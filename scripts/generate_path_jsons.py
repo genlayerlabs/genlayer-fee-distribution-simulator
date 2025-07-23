@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tests.round_combinations.graph_data import TRANSACTION_GRAPH
 from tests.round_combinations.path_generator import generate_all_paths
 from tests.round_combinations.path_types import PathConstraints
+from tests.round_combinations.path_filter import filter_valid_paths, is_valid_path
 from fee_simulator.core.path_to_transaction import path_to_transaction_results
 from fee_simulator.core.transaction_processing import process_transaction
 from fee_simulator.core.round_labeling import label_rounds
@@ -298,7 +299,7 @@ def main():
         help="Output directory for JSON files",
     )
     parser.add_argument(
-        "--max-length", type=int, default=17, help="Maximum path length to generate"
+        "--max-length", type=int, default=16, help="Maximum path length to generate (default: 16, as 17+ have no valid paths)"
     )
     parser.add_argument(
         "--test-mode", action="store_true", help="Run in test mode with limited paths"
@@ -313,6 +314,11 @@ def main():
         "--debug",
         action="store_true",
         help="Show detailed error information including stack traces",
+    )
+    parser.add_argument(
+        "--no-filter",
+        action="store_true",
+        help="Process all paths without 1000 validator filtering (not recommended)",
     )
 
     args = parser.parse_args()
@@ -332,24 +338,44 @@ def main():
     errors = 0
 
     print(f"Generating paths up to length {args.max_length}...")
+    if not args.no_filter:
+        print("Filtering enabled: Only processing paths valid with 1000 validators")
 
     # First, count total paths to process
     total_paths = 0
+    total_valid_paths = 0
     print("Counting total paths...")
     for length in range(3, args.max_length + 1):
         constraints = PathConstraints(
             source_node="START", target_node="END", min_length=length, max_length=length
         )
-        paths = generate_all_paths(TRANSACTION_GRAPH, constraints)
-        path_count = len(list(paths))
+        all_paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
+        path_count = len(all_paths)
+        
+        if args.no_filter:
+            valid_count = path_count
+        else:
+            # Filter valid paths
+            valid_paths = filter_valid_paths(all_paths, max_addresses=1000)
+            valid_count = len(valid_paths)
+        
         total_paths += path_count
-        print(f"Length {length}: {path_count} paths")
+        total_valid_paths += valid_count
+        
+        if args.no_filter:
+            print(f"Length {length}: {path_count} paths")
+        else:
+            print(f"Length {length}: {valid_count}/{path_count} valid paths ({valid_count/path_count*100:.1f}%)" if path_count > 0 else f"Length {length}: 0 paths")
 
-    print(f"\nTotal paths to process: {total_paths}")
+    if args.no_filter:
+        print(f"\nTotal paths to process: {total_paths}")
+    else:
+        print(f"\nTotal paths to process: {total_valid_paths} (out of {total_paths} theoretical paths)")
 
     # Process by length to organize output
     # Start from length 3 as minimum
-    progress_bar = tqdm(total=total_paths, desc="Processing paths", unit="path")
+    progress_bar = tqdm(total=total_valid_paths if not args.no_filter else total_paths, 
+                       desc="Processing paths", unit="path")
 
     for length in range(3, args.max_length + 1):
         length_dir = output_dir / f"length_{length:02d}"
@@ -365,9 +391,19 @@ def main():
             max_length=length,  # exact length
         )
 
-        all_paths = generate_all_paths(TRANSACTION_GRAPH, constraints)
+        all_paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
+        
+        # Filter if needed
+        if args.no_filter:
+            paths_to_process = all_paths
+        else:
+            paths_to_process = filter_valid_paths(all_paths, max_addresses=1000)
+        
+        # Skip if no valid paths
+        if not paths_to_process:
+            continue
 
-        for path in all_paths:
+        for path in paths_to_process:
 
             if args.test_mode and length_count >= 10:
                 break
@@ -408,6 +444,13 @@ def main():
     print(f"\nCompleted!")
     print(f"Total paths processed: {processed}")
     print(f"Errors: {errors}")
+    
+    if not args.no_filter:
+        print(f"\nFiltering summary:")
+        print(f"Theoretical paths (no filtering): {total_paths:,}")
+        print(f"Valid paths (1000 validator limit): {total_valid_paths:,}")
+        print(f"Paths filtered out: {total_paths - total_valid_paths:,}")
+        print(f"Validity rate: {total_valid_paths/total_paths*100:.1f}%")
 
 
 if __name__ == "__main__":
