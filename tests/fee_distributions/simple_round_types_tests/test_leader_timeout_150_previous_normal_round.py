@@ -22,7 +22,9 @@ from fee_simulator.display import (
     display_summary_table,
     display_test_description,
 )
-from tests.fee_distributions.check_invariants.comprehensive_invariants import check_comprehensive_invariants
+from tests.fee_distributions.check_invariants.comprehensive_invariants import (
+    check_comprehensive_invariants,
+)
 
 leaderTimeout = 100
 validatorsTimeout = 200
@@ -107,7 +109,9 @@ def test_leader_timeout_150_previous_normal_round(verbose, debug):
     ], f"Expected ['SKIP_ROUND', 'APPEAL_LEADER_TIMEOUT_SUCCESSFUL', 'LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(fee_events, transaction_budget, transaction_results, round_labels, tolerance=20)
+    check_comprehensive_invariants(
+        fee_events, transaction_budget, transaction_results, round_labels, tolerance=20
+    )
 
     # Everyone Else 0 Fees Assert
     assert all(
@@ -123,9 +127,8 @@ def test_leader_timeout_150_previous_normal_round(verbose, debug):
         validators_timeout=validatorsTimeout,
         round_labels=round_labels,
     )
-    assert (
-        compute_total_earnings(fee_events, addresses_pool[23])
-        == int(appeal_bond * 1.5)
+    assert compute_total_earnings(fee_events, addresses_pool[23]) == int(
+        appeal_bond * 1.5
     ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * 1.5)}) for 50% return"
     assert (
         compute_total_costs(fee_events, addresses_pool[23]) == appeal_bond

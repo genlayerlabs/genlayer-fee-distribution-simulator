@@ -119,7 +119,9 @@ for i, (path, violations) in enumerate(failing_paths[:1]):
 
     print("\n" + "=" * 80)
     print("SUMMARY TABLE:")
-    display_summary_table(fee_events, transaction_results, transaction_budget, round_labels)
+    display_summary_table(
+        fee_events, transaction_results, transaction_budget, round_labels
+    )
 
 # Summary of violation types
 if failing_paths:

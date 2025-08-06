@@ -12,11 +12,11 @@ from fee_simulator.utils import is_appeal_round
 def get_round_size(round_index: int, round_labels: List[RoundLabel] = None) -> int:
     """
     Get the size of a round based on its index and label.
-    
+
     Args:
         round_index: The index of the round (0-based)
         round_labels: Optional list of round labels to determine if it's an appeal
-        
+
     Returns:
         The number of participants in the round
     """
@@ -40,10 +40,10 @@ def get_round_size(round_index: int, round_labels: List[RoundLabel] = None) -> i
 def get_normal_round_size(normal_round_index: int) -> int:
     """
     Get the size of a normal round based on its index in the sequence of normal rounds.
-    
+
     Args:
         normal_round_index: The index in the sequence of normal rounds (0, 1, 2, ...)
-        
+
     Returns:
         The number of participants in the normal round
     """
@@ -56,10 +56,10 @@ def get_normal_round_size(normal_round_index: int) -> int:
 def get_appeal_round_size(appeal_index: int) -> int:
     """
     Get the size of an appeal round based on its index in the sequence of appeals.
-    
+
     Args:
         appeal_index: The index in the sequence of appeals (0, 1, 2, ...)
-        
+
     Returns:
         The number of participants in the appeal round
     """
@@ -72,11 +72,11 @@ def get_appeal_round_size(appeal_index: int) -> int:
 def get_appeal_index(round_index: int, round_labels: List[RoundLabel]) -> int:
     """
     Get the appeal sequence index for a given round.
-    
+
     Args:
         round_index: The absolute round index
         round_labels: List of round labels
-        
+
     Returns:
         The index in the sequence of appeals (0 for first appeal, 1 for second, etc.)
     """
@@ -90,11 +90,11 @@ def get_appeal_index(round_index: int, round_labels: List[RoundLabel]) -> int:
 def get_normal_round_index(round_index: int, round_labels: List[RoundLabel]) -> int:
     """
     Get the normal round sequence index for a given round.
-    
+
     Args:
         round_index: The absolute round index
         round_labels: List of round labels
-        
+
     Returns:
         The index in the sequence of normal rounds (0 for first normal, 1 for second, etc.)
     """
@@ -102,17 +102,21 @@ def get_normal_round_index(round_index: int, round_labels: List[RoundLabel]) -> 
     for i in range(round_index + 1):
         if i < len(round_labels) and not is_appeal_round(round_labels[i]):
             normal_count += 1
-    return normal_count - 1  # Subtract 1 because we counted up to and including current round
+    return (
+        normal_count - 1
+    )  # Subtract 1 because we counted up to and including current round
 
 
-def get_round_size_for_bond(appeal_round_index: int, round_labels: List[RoundLabel]) -> int:
+def get_round_size_for_bond(
+    appeal_round_index: int, round_labels: List[RoundLabel]
+) -> int:
     """
     Get the round size for appeal bond calculation.
-    
+
     Args:
         appeal_round_index: The index of the appeal round
         round_labels: List of round labels
-        
+
     Returns:
         The size of the appeal round for bond calculation
     """

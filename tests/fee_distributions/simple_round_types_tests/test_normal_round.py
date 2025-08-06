@@ -16,7 +16,9 @@ from fee_simulator.fee_aggregators.address_metrics import (
     compute_total_balance,
 )
 from fee_simulator.constants import PENALTY_REWARD_COEFFICIENT
-from tests.fee_distributions.check_invariants.comprehensive_invariants import check_comprehensive_invariants
+from tests.fee_distributions.check_invariants.comprehensive_invariants import (
+    check_comprehensive_invariants,
+)
 
 leaderTimeout = 100
 validatorsTimeout = 200
@@ -29,21 +31,27 @@ appealant_address = addresses_pool[1998]
 def test_normal_round(verbose, debug):
     """Test fee distribution for a normal round with all validators agreeing."""
     # Create custom transaction with unanimous agreement
-    from fee_simulator.models import TransactionRoundResults, TransactionBudget, Round, Rotation, Appeal
-    
+    from fee_simulator.models import (
+        TransactionRoundResults,
+        TransactionBudget,
+        Round,
+        Rotation,
+        Appeal,
+    )
+
     # Create votes where all validators agree
     votes = {
         addresses_pool[0]: ["LEADER_RECEIPT", "AGREE"],  # Leader
         addresses_pool[1]: "AGREE",
-        addresses_pool[2]: "AGREE", 
+        addresses_pool[2]: "AGREE",
         addresses_pool[3]: "AGREE",
         addresses_pool[4]: "AGREE",
     }
-    
+
     transaction_results = TransactionRoundResults(
         rounds=[Round(rotations=[Rotation(votes=votes)])]
     )
-    
+
     transaction_budget = TransactionBudget(
         leaderTimeout=leaderTimeout,
         validatorsTimeout=validatorsTimeout,
@@ -51,12 +59,12 @@ def test_normal_round(verbose, debug):
         rotations=[0],
         senderAddress=sender_address,
         appeals=[],
-        staking_distribution="constant"
+        staking_distribution="constant",
     )
-    
+
     # Get round labels
     round_labels = label_rounds(transaction_results)
-    
+
     # Process transaction
     fee_events, _ = process_transaction(
         addresses=addresses_pool,
@@ -84,7 +92,9 @@ def test_normal_round(verbose, debug):
     ], f"Expected ['NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(fee_events, transaction_budget, transaction_results, round_labels)
+    check_comprehensive_invariants(
+        fee_events, transaction_budget, transaction_results, round_labels
+    )
 
     # Leader Fees Assert
     assert (
@@ -118,10 +128,10 @@ def test_normal_round_with_minority_penalties(verbose, debug):
     # Note: The path_to_transaction_results will create a scenario with majority agree
     # but some validators in minority. This is handled by the vote distribution logic.
     path = ["START", "LEADER_RECEIPT_MAJORITY_AGREE", "END"]
-    
+
     # The path_to_transaction_results will create a scenario with majority agree
     # but some validators in minority who will be penalized
-    
+
     # Convert path to transaction results
     transaction_results, transaction_budget = path_to_transaction_results(
         path=path,
@@ -131,10 +141,10 @@ def test_normal_round_with_minority_penalties(verbose, debug):
         leader_timeout=leaderTimeout,
         validators_timeout=validatorsTimeout,
     )
-    
+
     # Get round labels
     round_labels = label_rounds(transaction_results)
-    
+
     # Process transaction
     fee_events, _ = process_transaction(
         addresses=addresses_pool,
@@ -162,11 +172,17 @@ def test_normal_round_with_minority_penalties(verbose, debug):
     ], f"Expected ['NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(fee_events, transaction_budget, transaction_results, round_labels)
+    check_comprehensive_invariants(
+        fee_events, transaction_budget, transaction_results, round_labels
+    )
 
     # Check that there are both earnings and burns (indicating majority/minority split)
-    total_earnings = sum(e.earned for e in fee_events if e.earned and e.role == "VALIDATOR")
-    total_burns = sum(e.burned for e in fee_events if e.burned and e.role == "VALIDATOR")
+    total_earnings = sum(
+        e.earned for e in fee_events if e.earned and e.role == "VALIDATOR"
+    )
+    total_burns = sum(
+        e.burned for e in fee_events if e.burned and e.role == "VALIDATOR"
+    )
     assert total_earnings > 0, "Should have validator earnings"
     assert total_burns > 0, "Should have validator burns for minority"
 
@@ -175,7 +191,7 @@ def test_normal_round_no_majority(verbose, debug):
     """Test normal round with no majority (undetermined)."""
     # Define path - undetermined (no clear majority)
     path = ["START", "LEADER_RECEIPT_UNDETERMINED", "END"]
-    
+
     # Convert path to transaction results
     transaction_results, transaction_budget = path_to_transaction_results(
         path=path,
@@ -185,10 +201,10 @@ def test_normal_round_no_majority(verbose, debug):
         leader_timeout=leaderTimeout,
         validators_timeout=validatorsTimeout,
     )
-    
+
     # Get round labels
     round_labels = label_rounds(transaction_results)
-    
+
     # Process transaction
     fee_events, _ = process_transaction(
         addresses=addresses_pool,
@@ -216,7 +232,9 @@ def test_normal_round_no_majority(verbose, debug):
     ], f"Expected ['NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(fee_events, transaction_budget, transaction_results, round_labels)
+    check_comprehensive_invariants(
+        fee_events, transaction_budget, transaction_results, round_labels
+    )
 
     # Leader Fees Assert
     assert (
@@ -226,8 +244,7 @@ def test_normal_round_no_majority(verbose, debug):
 
     # Validator Fees Assert - all validators should earn in undetermined
     validator_earnings = [
-        compute_total_earnings(fee_events, addr) 
-        for addr in addresses_pool[1:5]
+        compute_total_earnings(fee_events, addr) for addr in addresses_pool[1:5]
     ]
     assert all(
         earning == validatorsTimeout for earning in validator_earnings
@@ -242,7 +259,7 @@ def test_normal_round_majority_disagree(verbose, debug):
     """Test normal round with majority DISAGREE."""
     # Define path - majority disagrees
     path = ["START", "LEADER_RECEIPT_MAJORITY_DISAGREE", "END"]
-    
+
     # Convert path to transaction results
     transaction_results, transaction_budget = path_to_transaction_results(
         path=path,
@@ -252,10 +269,10 @@ def test_normal_round_majority_disagree(verbose, debug):
         leader_timeout=leaderTimeout,
         validators_timeout=validatorsTimeout,
     )
-    
+
     # Get round labels
     round_labels = label_rounds(transaction_results)
-    
+
     # Process transaction
     fee_events, _ = process_transaction(
         addresses=addresses_pool,
@@ -283,17 +300,22 @@ def test_normal_round_majority_disagree(verbose, debug):
     ], f"Expected ['NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(fee_events, transaction_budget, transaction_results, round_labels)
+    check_comprehensive_invariants(
+        fee_events, transaction_budget, transaction_results, round_labels
+    )
 
     # Leader Fees Assert
     # In our implementation, the leader also disagrees (part of majority)
     assert (
-        compute_total_earnings(fee_events, addresses_pool[0]) == leaderTimeout + validatorsTimeout
+        compute_total_earnings(fee_events, addresses_pool[0])
+        == leaderTimeout + validatorsTimeout
     ), "Leader should have 100 (leader) + 200 (validator) as part of majority"
 
     # Check that minority validators burn
     # Find validators who are in minority (those who agreed or timed out)
-    total_burns = sum(e.burned for e in fee_events if e.burned and e.role == "VALIDATOR")
+    total_burns = sum(
+        e.burned for e in fee_events if e.burned and e.role == "VALIDATOR"
+    )
     assert total_burns > 0, "Should have burns from minority validators"
 
     # Sender Fees Assert

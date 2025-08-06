@@ -17,11 +17,19 @@ sender_address = addresses[-1]
 appealant_address = addresses[-2]
 
 # Test path with conservation error
-path = ['START', 'LEADER_RECEIPT_MAJORITY_AGREE', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_SUCCESSFUL', 
-        'LEADER_RECEIPT_UNDETERMINED', 'LEADER_APPEAL_UNSUCCESSFUL', 
-        'LEADER_RECEIPT_UNDETERMINED', 'END']
+path = [
+    "START",
+    "LEADER_RECEIPT_MAJORITY_AGREE",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_SUCCESSFUL",
+    "LEADER_RECEIPT_UNDETERMINED",
+    "LEADER_APPEAL_UNSUCCESSFUL",
+    "LEADER_RECEIPT_UNDETERMINED",
+    "END",
+]
 
 print(f"Path: {' → '.join(path[1:-1])}")
 print("=" * 80)
@@ -55,26 +63,32 @@ for i, label in enumerate(round_labels):
         earned = sum(e.earned for e in round_events)
         burned = sum(e.burned for e in round_events)
         slashed = sum(e.slashed for e in round_events)
-        
+
         # Net flow: costs go in, earnings+burns+slashes go out
         round_net = cost - earned - burned - slashed
         net_flow += round_net
-        
+
         print(f"\nRound {i} ({label}):")
         print(f"  IN:  cost={cost}")
-        print(f"  OUT: earned={earned}, burned={burned}, slashed={slashed} (total={earned+burned+slashed})")
+        print(
+            f"  OUT: earned={earned}, burned={burned}, slashed={slashed} (total={earned+burned+slashed})"
+        )
         print(f"  Net: {round_net} (cumulative: {net_flow})")
-        
+
         # Check for specific issues
         if label == "APPEAL_VALIDATOR_UNSUCCESSFUL":
             # Count how many times this has occurred
-            appeal_count = sum(1 for j in range(i+1) if is_appeal_round(round_labels[j]))
+            appeal_count = sum(
+                1 for j in range(i + 1) if is_appeal_round(round_labels[j])
+            )
             print(f"  This is appeal #{appeal_count}")
-            
+
             # Check the appealant events
             appealant_events = [e for e in round_events if e.role == "APPEALANT"]
             for e in appealant_events:
-                print(f"  Appealant: cost={e.cost}, earned={e.earned}, burned={e.burned}")
+                print(
+                    f"  Appealant: cost={e.cost}, earned={e.earned}, burned={e.burned}"
+                )
 
 # The remaining net flow should be equal to the sender's refund
 print(f"\nFinal net flow: {net_flow}")
@@ -102,7 +116,7 @@ for i, label in enumerate(round_labels):
             if not is_appeal_round(round_labels[j]):
                 normal_round_index = j
                 break
-        
+
         bond = compute_appeal_bond(
             normal_round_index=normal_round_index,
             leader_timeout=100,
@@ -110,15 +124,21 @@ for i, label in enumerate(round_labels):
             round_labels=round_labels,
             appeal_round_index=i,
         )
-        
+
         print(f"Round {i} ({label}): bond = {bond}")
-        
+
         # Check actual cost paid
-        appealant_events = [e for e in fee_events if e.round_index == i and e.role == "APPEALANT" and e.cost > 0]
+        appealant_events = [
+            e
+            for e in fee_events
+            if e.round_index == i and e.role == "APPEALANT" and e.cost > 0
+        ]
         if appealant_events:
             actual_cost = sum(e.cost for e in appealant_events)
             print(f"  Actual cost paid: {actual_cost}")
             if actual_cost != bond:
                 print(f"  MISMATCH: Expected {bond}, got {actual_cost}")
 
-print("\nNote: The 300 difference might be accumulating from multiple small discrepancies.")
+print(
+    "\nNote: The 300 difference might be accumulating from multiple small discrepancies."
+)

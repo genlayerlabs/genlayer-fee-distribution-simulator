@@ -36,13 +36,13 @@ for length in [5, 6]:
         source_node="START", target_node="END", min_length=length, max_length=length
     )
     paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
-    
+
     for path in paths:
         # Skip if doesn't have multiple appeals
         appeal_count = sum(1 for node in path if "APPEAL" in node)
         if appeal_count < 2:
             continue
-            
+
         try:
             # Process the path
             transaction_results, transaction_budget = path_to_transaction_results(
@@ -53,40 +53,41 @@ for length in [5, 6]:
                 leader_timeout=100,
                 validators_timeout=200,
             )
-            
+
             round_labels = label_rounds(transaction_results)
-            
+
             fee_events, labels = process_transaction(
                 addresses=addresses,
                 transaction_results=transaction_results,
                 transaction_budget=transaction_budget,
             )
-            
+
             # Check conservation
             total_costs = compute_agg_costs(fee_events)
             total_earnings = compute_agg_earnings(fee_events)
-            
+
             # Exclude sender's earnings
             sender_earnings = sum(
-                event.earned for event in fee_events 
+                event.earned
+                for event in fee_events
                 if event.address == transaction_budget.senderAddress
             )
             earnings_without_sender = total_earnings - sender_earnings
-            
+
             # Calculate refund
             sender_refund = compute_sender_refund(
                 transaction_budget.senderAddress,
                 fee_events,
                 transaction_budget,
-                round_labels
+                round_labels,
             )
-            
+
             # Calculate appealant burns
             appealant_burns = compute_agg_appealant_burnt(fee_events)
-            
+
             expected = earnings_without_sender + sender_refund + appealant_burns
             difference = total_costs - expected
-            
+
             # Look for significant differences
             if abs(difference) > 1000:
                 print(f"\n{'='*80}")
@@ -100,30 +101,34 @@ for length in [5, 6]:
                 print(f"Appealant burns: {appealant_burns}")
                 print(f"Expected total: {expected}")
                 print(f"Difference: {difference}")
-                
+
                 # Show appealant-related events
                 print("\nAppealant events:")
                 for event in fee_events:
                     if event.role == "APPEALANT":
-                        print(f"  Round {event.round_index}: cost={event.cost}, earned={event.earned}, burned={event.burned}")
-                
+                        print(
+                            f"  Round {event.round_index}: cost={event.cost}, earned={event.earned}, burned={event.burned}"
+                        )
+
                 # Show burn events
                 print("\nAll burn events:")
                 for event in fee_events:
                     if event.burned > 0:
-                        print(f"  Round {event.round_index} ({event.role}): burned={event.burned}")
-                
+                        print(
+                            f"  Round {event.round_index} ({event.role}): burned={event.burned}"
+                        )
+
                 # Display full fee distribution
                 print("\nFull fee distribution:")
                 display_fee_distribution(fee_events)
-                
+
                 # Break after finding first issue
                 break
-                
+
         except Exception as e:
             print(f"Error processing path {path}: {e}")
             continue
-    
+
     # Break if we found an issue
     if abs(difference) > 1000:
         break

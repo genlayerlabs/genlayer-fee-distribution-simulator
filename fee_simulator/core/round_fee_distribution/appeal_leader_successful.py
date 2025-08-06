@@ -18,24 +18,28 @@ def apply_appeal_leader_successful(
     round_labels: List[RoundLabel],
 ) -> List[FeeEvent]:
     events = []
-    
+
     # Find which appeal this is by counting appeals up to this point
-    appeal_count = sum(1 for i in range(round_index + 1) if is_appeal_round(round_labels[i]))
+    appeal_count = sum(
+        1 for i in range(round_index + 1) if is_appeal_round(round_labels[i])
+    )
     appeal_index = appeal_count - 1
-    
+
     if appeal_index < 0 or appeal_index >= len(budget.appeals):
-        raise ValueError(f"Appeal index {appeal_index} out of bounds for round {round_index}")
-    
+        raise ValueError(
+            f"Appeal index {appeal_index} out of bounds for round {round_index}"
+        )
+
     appeal = budget.appeals[appeal_index]
     appealant_address = appeal.appealantAddress
-    
+
     # Find the most recent normal round before this appeal
     normal_round_index = round_index - 1  # Default
     for i in range(round_index - 1, -1, -1):
         if not is_appeal_round(round_labels[i]):
             normal_round_index = i
             break
-    
+
     appeal_bond = compute_appeal_bond(
         normal_round_index=normal_round_index,
         leader_timeout=budget.leaderTimeout,

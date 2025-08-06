@@ -50,10 +50,12 @@ def is_appeal_round_label(label: RoundLabel) -> bool:
     return label.startswith("APPEAL_")
 
 
-def is_likely_appeal_round(votes: Dict[str, Vote], leader_address: Optional[str]) -> bool:
+def is_likely_appeal_round(
+    votes: Dict[str, Vote], leader_address: Optional[str]
+) -> bool:
     """
     Determine if a round is likely an appeal based on vote patterns.
-    
+
     Appeal rounds have distinct patterns:
     - Leader appeals: All participants have "NA" votes (but not LEADER_TIMEOUT)
     - Validator appeals: No leader receipt, just AGREE/DISAGREE votes
@@ -61,13 +63,13 @@ def is_likely_appeal_round(votes: Dict[str, Vote], leader_address: Optional[str]
     """
     if not votes:
         return False
-    
+
     # Check if there's a LEADER_TIMEOUT - this is NOT an appeal
     if leader_address and leader_address in votes:
         vote = votes[leader_address]
         if isinstance(vote, list) and len(vote) >= 1 and vote[0] == "LEADER_TIMEOUT":
             return False  # Leader timeout is a normal round, not an appeal
-    
+
     # Check if all votes are NA (leader appeal pattern)
     all_na = all(
         vote == "NA" or (isinstance(vote, list) and vote[1] == "NA")
@@ -75,14 +77,14 @@ def is_likely_appeal_round(votes: Dict[str, Vote], leader_address: Optional[str]
     )
     if all_na:
         return True
-    
+
     # Check if there's a leader receipt (normal round pattern)
     has_leader_receipt = False
     if leader_address and leader_address in votes:
         vote = votes[leader_address]
         if isinstance(vote, list) and len(vote) >= 1 and vote[0] == "LEADER_RECEIPT":
             has_leader_receipt = True
-    
+
     # If no leader receipt and votes are AGREE/DISAGREE, likely validator appeal
     if not has_leader_receipt:
         vote_types = set()
@@ -93,11 +95,11 @@ def is_likely_appeal_round(votes: Dict[str, Vote], leader_address: Optional[str]
                 for v in vote:
                     if v in ["AGREE", "DISAGREE"]:
                         vote_types.add(v)
-        
+
         # If we have AGREE/DISAGREE votes without leader receipt, it's likely a validator appeal
         if vote_types:
             return True
-    
+
     return False
 
 
@@ -150,7 +152,7 @@ def classify_vote_appeal(
                 return "APPEAL_LEADER_SUCCESSFUL"
             else:
                 return "APPEAL_LEADER_UNSUCCESSFUL"
-        
+
         # Otherwise check next round
         next_majority = compute_majority(rounds[round_index + 1])
         if next_majority not in ["UNDETERMINED", "DISAGREE"]:
@@ -182,14 +184,18 @@ def classify_appeal_round(
     while original_round_index > 0:
         # Check if the previous round is likely an appeal
         prev_votes = rounds[original_round_index]
-        prev_leader_addr = leader_addresses[original_round_index] if original_round_index < len(leader_addresses) else None
+        prev_leader_addr = (
+            leader_addresses[original_round_index]
+            if original_round_index < len(leader_addresses)
+            else None
+        )
         if is_likely_appeal_round(prev_votes, prev_leader_addr):
             # Keep looking back
             original_round_index -= 1
         else:
             # Found a non-appeal round
             break
-    
+
     # Now classify based on the original normal round
     orig_round = rounds[original_round_index]
     orig_leader_action = get_leader_action(
@@ -371,14 +377,18 @@ def label_rounds(transaction_results: TransactionRoundResults) -> List[RoundLabe
 
         # Check for the specific pattern: LEADER_TIMEOUT -> APPEAL -> LEADER_TIMEOUT
         # where the appeal will be unsuccessful
-        if (i == 0 and leader_action == "LEADER_TIMEOUT" and 
-            i + 2 < total_rounds):
+        if i == 0 and leader_action == "LEADER_TIMEOUT" and i + 2 < total_rounds:
             # Check if next round looks like an appeal and round after that is leader timeout
             next_round_votes = rounds[i + 1] if i + 1 < total_rounds else {}
             next_leader_addr = leader_addresses[i + 1] if i + 1 < total_rounds else None
-            next_leader_action = get_leader_action(rounds[i + 2], leader_addresses[i + 2])
-            
-            if is_likely_appeal_round(next_round_votes, next_leader_addr) and next_leader_action == "LEADER_TIMEOUT":
+            next_leader_action = get_leader_action(
+                rounds[i + 2], leader_addresses[i + 2]
+            )
+
+            if (
+                is_likely_appeal_round(next_round_votes, next_leader_addr)
+                and next_leader_action == "LEADER_TIMEOUT"
+            ):
                 # This matches the pattern, so first timeout gets 50%
                 labels.append("LEADER_TIMEOUT_50_PERCENT")
                 continue
@@ -394,5 +404,17 @@ def label_rounds(transaction_results: TransactionRoundResults) -> List[RoundLabe
 
     # Apply special case transformations
     labels = apply_special_cases(labels, rounds)
+
+    # Post-processing: Handle last round LEADER_TIMEOUT that didn't match any pattern
+    if labels and labels[-1] == "LEADER_TIMEOUT":
+        # Check if it's actually a leader timeout (not misclassified)
+        last_round_votes = rounds[-1] if rounds else {}
+        last_leader_addr = leader_addresses[-1] if leader_addresses else None
+        last_leader_action = get_leader_action(last_round_votes, last_leader_addr)
+
+        if last_leader_action == "LEADER_TIMEOUT":
+            # This is a genuine leader timeout at the end that didn't match any pattern
+            # It should get 50% distribution
+            labels[-1] = "LEADER_TIMEOUT_50_PERCENT"
 
     return labels

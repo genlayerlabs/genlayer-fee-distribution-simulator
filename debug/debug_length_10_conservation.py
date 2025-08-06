@@ -41,7 +41,7 @@ found_300 = False
 for path in paths:
     if found_5100 and found_300:
         break
-        
+
     try:
         # Process the path
         transaction_results, transaction_budget = path_to_transaction_results(
@@ -52,40 +52,41 @@ for path in paths:
             leader_timeout=100,
             validators_timeout=200,
         )
-        
+
         round_labels = label_rounds(transaction_results)
-        
+
         fee_events, labels = process_transaction(
             addresses=addresses,
             transaction_results=transaction_results,
             transaction_budget=transaction_budget,
         )
-        
+
         # Check conservation
         total_costs = compute_agg_costs(fee_events)
         total_earnings = compute_agg_earnings(fee_events)
-        
+
         # Exclude sender's earnings
         sender_earnings = sum(
-            event.earned for event in fee_events 
+            event.earned
+            for event in fee_events
             if event.address == transaction_budget.senderAddress
         )
         earnings_without_sender = total_earnings - sender_earnings
-        
+
         # Calculate refund
         sender_refund = compute_sender_refund(
             transaction_budget.senderAddress,
             fee_events,
             transaction_budget,
-            round_labels
+            round_labels,
         )
-        
+
         # Calculate appealant burns
         appealant_burns = compute_agg_appealant_burnt(fee_events)
-        
+
         expected = earnings_without_sender + sender_refund + appealant_burns
         difference = total_costs - expected
-        
+
         # Look for specific differences
         if abs(difference - 5100) < 10 and not found_5100:
             found_5100 = True
@@ -99,37 +100,43 @@ for path in paths:
             print(f"Appealant burns: {appealant_burns}")
             print(f"Expected total: {expected}")
             print(f"Difference: {difference}")
-            
-            # Count LEADER_TIMEOUT labels  
-            leader_timeout_count = sum(1 for label in round_labels if label == "LEADER_TIMEOUT")
+
+            # Count LEADER_TIMEOUT labels
+            leader_timeout_count = sum(
+                1 for label in round_labels if label == "LEADER_TIMEOUT"
+            )
             print(f"\nLEADER_TIMEOUT labels: {leader_timeout_count}")
-            
+
             # Show appealant events
             print("\nAppealant events:")
             for event in fee_events:
                 if event.role == "APPEALANT":
-                    print(f"  Round {event.round_index}: cost={event.cost}, earned={event.earned}, burned={event.burned}")
-            
+                    print(
+                        f"  Round {event.round_index}: cost={event.cost}, earned={event.earned}, burned={event.burned}"
+                    )
+
             # Show which rounds have which labels
             print("\nRound label details:")
             for i, label in enumerate(round_labels):
                 if "TIMEOUT" in label or "APPEAL" in label:
                     print(f"  Round {i}: {label}")
-                    
+
         elif abs(difference - 300) < 10 and not found_300:
             found_300 = True
             print(f"\n{'='*80}")
             print(f"Found path with 300 conservation issue: {' → '.join(path)}")
-            print(f"Round labels: {round_labels[:5]} ... {round_labels[-5:]}")  # Show first and last 5
+            print(
+                f"Round labels: {round_labels[:5]} ... {round_labels[-5:]}"
+            )  # Show first and last 5
             print(f"Total rounds: {len(round_labels)}")
             print(f"Total costs: {total_costs}")
             print(f"Difference: {difference}")
-            
+
             # Count round types
             appeal_count = sum(1 for label in round_labels if is_appeal_round(label))
             normal_count = sum(1 for label in round_labels if label == "NORMAL_ROUND")
             print(f"Appeals: {appeal_count}, Normal rounds: {normal_count}")
-            
+
     except Exception as e:
         continue
 

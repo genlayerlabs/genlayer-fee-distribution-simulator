@@ -17,11 +17,19 @@ sender_address = addresses[-1]
 appealant_address = addresses[-2]
 
 # Test path with error
-path = ['START', 'LEADER_RECEIPT_MAJORITY_AGREE', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_SUCCESSFUL', 'END']
+path = [
+    "START",
+    "LEADER_RECEIPT_MAJORITY_AGREE",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_SUCCESSFUL",
+    "END",
+]
 
 transaction_results, transaction_budget = path_to_transaction_results(
     path=path,
@@ -84,15 +92,26 @@ print(f"\nAll round labels: {round_labels}")
 # Check for burns from previous unsuccessful appeals
 print("\nChecking for burns from previous rounds...")
 for i in range(7):
-    if round_labels[i] in ["APPEAL_VALIDATOR_UNSUCCESSFUL", "APPEAL_LEADER_UNSUCCESSFUL"]:
+    if round_labels[i] in [
+        "APPEAL_VALIDATOR_UNSUCCESSFUL",
+        "APPEAL_LEADER_UNSUCCESSFUL",
+    ]:
         # Get appeal bond for this round
-        appeal_events = [e for e in fee_events if e.round_index == i and e.role == "APPEALANT" and e.cost > 0]
+        appeal_events = [
+            e
+            for e in fee_events
+            if e.round_index == i and e.role == "APPEALANT" and e.cost > 0
+        ]
         if appeal_events:
             appeal_bond = sum(e.cost for e in appeal_events)
             print(f"Round {i} ({round_labels[i]}): appeal bond = {appeal_bond}")
-            
+
             # Check if this bond was burned in round i+1
-            next_round_burns = [e for e in fee_events if e.round_index == i+1 and e.role == "APPEALANT" and e.burned > 0]
+            next_round_burns = [
+                e
+                for e in fee_events
+                if e.round_index == i + 1 and e.role == "APPEALANT" and e.burned > 0
+            ]
             if next_round_burns:
                 burn_amount = sum(e.burned for e in next_round_burns)
                 print(f"  Burned in round {i+1}: {burn_amount}")

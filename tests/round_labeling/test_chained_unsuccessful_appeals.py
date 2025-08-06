@@ -319,7 +319,9 @@ class TestChainedUnsuccessfulAppeals:
         assert labels[0] == "NORMAL_ROUND"
         assert labels[1] == "APPEAL_LEADER_UNSUCCESSFUL"
         assert labels[2] == "SKIP_ROUND"  # Skip round due to successful appeal after
-        assert labels[3] == "APPEAL_LEADER_SUCCESSFUL"  # Successful because next round has majority
+        assert (
+            labels[3] == "APPEAL_LEADER_SUCCESSFUL"
+        )  # Successful because next round has majority
         assert labels[4] == "NORMAL_ROUND"  # Normal round with majority
 
     def test_leader_timeout_unsuccessful_chain(self):
@@ -607,7 +609,16 @@ class TestChainedUnsuccessfulAppeals:
 
         # Verify all appeals are unsuccessful
         # Count actual appeal labels in the result
-        appeal_labels = [i for i, label in enumerate(labels) if "APPEAL" in label and label not in ["SPLIT_PREVIOUS_APPEAL_BOND", "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND"]]
+        appeal_labels = [
+            i
+            for i, label in enumerate(labels)
+            if "APPEAL" in label
+            and label
+            not in [
+                "SPLIT_PREVIOUS_APPEAL_BOND",
+                "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND",
+            ]
+        ]
         assert len(appeal_labels) == 16  # Should have 16 appeals
         for idx in appeal_labels:
             assert labels[idx] == "APPEAL_VALIDATOR_UNSUCCESSFUL"
@@ -902,8 +913,14 @@ def test_invariants_with_chained_appeals():
                 if round_obj.rotations:
                     votes = round_obj.rotations[-1].votes
                     # Should have NA votes or no leader receipt
-                    has_na_votes = any(v == "NA" or (isinstance(v, list) and "NA" in v) for v in votes.values())
-                    has_leader_receipt = any(isinstance(v, list) and v[0] == "LEADER_RECEIPT" for v in votes.values())
+                    has_na_votes = any(
+                        v == "NA" or (isinstance(v, list) and "NA" in v)
+                        for v in votes.values()
+                    )
+                    has_leader_receipt = any(
+                        isinstance(v, list) and v[0] == "LEADER_RECEIPT"
+                        for v in votes.values()
+                    )
                     assert has_na_votes or not has_leader_receipt
 
         # Invariant 3: Valid labels

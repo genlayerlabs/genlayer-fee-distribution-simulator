@@ -27,14 +27,16 @@ def compute_appeal_bond(
             if is_appeal_round(round_labels[i]):
                 appeal_round_index = i
                 break
-        
+
         if appeal_round_index is None:
-            raise ValueError(f"No appeal round found after normal round {normal_round_index}")
-    
+            raise ValueError(
+                f"No appeal round found after normal round {normal_round_index}"
+            )
+
     # Validate the appeal round
     if appeal_round_index < 0 or appeal_round_index >= len(round_labels):
         raise ValueError(f"Invalid appeal round index: {appeal_round_index}")
-    
+
     if not is_appeal_round(round_labels[appeal_round_index]):
         raise ValueError(f"Round {appeal_round_index} is not an appeal round")
 

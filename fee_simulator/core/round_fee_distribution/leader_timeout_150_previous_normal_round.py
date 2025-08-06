@@ -92,7 +92,7 @@ def apply_leader_timeout_150_previous_normal_round(
                     hash="0xdefault",
                     cost=0,
                     staked=0,
-                    earned=budget.validatorsTimeout, 
+                    earned=budget.validatorsTimeout,
                     slashed=0,
                     burned=0,
                 )

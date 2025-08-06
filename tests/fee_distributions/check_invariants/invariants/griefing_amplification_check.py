@@ -6,10 +6,12 @@ network than the cost they paid for the appeal. This prevents "griefing
 amplification" attacks, where an attacker pays a small cost to inflict a large
 amount of damage on other participants.
 """
+
 from typing import List
 from fee_simulator.models import FeeEvent
 from fee_simulator.types import RoundLabel
 from .common import InvariantViolation
+
 
 def check_griefing_amplification(
     fee_events: List[FeeEvent], round_labels: List[RoundLabel]
@@ -29,7 +31,8 @@ def check_griefing_amplification(
     for round_index in unsuccessful_appeal_rounds:
         # Find the appellant and their cost for this specific appeal
         appellant_events = [
-            e for e in fee_events
+            e
+            for e in fee_events
             if e.round_index == round_index and e.role == "APPEALANT" and e.cost > 0
         ]
 
@@ -48,8 +51,8 @@ def check_griefing_amplification(
         if current_round_label == "APPEAL_LEADER_UNSUCCESSFUL":
             next_round_index = round_index + 1
             if (
-                next_round_index < len(round_labels) and
-                round_labels[next_round_index] == "SPLIT_PREVIOUS_APPEAL_BOND"
+                next_round_index < len(round_labels)
+                and round_labels[next_round_index] == "SPLIT_PREVIOUS_APPEAL_BOND"
             ):
                 affected_rounds.add(next_round_index)
 
@@ -65,10 +68,14 @@ def check_griefing_amplification(
 
         # The damage caused to others should not be greater than the appellant's cost.
         if damage_to_others > appellant_cost:
-            griefing_factor = damage_to_others / appellant_cost if appellant_cost > 0 else float('inf')
+            griefing_factor = (
+                damage_to_others / appellant_cost
+                if appellant_cost > 0
+                else float("inf")
+            )
             raise InvariantViolation(
                 "griefing_amplification",
                 f"Griefing amplification detected in round {round_index} ({current_round_label}). "
                 f"Appellant {appellant_address} paid {appellant_cost} but caused "
-                f"{damage_to_others} in damage to others (amplification factor: {griefing_factor:.2f}x)."
+                f"{damage_to_others} in damage to others (amplification factor: {griefing_factor:.2f}x).",
             )

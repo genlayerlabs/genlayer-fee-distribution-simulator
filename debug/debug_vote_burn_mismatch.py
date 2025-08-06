@@ -18,11 +18,19 @@ sender_address = addresses[-1]
 appealant_address = addresses[-2]
 
 # Test path
-path = ['START', 'LEADER_RECEIPT_MAJORITY_AGREE', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_SUCCESSFUL', 'END']
+path = [
+    "START",
+    "LEADER_RECEIPT_MAJORITY_AGREE",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_SUCCESSFUL",
+    "END",
+]
 
 transaction_results, transaction_budget = path_to_transaction_results(
     path=path,
@@ -88,21 +96,23 @@ if len(transaction_results.rounds) > 7:
     if round_7.rotations:
         votes_7 = round_7.rotations[-1].votes
         print(f"\nRound 7 has {len(votes_7)} voters")
-        
+
         # Check if round 8 burns are based on combined votes
         combined_votes = {**votes_7, **votes}
         combined_majority = compute_majority(combined_votes)
-        combined_majority_addrs, combined_minority_addrs = who_is_in_vote_majority(combined_votes, combined_majority)
-        
+        combined_majority_addrs, combined_minority_addrs = who_is_in_vote_majority(
+            combined_votes, combined_majority
+        )
+
         print(f"\nCombined votes from rounds 7+8:")
         print(f"Total voters: {len(combined_votes)}")
         print(f"Combined majority: {combined_majority}")
         print(f"Combined minority count: {len(combined_minority_addrs)}")
-        
+
         # Check if this matches burns
         if len(combined_minority_addrs) == len(burned_addresses):
             print("\nMATCH! Burns are based on COMBINED votes from rounds 7+8")
-        
+
         # Show vote counts
         vote_counts = {}
         for vote in combined_votes.values():

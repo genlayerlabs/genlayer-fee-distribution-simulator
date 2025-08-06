@@ -420,9 +420,15 @@ class AppealPositionInvariant(Invariant):
                     if round_obj.rotations:
                         votes = round_obj.rotations[-1].votes
                         # Appeal rounds should have NA votes or no leader receipt
-                        has_na_votes = any(v == "NA" or (isinstance(v, list) and "NA" in v) for v in votes.values())
-                        has_leader_receipt = any(isinstance(v, list) and v[0] == "LEADER_RECEIPT" for v in votes.values())
-                        
+                        has_na_votes = any(
+                            v == "NA" or (isinstance(v, list) and "NA" in v)
+                            for v in votes.values()
+                        )
+                        has_leader_receipt = any(
+                            isinstance(v, list) and v[0] == "LEADER_RECEIPT"
+                            for v in votes.values()
+                        )
+
                         if not has_na_votes and has_leader_receipt:
                             return Result(
                                 value=False,

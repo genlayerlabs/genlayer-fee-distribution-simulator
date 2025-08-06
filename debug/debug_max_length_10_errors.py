@@ -36,18 +36,17 @@ constraints = PathConstraints(
 )
 paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
 
-error_types = {
-    "conservation": [],
-    "majority_minority": [],
-    "vote_consistency": []
-}
+error_types = {"conservation": [], "majority_minority": [], "vote_consistency": []}
 
 for i, path in enumerate(paths):
     if i % 100 == 0:
         print(f"Checked {i}/{len(paths)} paths...")
-    if len(error_types["conservation"]) >= 5 and len(error_types["majority_minority"]) >= 5:
+    if (
+        len(error_types["conservation"]) >= 5
+        and len(error_types["majority_minority"]) >= 5
+    ):
         break  # Found enough examples
-        
+
     try:
         # Process the path
         transaction_results, transaction_budget = path_to_transaction_results(
@@ -58,19 +57,19 @@ for i, path in enumerate(paths):
             leader_timeout=100,
             validators_timeout=200,
         )
-        
+
         round_labels = label_rounds(transaction_results)
-        
+
         fee_events, labels = process_transaction(
             addresses=addresses,
             transaction_results=transaction_results,
             transaction_budget=transaction_budget,
         )
-        
+
         # Check invariants with dynamic tolerance
         num_rounds = len(round_labels)
         tolerance = num_rounds * 20
-        
+
         try:
             check_comprehensive_invariants(
                 fee_events,
@@ -81,7 +80,7 @@ for i, path in enumerate(paths):
             )
         except AssertionError as e:
             error_msg = str(e)
-            
+
             # Categorize the error
             if "Conservation of value" in error_msg:
                 if "300" in error_msg:
@@ -89,24 +88,28 @@ for i, path in enumerate(paths):
                     print(f"\n{'='*80}")
                     print(f"Found conservation error (300): {' → '.join(path)}")
                     print(f"Round labels: {round_labels}")
-                    
+
                     # Check for LEADER_TIMEOUT labels
-                    timeout_indices = [i for i, label in enumerate(round_labels) if label == "LEADER_TIMEOUT"]
+                    timeout_indices = [
+                        i
+                        for i, label in enumerate(round_labels)
+                        if label == "LEADER_TIMEOUT"
+                    ]
                     if timeout_indices:
                         print(f"LEADER_TIMEOUT at indices: {timeout_indices}")
-                    
+
             elif "Majority/minority consistency" in error_msg:
                 error_types["majority_minority"].append((path, error_msg))
                 print(f"\n{'='*80}")
                 print(f"Found majority/minority error: {' → '.join(path)}")
                 print(f"Error: {error_msg}")
-                
+
             elif "Vote consistency" in error_msg:
                 error_types["vote_consistency"].append((path, error_msg))
                 print(f"\n{'='*80}")
                 print(f"Found vote consistency error: {' → '.join(path)}")
                 print(f"Error: {error_msg}")
-                
+
     except Exception as e:
         continue
 
@@ -120,10 +123,10 @@ print(f"Vote consistency errors: {len(error_types['vote_consistency'])}")
 if error_types["conservation"]:
     print(f"\n{'='*80}")
     print("Analyzing first conservation error in detail...")
-    
+
     path, error_msg = error_types["conservation"][0]
     print(f"Path: {' → '.join(path)}")
-    
+
     # Reprocess to get details
     transaction_results, transaction_budget = path_to_transaction_results(
         path=path,
@@ -133,24 +136,26 @@ if error_types["conservation"]:
         leader_timeout=100,
         validators_timeout=200,
     )
-    
+
     round_labels = label_rounds(transaction_results)
-    
+
     fee_events, labels = process_transaction(
         addresses=addresses,
         transaction_results=transaction_results,
         transaction_budget=transaction_budget,
     )
-    
+
     # Show round by round
     print("\nRound by round analysis:")
     for i, label in enumerate(round_labels):
         print(f"Round {i}: {label}")
-        
+
         # Show fee events for this round
         round_events = [e for e in fee_events if e.round_index == i]
         if round_events:
             total_cost = sum(e.cost for e in round_events)
             total_earned = sum(e.earned for e in round_events)
             total_burned = sum(e.burned for e in round_events)
-            print(f"  Cost: {total_cost}, Earned: {total_earned}, Burned: {total_burned}")
+            print(
+                f"  Cost: {total_cost}, Earned: {total_earned}, Burned: {total_burned}"
+            )

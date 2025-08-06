@@ -35,15 +35,18 @@ print("Finding paths with failing invariants...")
 # Try different lengths
 for max_length in [10]:
     print(f"\nChecking paths of length {max_length}...")
-    
+
     constraints = PathConstraints(
-        source_node="START", target_node="END", min_length=max_length, max_length=max_length
+        source_node="START",
+        target_node="END",
+        min_length=max_length,
+        max_length=max_length,
     )
     paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
-    
+
     failed_paths = []
     error_types = {}
-    
+
     for i, path in enumerate(paths[:50]):  # Check first 50 paths
         try:
             # Process the path
@@ -55,19 +58,19 @@ for max_length in [10]:
                 leader_timeout=100,
                 validators_timeout=200,
             )
-            
+
             round_labels = label_rounds(transaction_results)
-            
+
             fee_events, labels = process_transaction(
                 addresses=addresses,
                 transaction_results=transaction_results,
                 transaction_budget=transaction_budget,
             )
-            
+
             # Check invariants with dynamic tolerance
             num_rounds = len(round_labels)
             tolerance = num_rounds * 20
-            
+
             try:
                 check_comprehensive_invariants(
                     fee_events,
@@ -79,7 +82,7 @@ for max_length in [10]:
             except AssertionError as e:
                 error_msg = str(e)
                 failed_paths.append(path)
-                
+
                 # Categorize error
                 if "Conservation of value" in error_msg:
                     error_type = "conservation"
@@ -91,16 +94,16 @@ for max_length in [10]:
                     error_type = "leader_timeout"
                 else:
                     error_type = "other"
-                
+
                 if error_type not in error_types:
                     error_types[error_type] = []
                 error_types[error_type].append((path, error_msg))
-                
+
                 if len(failed_paths) == 1:  # Analyze first failure in detail
                     print(f"\nFirst failing path: {' → '.join(path)}")
                     print(f"Error: {error_msg}")
                     print(f"Round labels: {round_labels}")
-                    
+
                     # Show round details
                     print("\nRound details:")
                     for j, label in enumerate(round_labels):
@@ -110,27 +113,29 @@ for max_length in [10]:
                             total_earned = sum(e.earned for e in round_events)
                             total_burned = sum(e.burned for e in round_events)
                             total_slashed = sum(e.slashed for e in round_events)
-                            print(f"  Round {j} ({label}): cost={total_cost}, earned={total_earned}, burned={total_burned}, slashed={total_slashed}")
-                
+                            print(
+                                f"  Round {j} ({label}): cost={total_cost}, earned={total_earned}, burned={total_burned}, slashed={total_slashed}"
+                            )
+
         except Exception as e:
             continue
-    
+
     print(f"\nSummary for length {max_length}:")
     print(f"Total paths checked: {min(50, len(paths))}")
     print(f"Failed paths: {len(failed_paths)}")
-    
+
     if error_types:
         print("\nError breakdown:")
         for error_type, errors in error_types.items():
             print(f"  {error_type}: {len(errors)}")
-            
+
         # Show examples
         if "conservation" in error_types and error_types["conservation"]:
             path, msg = error_types["conservation"][0]
             print(f"\nExample conservation error:")
             print(f"  Path: {' → '.join(path[:5])}...")
             print(f"  {msg[:200]}...")
-            
+
         if "majority_minority" in error_types and error_types["majority_minority"]:
             path, msg = error_types["majority_minority"][0]
             print(f"\nExample majority/minority error:")

@@ -18,11 +18,19 @@ sender_address = addresses[-1]
 appealant_address = addresses[-2]
 
 # Test path with error
-path = ['START', 'LEADER_RECEIPT_MAJORITY_AGREE', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_UNSUCCESSFUL', 'VALIDATOR_APPEAL_UNSUCCESSFUL', 
-        'VALIDATOR_APPEAL_SUCCESSFUL', 'END']
+path = [
+    "START",
+    "LEADER_RECEIPT_MAJORITY_AGREE",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_UNSUCCESSFUL",
+    "VALIDATOR_APPEAL_SUCCESSFUL",
+    "END",
+]
 
 print(f"Path: {' → '.join(path[1:-1])}")
 print("=" * 80)
@@ -54,13 +62,13 @@ if round_8.rotations:
     votes = round_8.rotations[-1].votes
     majority = compute_majority(votes)
     majority_addresses, minority_addresses = who_is_in_vote_majority(votes, majority)
-    
+
     print(f"\nRound 8 voting analysis:")
     print(f"Total voters: {len(votes)}")
     print(f"Majority: {majority}")
     print(f"Majority count: {len(majority_addresses)}")
     print(f"Minority count: {len(minority_addresses)}")
-    
+
     # Count vote types
     vote_counts = {}
     for vote in votes.values():
@@ -101,17 +109,17 @@ print(f"Expected total for 118 minority: {118 * transaction_budget.validatorsTim
 print(f"\nChecking if round 8 is APPEAL_VALIDATOR_SUCCESSFUL...")
 if round_labels[8] == "APPEAL_VALIDATOR_SUCCESSFUL":
     print("Yes, this is a successful validator appeal")
-    
+
     # Check the appeal bond calculation
     from fee_simulator.core.bond_computing import compute_appeal_bond
-    
+
     # Find normal round before appeal
     normal_round_index = 7
     for i in range(7, -1, -1):
         if round_labels[i] == "NORMAL_ROUND":
             normal_round_index = i
             break
-    
+
     appeal_bond = compute_appeal_bond(
         normal_round_index=normal_round_index,
         leader_timeout=transaction_budget.leaderTimeout,
@@ -119,25 +127,30 @@ if round_labels[8] == "APPEAL_VALIDATOR_SUCCESSFUL":
         round_labels=round_labels,
         appeal_round_index=8,
     )
-    
+
     print(f"\nAppeal bond: {appeal_bond}")
     print(f"Should pay 150% to appealant: {int(appeal_bond * 1.5)}")
-    
+
     # Check what the appealant actually got
     appealant_events = [e for e in round_8_events if e.role == "APPEALANT"]
     if appealant_events:
         print(f"Appealant earned: {sum(e.earned for e in appealant_events)}")
-        
+
 # Check for any coefficient being applied
 from fee_simulator.constants import PENALTY_REWARD_COEFFICIENT
+
 print(f"\nPENALTY_REWARD_COEFFICIENT: {PENALTY_REWARD_COEFFICIENT}")
 
 # Let's see if the burn amount matches any pattern
 if minority_burns:
     burn_amount = minority_burns[0][1]
     print(f"\nAnalyzing burn amount: {burn_amount}")
-    print(f"burn_amount / validators_timeout = {burn_amount / transaction_budget.validatorsTimeout}")
-    
+    print(
+        f"burn_amount / validators_timeout = {burn_amount / transaction_budget.validatorsTimeout}"
+    )
+
     # Check if it's related to round index
     print(f"Round index: 8")
-    print(f"Number of appeals so far: {sum(1 for label in round_labels[:9] if 'APPEAL' in label)}")
+    print(
+        f"Number of appeals so far: {sum(1 for label in round_labels[:9] if 'APPEAL' in label)}"
+    )

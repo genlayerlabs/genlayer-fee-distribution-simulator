@@ -43,7 +43,9 @@ def analyze_paths_by_length(max_length: int = 19) -> List[Dict]:
     print("-" * 80)
 
     # Use tqdm for progress bar
-    for length in tqdm(range(1, max_length + 1), desc="Processing path lengths", unit="length"):
+    for length in tqdm(
+        range(1, max_length + 1), desc="Processing path lengths", unit="length"
+    ):
 
         # Set up constraints
         constraints = PathConstraints(
@@ -53,17 +55,19 @@ def analyze_paths_by_length(max_length: int = 19) -> List[Dict]:
         # First count paths to see if we need progress tracking
         count_result = count_paths_between_nodes(TRANSACTION_GRAPH, constraints)
         matrix_count = count_result.by_length.get(length, 0)
-        
+
         # Generate paths using DFS
         if matrix_count > 10000:
             # For large path counts, show a sub-progress bar
-            generated_paths = list(tqdm(
-                generate_all_paths(TRANSACTION_GRAPH, constraints),
-                desc=f"  Generating paths for length {length}",
-                total=matrix_count,
-                leave=False,
-                unit="paths"
-            ))
+            generated_paths = list(
+                tqdm(
+                    generate_all_paths(TRANSACTION_GRAPH, constraints),
+                    desc=f"  Generating paths for length {length}",
+                    total=matrix_count,
+                    leave=False,
+                    unit="paths",
+                )
+            )
         else:
             generated_paths = generate_all_paths(TRANSACTION_GRAPH, constraints)
         generated_count = len(generated_paths)
@@ -74,11 +78,14 @@ def analyze_paths_by_length(max_length: int = 19) -> List[Dict]:
         if generated_count > 10000:
             # For large path counts, show progress for filtering
             from tests.round_combinations.path_filter import is_valid_path
+
             valid_paths = []
-            for path in tqdm(generated_paths, 
-                           desc=f"  Filtering paths for length {length}",
-                           leave=False,
-                           unit="paths"):
+            for path in tqdm(
+                generated_paths,
+                desc=f"  Filtering paths for length {length}",
+                leave=False,
+                unit="paths",
+            ):
                 if is_valid_path(path, max_addresses=1000):
                     valid_paths.append(path)
         else:
@@ -216,7 +223,11 @@ def analyze_filtered_paths_details(max_length: int = 10):
     print("FILTERED PATH EXAMPLES")
     print("=" * 120)
 
-    for length in tqdm(range(7, min(max_length + 1, 11)), desc="Analyzing filtered examples", unit="length"):
+    for length in tqdm(
+        range(7, min(max_length + 1, 11)),
+        desc="Analyzing filtered examples",
+        unit="length",
+    ):
         constraints = PathConstraints(
             min_length=length, max_length=length, source_node="START", target_node="END"
         )

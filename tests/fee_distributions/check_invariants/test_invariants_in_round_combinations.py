@@ -13,7 +13,9 @@ from fee_simulator.display import (
     display_summary_table,
     display_test_description,
 )
-from tests.fee_distributions.check_invariants.comprehensive_invariants import check_comprehensive_invariants
+from tests.fee_distributions.check_invariants.comprehensive_invariants import (
+    check_comprehensive_invariants,
+)
 from tests.round_combinations import generate_all_paths
 from tests.round_combinations.path_types import PathConstraints
 from tests.round_combinations.graph_data import TRANSACTION_GRAPH
@@ -71,7 +73,7 @@ slice_size = 50
 def test_paths_with_invariants(verbose, debug, path):
     """
     Test each path from all_paths with comprehensive invariants.
-    
+
     This test ensures that:
     1. Paths from TRANSITIONS_GRAPH convert properly to TransactionRoundResults
     2. Round labeling works correctly for all valid paths
@@ -147,7 +149,11 @@ def test_paths_with_invariants(verbose, debug, path):
         output_content.append("INVARIANT CHECK:")
         try:
             check_comprehensive_invariants(
-                fee_events, transaction_budget, transaction_results, round_labels, tolerance=20
+                fee_events,
+                transaction_budget,
+                transaction_results,
+                round_labels,
+                tolerance=20,
             )
             output_content.append("✓ All invariants passed")
             success = True
