@@ -137,7 +137,10 @@ def classify_leader_timeout_appeal(
 
 
 def classify_vote_appeal(
-    round_index: int, rounds: List[Dict[str, Vote]], prev_majority: str
+    round_index: int, 
+    rounds: List[Dict[str, Vote]], 
+    leader_addresses: List[Optional[str]],
+    prev_majority: str
 ) -> RoundLabel:
     """Classify an appeal based on vote majorities."""
     # Get appeal round majority
@@ -154,6 +157,19 @@ def classify_vote_appeal(
                 return "APPEAL_LEADER_UNSUCCESSFUL"
 
         # Otherwise check next round
+        next_votes = rounds[round_index + 1]
+        next_leader_addr = (
+            leader_addresses[round_index + 1]
+            if round_index + 1 < len(leader_addresses)
+            else None
+        )
+        next_leader_action = get_leader_action(next_votes, next_leader_addr)
+        
+        # Special case: if next round is LEADER_TIMEOUT, consider it successful
+        # because the timeout is not related to the appeal outcome
+        if next_leader_action == "LEADER_TIMEOUT":
+            return "APPEAL_LEADER_SUCCESSFUL"
+        
         next_majority = compute_majority(rounds[round_index + 1])
         if next_majority not in ["UNDETERMINED", "DISAGREE"]:
             return "APPEAL_LEADER_SUCCESSFUL"
@@ -206,7 +222,7 @@ def classify_appeal_round(
         return classify_leader_timeout_appeal(round_index, rounds, leader_addresses)
     else:
         orig_majority = compute_majority(orig_round)
-        return classify_vote_appeal(round_index, rounds, orig_majority)
+        return classify_vote_appeal(round_index, rounds, leader_addresses, orig_majority)
 
 
 # Special case patterns
