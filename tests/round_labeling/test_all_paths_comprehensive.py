@@ -52,7 +52,7 @@ class PathTestConfig:
 
     batch_size: int = 1000
     max_rounds: int = 10  # Reasonable limit for testing (actual max is 19)
-    min_rounds: int = 3   # Minimum meaningful path length
+    min_rounds: int = 3  # Minimum meaningful path length
     random_seed: int = 42
     address_pool_size: int = 5000
 
@@ -86,7 +86,7 @@ class PathGenerator:
         """Generate a batch of paths starting from start_idx."""
         paths = []
         path_gen = generate_all_paths(TRANSACTION_GRAPH, self.constraints)
-        
+
         # More efficient: collect all paths up to start_idx + batch_size
         # then slice the result
         collected = 0
@@ -96,11 +96,11 @@ class PathGenerator:
                 if len(paths) >= batch_size:
                     break
             collected += 1
-            
+
             # Progress indicator for long skips
             if start_idx > 1000 and collected % 1000 == 0 and collected < start_idx:
                 print(f"  Skipping to start index: {collected}/{start_idx}")
-                
+
         return paths
 
     def generate_paths_by_rounds(
@@ -196,7 +196,7 @@ class PathToTransaction:
         ]
         # Rotations should be appealRounds + 1 according to validation
         rotations = [0] * (appeal_count + 1)
-                
+
         budget = TransactionBudget(
             leaderTimeout=100,
             validatorsTimeout=200,
@@ -258,9 +258,17 @@ class RoundLabelingInvariants:
                 round_obj = transaction_results.rounds[i]
                 if round_obj.rotations:
                     votes = round_obj.rotations[-1].votes
-                    has_na_votes = any(v == "NA" or (isinstance(v, list) and "NA" in v) for v in votes.values())
-                    has_leader_receipt = any(isinstance(v, list) and v[0] == "LEADER_RECEIPT" for v in votes.values())
-                    assert has_na_votes or not has_leader_receipt, f"Appeal '{label}' at index {i} but round doesn't have appeal characteristics for path {path}"
+                    has_na_votes = any(
+                        v == "NA" or (isinstance(v, list) and "NA" in v)
+                        for v in votes.values()
+                    )
+                    has_leader_receipt = any(
+                        isinstance(v, list) and v[0] == "LEADER_RECEIPT"
+                        for v in votes.values()
+                    )
+                    assert (
+                        has_na_votes or not has_leader_receipt
+                    ), f"Appeal '{label}' at index {i} but round doesn't have appeal characteristics for path {path}"
 
 
 # Test Classes with Markers
@@ -303,7 +311,7 @@ class TestFirst500Paths:
             # Better progress reporting
             if i % 50 == 0:
                 print(f"  Progress: {i/500*100:.1f}% ({i}/500)")
-                
+
             tx, budget = PathToTransaction.path_to_transaction(path)
             labels = label_rounds(tx)
             RoundLabelingInvariants.check_all_invariants(labels, tx, path)
@@ -312,7 +320,7 @@ class TestFirst500Paths:
             if i % 10 == 0:
                 fee_events, round_labels = process_transaction(ADDR_POOL, tx, budget)
                 assert round_labels == labels, f"Label mismatch for path {i}: {path}"
-        
+
         print("  Progress: 100.0% (500/500) - Complete!")
 
 
@@ -360,7 +368,7 @@ class TestSpecificRoundCounts:
 @pytest.mark.parametrize(
     "start,end",
     [
-        (0, 100),      # Reduced from 1000
+        (0, 100),  # Reduced from 1000
         (1000, 1100),  # Reduced from 10000-11000
         (10000, 10100),  # Reduced from 100000-101000
     ],

@@ -131,8 +131,8 @@ def test_leader_timeout_50_previous_appeal_bond(verbose, debug):
 
     # Second Leader Fees Assert
     assert (
-        compute_total_earnings(fee_events, addresses_pool[5]) == appeal_bond / 2
-    ), f"Second leader should earn 50% of appeal_bond ({appeal_bond / 2})"
+        compute_total_earnings(fee_events, addresses_pool[5]) == leaderTimeout * 0.5
+    ), f"Second leader should earn 50% of leaderTimeout ({leaderTimeout * 0.5})"
 
     # Sender Fees Assert
     total_cost = compute_total_cost(transaction_budget)

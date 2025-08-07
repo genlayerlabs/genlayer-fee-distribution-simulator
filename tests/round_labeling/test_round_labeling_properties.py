@@ -225,7 +225,10 @@ class TestRoundLabelingProperties:
             # Check that rounds with NA votes are detected as appeals
             for i, round_obj in enumerate(rounds):
                 votes = round_obj.rotations[0].votes if round_obj.rotations else {}
-                if votes and all(v == "NA" or (isinstance(v, list) and v[1] == "NA") for v in votes.values()):
+                if votes and all(
+                    v == "NA" or (isinstance(v, list) and v[1] == "NA")
+                    for v in votes.values()
+                ):
                     # This round has all NA votes, should be labeled as appeal
                     assert "APPEAL" in labels[i] or labels[i] in [
                         "SPLIT_PREVIOUS_APPEAL_BOND",
@@ -479,10 +482,17 @@ def test_mathematical_properties():
         transaction_results = TransactionRoundResults(rounds=rounds)
         labels = label_rounds(transaction_results)
 
-        appeal_labels = sum(1 for label in labels if "APPEAL" in label and label not in [
-            "SPLIT_PREVIOUS_APPEAL_BOND", "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND"
-        ])
-        
+        appeal_labels = sum(
+            1
+            for label in labels
+            if "APPEAL" in label
+            and label
+            not in [
+                "SPLIT_PREVIOUS_APPEAL_BOND",
+                "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND",
+            ]
+        )
+
         # Appeal labels should correspond to rounds with appeal characteristics (NA votes)
         assert appeal_labels <= appeal_round_count
 

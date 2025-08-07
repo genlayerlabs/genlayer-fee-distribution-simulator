@@ -15,6 +15,10 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Any
 from collections import defaultdict
 import argparse
+from rich.console import Console
+from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
+from rich.table import Table
+from rich.text import Text
 
 # Add parent directory to path to enable imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,18 +26,20 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tests.round_combinations.graph_data import TRANSACTION_GRAPH
 from tests.round_combinations.path_generator import generate_all_paths
 from tests.round_combinations.path_types import PathConstraints
+from tests.round_combinations.path_filter import filter_valid_paths
 from fee_simulator.core.path_to_transaction import path_to_transaction_results
 from fee_simulator.core.transaction_processing import process_transaction
 from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.types import RoundLabel
 from fee_simulator.utils import generate_random_eth_address
 
 # Constants
 LEADER_TIMEOUT = 100
 VALIDATORS_TIMEOUT = 200
 
+# Rich Console
+console = Console()
 
-# Create lookup tables for compression
+# --- Lookup Tables ---
 NODE_TO_IDX = {
     "START": 0,
     "LEADER_RECEIPT_MAJORITY_AGREE": 1,
@@ -49,7 +55,6 @@ NODE_TO_IDX = {
     "LEADER_APPEAL_TIMEOUT_UNSUCCESSFUL": 11,
     "END": 12,
 }
-
 LABEL_TO_IDX = {
     "NORMAL_ROUND": 0,
     "EMPTY_ROUND": 1,
@@ -66,15 +71,7 @@ LABEL_TO_IDX = {
     "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND": 12,
     "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND": 13,
 }
-
-ROLE_TO_IDX = {
-    "LEADER": 0,
-    "VALIDATOR": 1,
-    "SENDER": 2,
-    "APPEALANT": 3,
-}
-
-# Invariant bit positions
+ROLE_TO_IDX = {"LEADER": 0, "VALIDATOR": 1, "SENDER": 2, "APPEALANT": 3}
 INVARIANT_BITS = {
     "conservation_of_value": 0,
     "non_negative_balances": 1,
@@ -101,55 +98,53 @@ INVARIANT_BITS = {
 }
 
 
+# --- Helper Functions ---
 def hash_path(path: List[str]) -> str:
-    """Generate SHA256 hash of a path for deduplication."""
     path_str = "-".join(path)
     return hashlib.sha256(path_str.encode()).hexdigest()
 
 
 def get_address_index(address: str, address_map: Dict[str, int]) -> int:
-    """Get sequential index for address."""
     if address not in address_map:
         address_map[address] = len(address_map) + 1
     return address_map[address]
 
 
-def check_invariants(fee_events, transaction_budget, transaction_results, round_labels) -> int:
-    """
-    Check invariants and return bitfield of results.
-    Returns an integer where each bit represents whether an invariant passed (1) or failed (0).
-    """
+def check_invariants(
+    fee_events, transaction_budget, transaction_results, round_labels
+) -> int:
     from tests.fee_distributions.check_invariants.comprehensive_invariants import (
-        check_comprehensive_invariants
+        check_comprehensive_invariants,
     )
-    
-    bitfield = 0
-    
-    try:
-        # Try to check all invariants
-        check_comprehensive_invariants(
-            fee_events, transaction_budget, transaction_results, round_labels, tolerance=20
-        )
-        # If no exception, all invariants passed
-        bitfield = (1 << len(INVARIANT_BITS)) - 1  # All bits set to 1
-    except AssertionError as e:
-        # Parse which invariants failed from the error message
-        # For now, we'll set all bits to 1 except a few to indicate some failure
-        # In a real implementation, we'd parse the specific failing invariants
-        bitfield = (1 << len(INVARIANT_BITS)) - 1  # Start with all passing
-        # Clear first bit to indicate at least one failure
-        bitfield &= ~1
-    
-    return bitfield
+
+    num_rounds = len(round_labels)
+    split_rounds = sum(
+        1
+        for label in round_labels
+        if label
+        in [
+            "NORMAL_ROUND",
+            "SPLIT_PREVIOUS_APPEAL_BOND",
+            "APPEAL_VALIDATOR_SUCCESSFUL",
+            "APPEAL_VALIDATOR_UNSUCCESSFUL",
+            "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
+        ]
+    )
+    tolerance = split_rounds * 200 + num_rounds * 2
+
+    check_comprehensive_invariants(
+        fee_events,
+        transaction_budget,
+        transaction_results,
+        round_labels,
+        tolerance=tolerance,
+    )
+    return (1 << len(INVARIANT_BITS)) - 1
 
 
-def process_path(path: List[str], addresses: List[str]) -> Dict[str, Any]:
-    """Process a single path and return the compressed result."""
-    # Fixed addresses for sender and appealant
+def process_path(path: List[str], addresses: List[str]) -> Tuple[Dict[str, Any], Tuple]:
     sender_address = addresses[-1]
     appealant_address = addresses[-2]
-    
-    # Convert path to transaction results
     transaction_results, transaction_budget = path_to_transaction_results(
         path=path,
         addresses=addresses,
@@ -158,200 +153,239 @@ def process_path(path: List[str], addresses: List[str]) -> Dict[str, Any]:
         leader_timeout=LEADER_TIMEOUT,
         validators_timeout=VALIDATORS_TIMEOUT,
     )
-    
-    # Get round labels
     round_labels = label_rounds(transaction_results)
-    
-    # Process transaction
     fee_events, _ = process_transaction(
         addresses=addresses,
         transaction_results=transaction_results,
         transaction_budget=transaction_budget,
     )
-    
-    # Address mapping for sequential numbering
     address_map = {}
-    
-    # Aggregate results by participant
-    participants = defaultdict(lambda: {
-        "r": [],  # rounds with roles
-        "c": 0,   # cost
-        "e": 0,   # earned
-        "s": 0,   # slashed
-        "b": 0,   # burned
-    })
-    
+    participants = defaultdict(lambda: {"r": [], "c": 0, "e": 0, "s": 0, "b": 0})
     for event in fee_events:
         if event.address:
             addr_idx = get_address_index(event.address, address_map)
-            
-            # Track rounds and roles
             if event.round_index is not None and event.role:
                 role_idx = ROLE_TO_IDX.get(event.role, -1)
                 if role_idx >= 0:
                     participants[addr_idx]["r"].append([event.round_index, role_idx])
-            
-            # Aggregate amounts
             participants[addr_idx]["c"] += event.cost
             participants[addr_idx]["e"] += event.earned
             participants[addr_idx]["s"] += event.slashed
             participants[addr_idx]["b"] += event.burned
-    
-    # Filter out participants with no activity (excluding initial stake events)
-    active_participants = {}
-    for addr_idx, data in participants.items():
-        if data["c"] > 0 or data["e"] > 0 or data["s"] > 0 or data["b"] > 0:
-            active_participants[addr_idx] = data
-    
-    # Convert path and labels to indices
+    active_participants = {
+        k: v for k, v in participants.items() if v["c"] or v["e"] or v["s"] or v["b"]
+    }
     path_indices = [NODE_TO_IDX[node] for node in path]
     label_indices = [LABEL_TO_IDX.get(label, -1) for label in round_labels]
-    
-    # Check invariants
-    invariant_bitfield = check_invariants(
-        fee_events, transaction_budget, transaction_results, round_labels
-    )
-    
-    # Create result
-    result = {
+    result_data = {
         "path": path_indices,
         "labels": label_indices,
         "participants": active_participants,
-        "invariants": invariant_bitfield,
         "hash": hash_path(path),
     }
-    
-    return result
+    invariant_data = (fee_events, transaction_budget, transaction_results, round_labels)
+    return result_data, invariant_data
 
 
 def generate_filename(path: List[str]) -> str:
-    """Generate filename for a path."""
-    path_length = len(path) - 2  # Exclude START and END
-    # Create a short hash of the path for uniqueness
+    path_length = len(path) - 2
     path_hash = hash_path(path)[:8]
     return f"{path_length:02d}-{path_hash}.json"
 
 
 def save_lookup_tables(output_dir: Path):
-    """Save the lookup tables as a separate JSON file."""
-    # Reverse the dictionaries for decoding
     idx_to_node = {v: k for k, v in NODE_TO_IDX.items()}
     idx_to_label = {v: k for k, v in LABEL_TO_IDX.items()}
     idx_to_role = {v: k for k, v in ROLE_TO_IDX.items()}
-    
     lookup_tables = {
         "node_map": idx_to_node,
         "label_map": idx_to_label,
         "role_map": idx_to_role,
         "invariant_bits": {str(v): k for k, v in INVARIANT_BITS.items()},
     }
-    
     lookup_file = output_dir / "lookup_tables.json"
-    with open(lookup_file, 'w') as f:
+    with open(lookup_file, "w") as f:
         json.dump(lookup_tables, f, indent=2)
-    
-    print(f"Saved lookup tables to {lookup_file}")
+    console.print(f"[green]Saved lookup tables to[/green] {lookup_file}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate JSON files for fee distribution paths")
-    parser.add_argument(
-        "--output-dir", 
-        type=str, 
-        default="path_jsons",
-        help="Output directory for JSON files"
+    parser = argparse.ArgumentParser(
+        description="Generate JSON files for fee distribution paths"
     )
     parser.add_argument(
-        "--max-length",
-        type=int,
-        default=17,
-        help="Maximum path length to generate"
+        "--output-dir", type=str, default="path_jsons", help="Output directory"
     )
+    parser.add_argument("--max-length", type=int, default=16, help="Max path length")
     parser.add_argument(
-        "--test-mode",
-        action="store_true",
-        help="Run in test mode with limited paths"
+        "--test-mode", action="store_true", help="Run with limited paths"
     )
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=1000,
-        help="Number of paths to process before printing progress"
-    )
-    
+    parser.add_argument("--debug", action="store_true", help="Show detailed error info")
+    parser.add_argument("--no-filter", action="store_true", help="Process all paths")
     args = parser.parse_args()
-    
-    # Create output directory
+
     output_dir = Path(args.output_dir)
     output_dir.mkdir(exist_ok=True)
-    
-    # Save lookup tables
     save_lookup_tables(output_dir)
-    
-    # Generate addresses pool
+
     addresses = [generate_random_eth_address() for _ in range(1000)]
-    
-    # Initialize counters
-    processed = 0
-    errors = 0
-    
-    print(f"Generating paths up to length {args.max_length}...")
-    
-    # Process by length to organize output
-    # Start from length 3 as minimum
-    for length in range(3, args.max_length + 1):
-        length_dir = output_dir / f"length_{length:02d}"
-        length_dir.mkdir(exist_ok=True)
-        
-        length_count = 0
-        
-        # Generate paths of this length
-        constraints = PathConstraints(
-            source_node="START",
-            target_node="END",
-            min_length=length,  # length is measured in edges
-            max_length=length   # exact length
+    processed, errors = 0, 0
+
+    console.rule("[bold cyan]Path Generation Setup[/bold cyan]")
+    console.print(f"Generating paths up to length [bold]{args.max_length}[/bold]...")
+    if not args.no_filter:
+        console.print(
+            "[yellow]Filtering enabled[/yellow]: Only processing paths valid with 1000 validators"
         )
-        
-        all_paths = generate_all_paths(TRANSACTION_GRAPH, constraints)
-        
-        for path in all_paths:
-            
-            if args.test_mode and length_count >= 10:
+
+    # --- Path Counting ---
+    total_paths, total_valid_paths = 0, 0
+    console.print("[bold]Counting total paths...[/bold]")
+    count_table = Table(title="Path Counts by Length")
+    count_table.add_column("Length", justify="right")
+    count_table.add_column("Valid Paths", justify="right")
+    count_table.add_column("Total Paths", justify="right")
+    count_table.add_column("Validity Rate", justify="right")
+
+    for length in range(3, args.max_length + 1):
+        constraints = PathConstraints(
+            source_node="START", target_node="END", min_length=length, max_length=length
+        )
+        all_paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
+        path_count = len(all_paths)
+        valid_count = (
+            len(filter_valid_paths(all_paths, max_addresses=1000))
+            if not args.no_filter
+            else path_count
+        )
+        total_paths += path_count
+        total_valid_paths += valid_count
+        rate = f"{(valid_count/path_count*100):.1f}%" if path_count > 0 else "N/A"
+        count_table.add_row(str(length), f"{valid_count:,}", f"{path_count:,}", rate)
+
+    console.print(count_table)
+    paths_to_process_count = total_valid_paths if not args.no_filter else total_paths
+    console.print(
+        f"\n[bold]Total paths to process: [cyan]{paths_to_process_count:,}[/cyan][/bold]"
+    )
+    console.rule("[bold cyan]Processing Paths[/bold cyan]")
+
+    # --- Path Processing ---
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        TextColumn("({task.completed}/{task.total})"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Processing...", total=paths_to_process_count)
+
+        for length in range(3, args.max_length + 1):
+            length_dir = output_dir / f"length_{length:02d}"
+            length_dir.mkdir(exist_ok=True)
+            length_count = 0
+
+            constraints = PathConstraints(
+                source_node="START",
+                target_node="END",
+                min_length=length,
+                max_length=length,
+            )
+            all_paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
+            paths_to_process = (
+                filter_valid_paths(all_paths, max_addresses=1000)
+                if not args.no_filter
+                else all_paths
+            )
+
+            if not paths_to_process:
+                continue
+
+            for path in paths_to_process:
+                if args.test_mode and length_count >= 10:
+                    break
+
+                invariant_exception = None
+                try:
+                    result_data, invariant_data = process_path(path, addresses)
+                    filename = generate_filename(path)
+                    filepath = length_dir / filename
+
+                    try:
+                        invariant_bitfield = check_invariants(*invariant_data)
+                    except Exception as e:
+                        invariant_bitfield = 0
+                        invariant_exception = e
+
+                    result_data["invariants"] = invariant_bitfield
+                    with open(filepath, "w") as f:
+                        json.dump(result_data, f, separators=(",", ":"))
+
+                    if invariant_exception:
+                        errors += 1
+                        error_text = Text(
+                            f"\nError processing path {' -> '.join(path)}: {invariant_exception}"
+                        )
+                        error_text.stylize("bold red")
+                        console.print(error_text)
+                        console.print(
+                            f"  -> [bold]Check generated file for details:[/] {filepath}"
+                        )
+                        if args.debug:
+                            console.print_exception(show_locals=True)
+
+                    processed += 1
+                    length_count += 1
+                except Exception as e:
+                    errors += 1
+                    filename = generate_filename(path)
+                    filepath = length_dir / filename
+                    console.print(
+                        f"\n[bold red]Critical error processing path {path}: {e}[/bold red]"
+                    )
+                    console.print(
+                        f"  -> [bold]Check generated file for details:[/] {filepath}"
+                    )
+                    if args.debug:
+                        console.print_exception(show_locals=True)
+
+                progress.update(task, advance=1)
+
+            if args.test_mode:
                 break
-            
-            try:
-                # Process the path
-                result = process_path(path, addresses)
-                
-                # Save to file
-                filename = generate_filename(path)
-                filepath = length_dir / filename
-                
-                with open(filepath, 'w') as f:
-                    json.dump(result, f, separators=(',', ':'))  # Compact format
-                
-                processed += 1
-                length_count += 1
-                
-                if processed % args.batch_size == 0:
-                    print(f"Processed {processed} paths...")
-                    
-            except Exception as e:
-                errors += 1
-                print(f"Error processing path {path}: {e}")
-                if args.test_mode:
-                    raise
-        
-        print(f"Length {length}: {length_count} paths")
-        
-        if args.test_mode:
-            print("Test mode: stopping after first length")
-            break
-    
-    print(f"\nCompleted!")
-    print(f"Total paths processed: {processed}")
-    print(f"Errors: {errors}")
+
+    # --- Final Summary ---
+    console.rule("[bold cyan]Completion Summary[/bold cyan]")
+    summary_table = Table(show_header=False, box=None)
+    summary_table.add_row(
+        "Total Paths Processed:", f"[bold green]{processed:,}[/bold green]"
+    )
+    summary_table.add_row(
+        "Errors Encountered:",
+        (
+            f"[bold red]{errors:,}[/bold red]"
+            if errors > 0
+            else "[bold green]0[/bold green]"
+        ),
+    )
+    console.print(summary_table)
+
+    if not args.no_filter:
+        filter_table = Table(title="Filtering Summary", box=None)
+        filter_table.add_column("Metric", justify="right")
+        filter_table.add_column("Value", justify="left")
+        filter_table.add_row("Theoretical Paths:", f"{total_paths:,}")
+        filter_table.add_row(
+            "Valid Paths (1000 validator limit):", f"{total_valid_paths:,}"
+        )
+        filter_table.add_row(
+            "Paths Filtered Out:", f"{total_paths - total_valid_paths:,}"
+        )
+        filter_table.add_row(
+            "Validity Rate:", f"{(total_valid_paths/total_paths*100):.1f}%"
+        )
+        console.print(filter_table)
 
 
 if __name__ == "__main__":

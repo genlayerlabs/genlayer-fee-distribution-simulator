@@ -17,7 +17,9 @@ from fee_simulator.display import (
     display_summary_table,
     display_test_description,
 )
-from tests.fee_distributions.check_invariants.comprehensive_invariants import check_comprehensive_invariants
+from tests.fee_distributions.check_invariants.comprehensive_invariants import (
+    check_comprehensive_invariants,
+)
 
 leaderTimeout = 100
 validatorsTimeout = 200
@@ -33,11 +35,11 @@ def test_appeal_validator_successful(verbose, debug):
     path = [
         "START",
         "LEADER_RECEIPT_MAJORITY_AGREE",  # Normal round where majority agreed
-        "VALIDATOR_APPEAL_SUCCESSFUL",     # Validators appeal and succeed
-        "LEADER_RECEIPT_MAJORITY_AGREE",   # Normal round after successful appeal
-        "END"
+        "VALIDATOR_APPEAL_SUCCESSFUL",  # Validators appeal and succeed
+        "LEADER_RECEIPT_MAJORITY_AGREE",  # Normal round after successful appeal
+        "END",
     ]
-    
+
     # Convert path to transaction results
     transaction_results, transaction_budget = path_to_transaction_results(
         path=path,
@@ -47,7 +49,7 @@ def test_appeal_validator_successful(verbose, debug):
         leader_timeout=leaderTimeout,
         validators_timeout=validatorsTimeout,
     )
-    
+
     # Get round labels
     round_labels = label_rounds(transaction_results)
 
@@ -80,7 +82,9 @@ def test_appeal_validator_successful(verbose, debug):
     ], f"Expected ['SKIP_ROUND', 'APPEAL_VALIDATOR_SUCCESSFUL', 'NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(fee_events, transaction_budget, transaction_results, round_labels)
+    check_comprehensive_invariants(
+        fee_events, transaction_budget, transaction_results, round_labels
+    )
 
     # Appealant Fees Assert
     appeal_bond = compute_appeal_bond(
@@ -90,10 +94,10 @@ def test_appeal_validator_successful(verbose, debug):
         round_labels=round_labels,
     )
     appealant_earnings = compute_total_earnings(fee_events, appealant_address)
-    assert (
-        appealant_earnings == int(appeal_bond * 1.5)
+    assert appealant_earnings == int(
+        appeal_bond * 1.5
     ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * 1.5)}) for 50% return, got {appealant_earnings}"
-    
+
     appealant_costs = compute_total_costs(fee_events, appealant_address)
     assert (
         appealant_costs == appeal_bond
@@ -112,7 +116,7 @@ def test_appeal_validator_successful(verbose, debug):
     total_earnings = sum(e.earned for e in fee_events if e.earned)
     total_burns = sum(e.burned for e in fee_events if e.burned)
     assert total_earnings > 0, "Should have positive earnings"
-    
+
 
 def test_appeal_validator_successful_after_disagree(verbose, debug):
     """Test leader appeal after a majority disagree round."""
@@ -120,11 +124,11 @@ def test_appeal_validator_successful_after_disagree(verbose, debug):
     path = [
         "START",
         "LEADER_RECEIPT_MAJORITY_DISAGREE",  # Normal round where majority disagreed
-        "LEADER_APPEAL_SUCCESSFUL",          # Leader appeals and succeeds
-        "LEADER_RECEIPT_MAJORITY_AGREE",     # Normal round after successful appeal
-        "END"
+        "LEADER_APPEAL_SUCCESSFUL",  # Leader appeals and succeeds
+        "LEADER_RECEIPT_MAJORITY_AGREE",  # Normal round after successful appeal
+        "END",
     ]
-    
+
     # Convert path to transaction results
     transaction_results, transaction_budget = path_to_transaction_results(
         path=path,
@@ -134,7 +138,7 @@ def test_appeal_validator_successful_after_disagree(verbose, debug):
         leader_timeout=leaderTimeout,
         validators_timeout=validatorsTimeout,
     )
-    
+
     # Get round labels
     round_labels = label_rounds(transaction_results)
 
@@ -167,7 +171,9 @@ def test_appeal_validator_successful_after_disagree(verbose, debug):
     ], f"Expected ['SKIP_ROUND', 'APPEAL_LEADER_SUCCESSFUL', 'NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(fee_events, transaction_budget, transaction_results, round_labels)
+    check_comprehensive_invariants(
+        fee_events, transaction_budget, transaction_results, round_labels
+    )
 
     # Appealant should earn appeal bond + leader timeout
     appeal_bond = compute_appeal_bond(
@@ -177,6 +183,6 @@ def test_appeal_validator_successful_after_disagree(verbose, debug):
         round_labels=round_labels,
     )
     appealant_earnings = compute_total_earnings(fee_events, appealant_address)
-    assert (
-        appealant_earnings == int(appeal_bond * 1.5)
+    assert appealant_earnings == int(
+        appeal_bond * 1.5
     ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * 1.5)}) for 50% return, got {appealant_earnings}"

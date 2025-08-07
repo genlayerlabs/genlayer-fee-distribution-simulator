@@ -29,7 +29,7 @@ def compute_sender_refund(
                     if i < len(round_labels) and not is_appeal_round(round_labels[i]):
                         normal_round_index = i
                         break
-                
+
                 appeal_bond = compute_appeal_bond(
                     normal_round_index=normal_round_index,
                     leader_timeout=transaction_budget.leaderTimeout,

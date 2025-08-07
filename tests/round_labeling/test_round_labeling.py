@@ -150,12 +150,20 @@ class TestRoundLabelingInvariants:
 
         # Check that appeals are correctly identified based on vote patterns
         # Round 1 and 3 should be appeals because they have NA votes
-        assert "APPEAL" in labels[1], f"Round 1 with NA votes should be appeal, got {labels[1]}"
-        assert "APPEAL" in labels[3], f"Round 3 with NA votes should be appeal, got {labels[3]}"
-        
+        assert (
+            "APPEAL" in labels[1]
+        ), f"Round 1 with NA votes should be appeal, got {labels[1]}"
+        assert (
+            "APPEAL" in labels[3]
+        ), f"Round 3 with NA votes should be appeal, got {labels[3]}"
+
         # Rounds 0 and 2 should be normal rounds (have leader receipts)
-        assert "APPEAL" not in labels[0], f"Round 0 with leader receipt should not be appeal, got {labels[0]}"
-        assert "APPEAL" not in labels[2], f"Round 2 with leader receipt should not be appeal, got {labels[2]}"
+        assert (
+            "APPEAL" not in labels[0]
+        ), f"Round 0 with leader receipt should not be appeal, got {labels[0]}"
+        assert (
+            "APPEAL" not in labels[2]
+        ), f"Round 2 with leader receipt should not be appeal, got {labels[2]}"
 
     def test_deterministic_labeling(self):
         """Same input must always produce same output."""
@@ -643,9 +651,17 @@ class TestRoundCombinations:
                     if round_obj.rotations:
                         votes = round_obj.rotations[-1].votes
                         # Appeal rounds should have NA votes or no leader receipt
-                        has_na_votes = any(v == "NA" or (isinstance(v, list) and "NA" in v) for v in votes.values())
-                        has_leader_receipt = any(isinstance(v, list) and v[0] == "LEADER_RECEIPT" for v in votes.values())
-                        assert has_na_votes or not has_leader_receipt, f"Appeal label {label} at index {i} but round doesn't have appeal characteristics"
+                        has_na_votes = any(
+                            v == "NA" or (isinstance(v, list) and "NA" in v)
+                            for v in votes.values()
+                        )
+                        has_leader_receipt = any(
+                            isinstance(v, list) and v[0] == "LEADER_RECEIPT"
+                            for v in votes.values()
+                        )
+                        assert (
+                            has_na_votes or not has_leader_receipt
+                        ), f"Appeal label {label} at index {i} but round doesn't have appeal characteristics"
 
         # Ensure we've seen various label types
         assert len(label_counts) > 5, "Should see variety of labels"

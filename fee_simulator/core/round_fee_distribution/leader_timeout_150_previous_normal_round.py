@@ -86,13 +86,13 @@ def apply_leader_timeout_150_previous_normal_round(
                     sequence_id=event_sequence.next_id(),
                     address=addr,
                     round_index=round_index,
-                    round_label="SPLIT_PREVIOUS_APPEAL_BOND",
+                    round_label="LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
                     role="VALIDATOR",
                     vote=normalize_vote(votes[addr]),
                     hash="0xdefault",
                     cost=0,
                     staked=0,
-                    earned=budget.validatorsTimeout,  # Only the split, no timeout
+                    earned=budget.validatorsTimeout,
                     slashed=0,
                     burned=0,
                 )
