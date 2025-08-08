@@ -24,17 +24,18 @@ from typing import (
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
-from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.models import (
+from src.fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     Round,
     Rotation,
     TransactionBudget,
     Appeal,
 )
-from fee_simulator.utils import generate_random_eth_address
-from tests.round_combinations import TRANSACTION_GRAPH
-
+from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.specification.state_machine.path_analysis.round_combinations import (
+    TRANSACTION_GRAPH,
+)
 
 # Type definitions
 T = TypeVar("T")

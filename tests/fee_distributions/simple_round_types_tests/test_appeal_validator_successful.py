@@ -1,25 +1,23 @@
 import pytest
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.core.path_to_transaction import path_to_transaction_results
-from fee_simulator.utils import compute_total_cost, generate_random_eth_address
-from fee_simulator.core.bond_computing import compute_appeal_bond
-from fee_simulator.constants import PENALTY_REWARD_COEFFICIENT
-from fee_simulator.fee_aggregators.address_metrics import (
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.core.path_to_transaction import path_to_transaction_results
+from src.fee_simulator.utils import compute_total_cost, generate_random_eth_address
+from src.fee_simulator.core.bond_computing import compute_appeal_bond
+from src.fee_simulator.protocol.constants import PENALTY_REWARD_COEFFICIENT
+from src.fee_simulator.metrics.address_metrics import (
     compute_total_earnings,
     compute_total_costs,
     compute_total_burnt,
     compute_all_zeros,
 )
-from fee_simulator.display import (
+from src.fee_simulator.display import (
     display_transaction_results,
     display_fee_distribution,
     display_summary_table,
     display_test_description,
 )
-from tests.fee_distributions.check_invariants.comprehensive_invariants import (
-    check_comprehensive_invariants,
-)
+from src.fee_simulator.specification.invariants.checker import check_all_invariants
 
 leaderTimeout = 100
 validatorsTimeout = 200
@@ -82,7 +80,7 @@ def test_appeal_validator_successful(verbose, debug):
     ], f"Expected ['SKIP_ROUND', 'APPEAL_VALIDATOR_SUCCESSFUL', 'NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(
+    check_all_invariants(
         fee_events, transaction_budget, transaction_results, round_labels
     )
 
@@ -171,7 +169,7 @@ def test_appeal_validator_successful_after_disagree(verbose, debug):
     ], f"Expected ['SKIP_ROUND', 'APPEAL_LEADER_SUCCESSFUL', 'NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(
+    check_all_invariants(
         fee_events, transaction_budget, transaction_results, round_labels
     )
 

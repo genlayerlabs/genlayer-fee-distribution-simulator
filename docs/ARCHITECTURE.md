@@ -13,7 +13,7 @@
 
 ## Overview
 
-The GenLayer Fee Distribution Simulator is a comprehensive system for modeling and testing fee distribution mechanisms in a blockchain validator network. It simulates complex transaction scenarios involving validators, leaders, appeals, and various edge cases to ensure correct fee distribution.
+The GenLayer Fee Distribution Simulator is a comprehensive system for modeling and testing the fee distribution mechanisms of the GenLayer network. It simulates complex transaction scenarios involving different validator setups, and various edge cases to ensure correct fee distribution.
 
 ### Key Design Principles
 - **Path-based Flow**: The system follows a deterministic flow from graph paths to fee distributions

@@ -1,24 +1,22 @@
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.core.path_to_transaction import path_to_transaction_results
-from fee_simulator.utils import compute_total_cost, generate_random_eth_address
-from fee_simulator.display import (
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.core.path_to_transaction import path_to_transaction_results
+from src.fee_simulator.utils import compute_total_cost, generate_random_eth_address
+from src.fee_simulator.display import (
     display_transaction_results,
     display_fee_distribution,
     display_summary_table,
     display_test_description,
 )
-from fee_simulator.fee_aggregators.address_metrics import (
+from src.fee_simulator.metrics.address_metrics import (
     compute_all_zeros,
     compute_total_costs,
     compute_total_earnings,
     compute_total_burnt,
     compute_total_balance,
 )
-from fee_simulator.constants import PENALTY_REWARD_COEFFICIENT
-from tests.fee_distributions.check_invariants.comprehensive_invariants import (
-    check_comprehensive_invariants,
-)
+from src.fee_simulator.protocol.constants import PENALTY_REWARD_COEFFICIENT
+from src.fee_simulator.specification.invariants.checker import check_all_invariants
 
 leaderTimeout = 100
 validatorsTimeout = 200
@@ -31,7 +29,7 @@ appealant_address = addresses_pool[1998]
 def test_normal_round(verbose, debug):
     """Test fee distribution for a normal round with all validators agreeing."""
     # Create custom transaction with unanimous agreement
-    from fee_simulator.models import (
+    from src.fee_simulator.protocol.models import (
         TransactionRoundResults,
         TransactionBudget,
         Round,
@@ -92,7 +90,7 @@ def test_normal_round(verbose, debug):
     ], f"Expected ['NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(
+    check_all_invariants(
         fee_events, transaction_budget, transaction_results, round_labels
     )
 
@@ -172,7 +170,7 @@ def test_normal_round_with_minority_penalties(verbose, debug):
     ], f"Expected ['NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(
+    check_all_invariants(
         fee_events, transaction_budget, transaction_results, round_labels
     )
 
@@ -232,7 +230,7 @@ def test_normal_round_no_majority(verbose, debug):
     ], f"Expected ['NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(
+    check_all_invariants(
         fee_events, transaction_budget, transaction_results, round_labels
     )
 
@@ -300,7 +298,7 @@ def test_normal_round_majority_disagree(verbose, debug):
     ], f"Expected ['NORMAL_ROUND'], got {round_labels}"
 
     # Invariant Check
-    check_comprehensive_invariants(
+    check_all_invariants(
         fee_events, transaction_budget, transaction_results, round_labels
     )
 

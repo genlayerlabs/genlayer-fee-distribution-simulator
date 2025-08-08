@@ -2,23 +2,27 @@ import pytest
 import itertools
 import os
 from datetime import datetime
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.core.path_to_transaction import path_to_transaction_results
-from fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.core.path_to_transaction import path_to_transaction_results
+from src.fee_simulator.specification.state_machine.path_analysis.path_generator import (
+    generate_all_paths,
+)
+from src.fee_simulator.specification.state_machine.path_analysis.path_types import (
+    PathConstraints,
+)
+from src.fee_simulator.utils import generate_random_eth_address
 
-from fee_simulator.display import (
+from src.fee_simulator.display import (
     display_transaction_results,
     display_fee_distribution,
     display_summary_table,
     display_test_description,
 )
-from tests.fee_distributions.check_invariants.comprehensive_invariants import (
-    check_comprehensive_invariants,
+from src.fee_simulator.specification.invariants.checker import (
+    check_all_invariants,
 )
-from tests.round_combinations import generate_all_paths
-from tests.round_combinations.path_types import PathConstraints
-from tests.round_combinations.graph_data import TRANSACTION_GRAPH
+from src.fee_simulator.specification.state_machine.graph import TRANSACTION_GRAPH
 
 # Constants
 LEADER_TIMEOUT = 100
@@ -148,7 +152,7 @@ def test_paths_with_invariants(verbose, debug, path):
         # Check comprehensive invariants
         output_content.append("INVARIANT CHECK:")
         try:
-            check_comprehensive_invariants(
+            check_all_invariants(
                 fee_events,
                 transaction_budget,
                 transaction_results,

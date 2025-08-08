@@ -2,7 +2,7 @@
 """Test suite for path_filter.py"""
 
 import pytest
-from tests.round_combinations.path_filter import (
+from src.fee_simulator.specification.state_machine.path_analysis.path_filter import (
     is_valid_path,
     filter_valid_paths,
     get_path_statistics,

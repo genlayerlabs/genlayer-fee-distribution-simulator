@@ -8,15 +8,14 @@ input combinations by testing properties that must always hold.
 import pytest
 from hypothesis import given, strategies as st, settings, assume
 from typing import List, Dict, Optional
-from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.models import (
+from src.fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     Round,
     Rotation,
 )
-from fee_simulator.utils import generate_random_eth_address
-from fee_simulator.types import Vote
-
+from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.protocol.types import Vote
 
 # Pre-generate addresses for efficiency
 ADDR_POOL = [generate_random_eth_address() for _ in range(100)]

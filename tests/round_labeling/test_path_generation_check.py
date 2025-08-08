@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Quick script to check path generation performance."""
 
-from tests.round_combinations import (
+from src.fee_simulator.specification.state_machine.path_analysis.round_combinations import (
     generate_all_paths,
     PathConstraints,
     TRANSACTION_GRAPH,

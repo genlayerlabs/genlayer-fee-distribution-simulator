@@ -5,17 +5,20 @@ Example tests demonstrating how the refactored code is more testable.
 import unittest
 from typing import List
 
-from tests.round_combinations.path_types import PathConstraints, Path
-from tests.round_combinations.graph_data import TRANSACTION_GRAPH
-from tests.round_combinations.path_counter import (
+from src.fee_simulator.specification.state_machine.path_analysis.path_types import (
+    PathConstraints,
+    Path,
+)
+from src.fee_simulator.specification.state_machine.graph import TRANSACTION_GRAPH
+from src.fee_simulator.specification.state_machine.path_analysis.path_counter import (
     count_paths_between_nodes,
     get_reachable_nodes,
 )
-from tests.round_combinations.path_generator import (
+from src.fee_simulator.specification.state_machine.path_analysis.path_generator import (
     generate_all_paths,
     filter_paths_containing_pattern,
 )
-from tests.round_combinations.path_analyzer import (
+from src.fee_simulator.specification.state_machine.path_analysis.path_analyzer import (
     analyze_paths,
     _count_appeals_in_path,
 )
