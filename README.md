@@ -65,7 +65,14 @@ tests/
 scripts/                     # Utility scripts
 ├── 01_generate_test_vectors.py  # Generate compressed JSON files for all paths
 ├── 02_decode_test_vector.py     # Decode and visualize JSON path files
-└── 03_analyze_incentives.py     # Analyze incentive structures
+├── 03_analyze_incentives.py     # Analyze incentive structures
+└── 04_interactive_simulator.py  # Interactive path builder and simulator
+
+examples/                    # Example scenarios
+├── 01_basic_transaction.py      # Simple majority agreement
+├── 02_validator_appeal.py       # Successful validator appeal
+├── 03_leader_timeout.py         # Leader timeout scenario
+└── 04_complex_path.py           # Multiple appeals example
 ```
 
 ## How It Works
@@ -243,6 +250,69 @@ python scripts/03_analyze_incentives.py --max-length 7
 # Generate detailed table of outcomes
 python scripts/03_analyze_incentives.py --max-length 5 --show-details
 ```
+
+### Interactive Simulator
+
+Use the interactive simulator to build custom transaction paths and see all outputs:
+
+```bash
+# Run the interactive simulator
+python scripts/04_interactive_simulator.py
+```
+
+Features:
+- **Build custom paths**: Interactively select nodes to create your transaction path
+- **Predefined examples**: Quick access to simple, appeal, and complex scenarios
+- **Full visualization**: See transaction details, fee distribution, and summary tables
+- **Invariant verification**: Automatically checks all 22 invariants
+- **Parameter customization**: Set custom leader and validator timeout values
+
+The interactive simulator provides a menu-driven interface where you can:
+1. Build paths step-by-step with valid node suggestions
+2. Use predefined example paths
+3. Customize simulation parameters
+4. View comprehensive results with all tables and visualizations
+
+## Examples
+
+The `examples/` directory contains ready-to-run scripts demonstrating various transaction scenarios:
+
+### Basic Examples
+
+```bash
+# 1. Basic transaction with majority agreement
+python examples/01_basic_transaction.py
+
+# 2. Successful validator appeal
+python examples/02_validator_appeal.py
+
+# 3. Leader timeout scenario
+python examples/03_leader_timeout.py
+
+# 4. Complex path with multiple appeals
+python examples/04_complex_path.py
+```
+
+Each example script:
+- Shows a specific transaction scenario
+- Displays all visualization tables (transaction details, fee distribution, summary)
+- Verifies all 22 invariants
+- Provides detailed explanations of the outcomes
+
+### Example Output
+
+When you run an example, you'll see:
+1. **Transaction Details**: Round-by-round vote breakdown
+2. **Fee Distribution**: Detailed fee events for each participant
+3. **Summary Table**: Consolidated view of all participants' earnings and costs
+4. **Invariant Verification**: Confirmation that all 22 invariants pass
+5. **Outcome Explanation**: Clear description of what happened and why
+
+These examples are perfect for:
+- Understanding how the fee distribution system works
+- Testing different scenarios
+- Learning the impact of appeals and timeouts
+- Demonstrating the system to others
 
 ### Creating Custom Scenarios
 

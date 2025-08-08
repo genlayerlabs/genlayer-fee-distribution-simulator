@@ -4,6 +4,31 @@
 
 The GenLayer Fee Distribution Simulator employs a comprehensive testing strategy designed to ensure mathematical correctness and production-ready reliability for blockchain financial operations. The test suite uses multiple testing approaches to achieve 100% coverage of all possible transaction scenarios.
 
+## Current Test Suite Statistics
+
+- **Total Tests**: 146 tests
+- **Test Coverage**: 100% of all possible transaction paths up to length 7
+- **Execution Time**: ~27 seconds for full suite
+- **Test Categories**:
+  - Unit tests for individual functions
+  - Integration tests for complete workflows
+  - Property-based tests using Hypothesis
+  - Exhaustive path testing (484 paths for length ≤7)
+  - Invariant verification (22 invariants checked)
+
+## Environment Setup
+
+### Prerequisites
+
+Before running tests, ensure you have the proper environment activated:
+
+```bash
+# Install dependencies if needed
+pip install requirements.txt
+```
+
+And then activate the environment.
+
 ## Test Directory Structure
 
 ```
@@ -11,16 +36,10 @@ tests/
 ├── __init__.py
 ├── conftest.py                          # Pytest configuration and global fixtures
 │
-├── budget_and_refunds/                  # Budget and refund mechanism tests
-│   ├── test_budget_computing.py
-│   └── test_refunds.py
-│
 ├── fee_distributions/                   # Core fee distribution testing
-│   ├── INVARIANTS_DESIGN.md            # 22 invariants documentation
 │   ├── check_invariants/               # Invariant implementation
-│   │   ├── comprehensive_invariants.py # All 22 invariants
-│   │   ├── invariant_checks.py        # Helper functions
-│   │   ├── test_invariants_in_round_combinations.py
+│   │   ├── __init__.py
+│   │   ├── test_invariants_in_round_combinations.py  # Main invariant test runner
 │   │   └── analyze_tests_results.py   # Test result analysis
 │   ├── simple_round_types_tests/       # Individual round type tests
 │   │   ├── test_normal_round.py
@@ -33,38 +52,29 @@ tests/
 │   └── unit_tests/                     # Unit tests for distribution functions
 │       └── test_fee_distribution_functions.py
 │
-├── round_combinations/                  # Exhaustive path testing
-│   ├── README.md                       # Path analysis documentation
-│   ├── graph_data.py                   # TRANSITIONS_GRAPH (source of truth)
-│   ├── path_generator.py               # DFS path generation
-│   ├── path_counter.py                 # Matrix-based counting
-│   ├── path_analyzer.py                # Statistical analysis
-│   ├── path_display.py                 # Path visualization
-│   ├── critical_path_analyzer.py       # Production verification
-│   ├── debug_path_differences.py       # Debugging utilities
-│   ├── round_combinations.py           # Core combination logic
-│   └── test_round_combinations.py      # Path testing
+├── round_combinations/                  # Path generation and combination tests
+│   ├── __init__.py                     # Package initialization with imports
+│   ├── test_round_combinations.py      # Test round combination logic
+│   ├── test_address_allocation.py      # Test address allocation algorithm
+│   ├── test_path_filter.py             # Test path filtering logic
+│   └── test_single_path.py             # Test single path scenarios
 │
 ├── round_labeling/                     # Round type detection tests
-│   ├── README.md                       # Labeling documentation
-│   ├── README_COMPREHENSIVE_TESTING.md # Testing strategy
-│   ├── pytest.ini                      # Pytest configuration
 │   ├── test_round_labeling.py          # Core labeling tests
 │   ├── test_round_labeling_advanced.py # Complex scenarios
-│   ├── test_round_labeling_properties.py # Property-based testing
+│   ├── test_round_labeling_properties.py # Property-based testing with Hypothesis
 │   ├── test_chained_unsuccessful_appeals.py # Consecutive appeals
 │   ├── test_path_generation_check.py   # Path verification
-│   ├── test_all_paths_comprehensive.py # Exhaustive testing
-│   └── run_path_tests.py               # Exhaustive test runner
+│   ├── test_all_paths_comprehensive.py # Exhaustive testing (marked tests)
+│   └── run_path_tests.py               # Exhaustive test runner script
 │
 └── slashing/                           # Penalty mechanism tests
-    ├── test_deterministic_violation.py # Hash mismatch penalties
-    ├── test_idleness.py               # Idle validator penalties
-    └── test_tribunal_appeal.py        # Tribunal mechanisms
+    └── test_idleness.py               # Idle validator penalties
 
 scripts/                                # Utility scripts
-├── generate_path_jsons.py              # Export paths to JSON
-└── decode_path_json.py                 # Decode and visualize JSONs
+├── 01_generate_test_vectors.py        # Export paths to JSON test vectors
+├── 02_decode_test_vector.py           # Decode and visualize JSON test vectors
+└── 03_analyze_incentives.py           # Analyze incentive structures
 ```
 
 ## Testing Framework
@@ -244,6 +254,8 @@ class TestFeatureArea:
 
 #### Address Generation
 ```python
+from src.fee_simulator.utils import generate_random_eth_address
+
 addresses = [generate_random_eth_address() for _ in range(1000)]
 sender_address = addresses[999]
 appealant_address = addresses[998]
@@ -251,6 +263,9 @@ appealant_address = addresses[998]
 
 #### Transaction Creation
 ```python
+from src.fee_simulator.core.path_to_transaction import path_to_transaction_results
+from src.fee_simulator.protocol.models import TransactionRoundResults, Round, Rotation
+
 # From path (recommended)
 transaction_results, budget = path_to_transaction_results(
     path=["START", "LEADER_RECEIPT_MAJORITY_AGREE", "END"],
@@ -267,11 +282,10 @@ transaction = TransactionRoundResults(
 
 #### Invariant Checking
 ```python
-# Single invariant
-assert_conservation_of_value(fee_events, budget)
+from src.fee_simulator.specification.invariants.checker import check_all_invariants
 
 # All invariants (recommended)
-check_comprehensive_invariants(fee_events, budget, transaction_results, labels)
+check_all_invariants(fee_events, budget, transaction_results, labels)
 ```
 
 ## Configuration and Fixtures
@@ -296,27 +310,64 @@ def debug(request):
 ## Test Execution Patterns
 
 ### Running Tests
+
+**Important**: Always activate the conda environment first:
 ```bash
-# All tests
+source /home/jmlago/miniconda3/bin/activate
+conda activate kpi-tracker
+```
+
+#### Basic Test Execution
+```bash
+# Run all tests
 pytest
 
-# Specific directory
+# Run all tests with summary only (quiet mode)
+pytest --tb=no -q
+
+# Run specific directory
 pytest tests/fee_distributions/
 
-# Specific file
+# Run specific file
 pytest tests/round_labeling/test_round_labeling.py
 
-# With verbose output
+# Run specific test
+pytest tests/fee_distributions/simple_round_types_tests/test_normal_round.py::test_normal_round_with_minority_penalties
+```
+
+#### Verbose Testing
+```bash
+# With verbose output (shows formatted tables)
 pytest -s --verbose-output --debug-output
 
-# Specific test
-pytest tests/fee_distributions/simple_round_types_tests/test_normal_round.py::test_specific_case
+# Generate detailed test output file
+pytest -s --verbose-output --debug-output > test_results.txt
 
-# Generate test output file
-pytest -s --verbose-output --debug-output > tests.txt
+# Run with detailed traceback
+pytest -xvs tests/fee_distributions/simple_round_types_tests/test_normal_round.py
+```
 
-# Run exhaustive path tests
+#### Test Markers
+```bash
+# Run only quick tests (if marked)
+pytest -m quick
+
+# Run property-based tests
+pytest tests/round_labeling/test_round_labeling_properties.py
+
+# Skip slow tests
+pytest -m "not slow"
+```
+
+#### Exhaustive Testing
+```bash
+# Run exhaustive path tests (can take hours)
 python tests/round_labeling/run_path_tests.py
+
+# Run comprehensive path tests with specific markers
+pytest tests/round_labeling/test_all_paths_comprehensive.py -m first_500
+pytest tests/round_labeling/test_all_paths_comprehensive.py -m last_500
+pytest tests/round_labeling/test_all_paths_comprehensive.py -m rounds_7_to_10
 ```
 
 ### Test Output
@@ -347,19 +398,34 @@ python tests/round_labeling/run_path_tests.py
 
 ## JSON Export and Verification
 
-### Path Export (`scripts/generate_path_jsons.py`)
+### Path Export (`scripts/01_generate_test_vectors.py`)
 ```bash
 # Generate compressed JSONs for all paths
-python scripts/generate_path_jsons.py --max-length 7
+python scripts/01_generate_test_vectors.py --max-length 7
 
 # Test mode (10 paths per length)
-python scripts/generate_path_jsons.py --max-length 7 --test-mode
+python scripts/01_generate_test_vectors.py --max-length 7 --test-mode
+
+# With custom output directory
+python scripts/01_generate_test_vectors.py --max-length 7 --output-dir custom_output
 ```
 
-### Path Visualization (`scripts/decode_path_json.py`)
+### Path Visualization (`scripts/02_decode_test_vector.py`)
 ```bash
 # Decode and visualize a path
-python scripts/decode_path_json.py path_jsons/length_03/02-0cd0354f.json --show-all
+python scripts/02_decode_test_vector.py path_jsons/length_03/02-0cd0354f.json --show-all
+
+# Show specific visualizations
+python scripts/02_decode_test_vector.py path_jsons/length_03/02-0cd0354f.json -t -f
+```
+
+### Incentive Analysis (`scripts/03_analyze_incentives.py`)
+```bash
+# Analyze incentive structures
+python scripts/03_analyze_incentives.py --max-length 7
+
+# With detailed output
+python scripts/03_analyze_incentives.py --max-length 5 --show-details
 ```
 
 ### JSON Format
@@ -431,6 +497,44 @@ python scripts/decode_path_json.py path_jsons/length_03/02-0cd0354f.json --show-
 - Compressed format for external verification
 - Enables consensus team validation
 - Efficient storage and transmission
+
+## Troubleshooting
+
+### Common Issues
+
+#### ModuleNotFoundError
+If you encounter `ModuleNotFoundError: No module named 'src.fee_simulator'`:
+- Ensure you're running tests from the project root directory
+- Check that all imports use the `src.fee_simulator` prefix
+- Verify the conda environment is activated
+
+#### Environment Not Found
+If conda environment is not found:
+```bash
+# Create a new environment
+conda create -n consensus-simulator python=3.12
+conda activate consensus-simulator
+pip install -r requirements.txt
+```
+
+#### Test Markers Not Recognized
+If you see warnings about unknown pytest markers:
+- These can be safely ignored
+- Or register custom marks in `pytest.ini`:
+```ini
+[pytest]
+markers =
+    quick: marks tests as quick to run
+    slow: marks tests as slow to run
+    first_500: first 500 paths
+    last_500: last 500 paths
+```
+
+#### Memory Issues with Exhaustive Testing
+For long path testing (length > 10):
+- Consider running in batches
+- Use `--test-mode` flag for sampling
+- Monitor system memory usage
 
 ## Future Considerations
 
