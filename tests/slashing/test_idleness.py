@@ -1,21 +1,24 @@
 import pytest
-from fee_simulator.models import (
+from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     Round,
     Rotation,
     TransactionBudget,
 )
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.utils import compute_total_cost, generate_random_eth_address
-from fee_simulator.fee_aggregators.address_metrics import (
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.utils import compute_total_cost, generate_random_eth_address
+from src.fee_simulator.metrics.address_metrics import (
     compute_total_earnings,
     compute_total_costs,
     compute_total_slashed,
     compute_all_zeros,
     compute_current_stake,
 )
-from fee_simulator.constants import PENALTY_REWARD_COEFFICIENT, DEFAULT_STAKE
-from fee_simulator.display import (
+from src.fee_simulator.protocol.constants import (
+    PENALTY_REWARD_COEFFICIENT,
+    DEFAULT_STAKE,
+)
+from src.fee_simulator.display import (
     display_transaction_results,
     display_fee_distribution,
     display_summary_table,

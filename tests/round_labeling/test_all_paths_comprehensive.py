@@ -26,23 +26,23 @@ from functools import lru_cache
 import itertools
 from dataclasses import dataclass
 
-from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.models import (
+from src.fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     Round,
     Rotation,
     TransactionBudget,
     Appeal,
 )
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.utils import generate_random_eth_address
-from fee_simulator.types import Vote, RoundLabel
-from tests.round_combinations import (
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.protocol.types import Vote, RoundLabel
+from src.fee_simulator.specification.state_machine.path_analysis.round_combinations import (
     generate_all_paths,
     PathConstraints,
     TRANSACTION_GRAPH,
 )
-from tests.fee_distributions.check_invariants.invariant_checks import check_invariants
+from src.fee_simulator.specification.invariants.checker import check_all_invariants
 
 
 # Configuration
@@ -426,7 +426,7 @@ class TestAllPaths:
                     assert (
                         round_labels == labels
                     ), f"Label mismatch at index {global_idx}"
-                    check_invariants(fee_events, budget, tx)
+                    check_all_invariants(fee_events, budget, tx)
 
 
 if __name__ == "__main__":

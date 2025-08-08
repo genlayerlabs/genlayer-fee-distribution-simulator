@@ -1,21 +1,21 @@
 import pytest
 from typing import List, Dict, Set
-from fee_simulator.core.round_labeling import (
+from src.fee_simulator.core.round_labeling import (
     label_rounds,
     get_leader_action,
     extract_rounds_data,
 )
-from fee_simulator.models import (
+from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     Round,
     Rotation,
     TransactionBudget,
     Appeal,
 )
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.utils import generate_random_eth_address
-from fee_simulator.types import RoundLabel, Vote
-from tests.round_combinations import (
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.protocol.types import RoundLabel, Vote
+from src.fee_simulator.specification.state_machine.path_analysis.round_combinations import (
     generate_all_paths,
     PathConstraints,
     TRANSACTION_GRAPH,
@@ -835,7 +835,7 @@ class TestIntegrationWithFeeDistribution:
 
 def test_all_valid_label_values():
     """Ensure all labels produced are valid RoundLabel values."""
-    from fee_simulator.types import RoundLabel
+    from src.fee_simulator.protocol.types import RoundLabel
 
     valid_labels = {
         "NORMAL_ROUND",

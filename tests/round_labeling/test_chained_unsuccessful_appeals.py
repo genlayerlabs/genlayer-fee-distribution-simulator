@@ -7,23 +7,23 @@ unsuccessful appeals can occur in sequence.
 
 import pytest
 from typing import List
-from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.models import (
+from src.fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     Round,
     Rotation,
     TransactionBudget,
     Appeal,
 )
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.core.bond_computing import compute_appeal_bond
-from fee_simulator.utils import generate_random_eth_address
-from fee_simulator.fee_aggregators.address_metrics import (
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.core.bond_computing import compute_appeal_bond
+from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.metrics.address_metrics import (
     compute_total_costs,
     compute_total_earnings,
     compute_total_burnt,
 )
-from fee_simulator.display import (
+from src.fee_simulator.display import (
     display_transaction_results,
     display_fee_distribution,
     display_summary_table,

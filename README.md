@@ -21,38 +21,58 @@ The simulator follows a deterministic flow: **TRANSITIONS_GRAPH → Path → Tra
 ## Project Structure
 
 ```
-fee_simulator/
-├── core/                     # Core logic
-│   ├── round_fee_distribution/  # Fee distribution strategies
-│   │   ├── normal_round.py
-│   │   ├── appeal_*_successful.py
-│   │   ├── appeal_*_unsuccessful.py
-│   │   ├── leader_timeout_*.py
-│   │   └── split_previous_appeal_bond.py
-│   ├── path_to_transaction.py   # Path → Transaction converter
-│   ├── round_labeling.py        # Content-based round type detection
-│   ├── transaction_processing.py # Main processing pipeline
-│   ├── bond_computing.py        # Appeal bond calculations
-│   ├── majority.py              # Vote outcome determination
-│   └── refunds.py               # Sender refund logic
-├── models.py                 # Data structures (immutable)
-├── constants.py              # NORMAL_ROUND_SIZES, APPEAL_ROUND_SIZES
-├── types.py                  # Type definitions
-└── display/                  # Visualization utilities
+src/
+└── fee_simulator/
+    ├── core/                     # Core logic
+    │   ├── round_fee_distribution/  # Fee distribution strategies
+    │   │   ├── normal_round.py
+    │   │   ├── appeal_*_successful.py
+    │   │   ├── appeal_*_unsuccessful.py
+    │   │   ├── leader_timeout_*.py
+    │   │   └── split_previous_appeal_bond.py
+    │   ├── path_to_transaction.py   # Path → Transaction converter
+    │   ├── round_labeling.py        # Content-based round type detection
+    │   ├── transaction_processing.py # Main processing pipeline
+    │   ├── bond_computing.py        # Appeal bond calculations
+    │   ├── majority.py              # Vote outcome determination
+    │   └── refunds.py               # Sender refund logic
+    ├── protocol/                 # Protocol definitions
+    │   ├── models.py            # Data structures (immutable)
+    │   ├── constants.py         # NORMAL_ROUND_SIZES, APPEAL_ROUND_SIZES
+    │   └── types.py             # Type definitions
+    ├── specification/           # Formal specification
+    │   ├── invariants/          # System invariants
+    │   │   ├── checker.py       # Main invariant checker
+    │   │   └── definitions/     # 22 invariant implementations
+    │   └── state_machine/       # State machine specification
+    │       ├── graph.py         # TRANSACTION_GRAPH definition
+    │       └── path_analysis/   # Path analysis tools
+    │           ├── path_generator.py
+    │           ├── path_counter.py
+    │           └── path_filter.py
+    ├── display/                 # Visualization utilities
+    ├── metrics/                 # Metrics and aggregations
+    └── utils.py                 # Utility functions
 
 tests/
-├── round_combinations/       # Path generation from TRANSITIONS_GRAPH
-│   ├── graph_data.py        # The source of truth graph
-│   └── path_generator.py    # Path generation logic
+├── round_combinations/       # Path generation tests
 ├── round_labeling/          # Round detection tests
 ├── fee_distributions/       # Fee distribution tests
 │   ├── simple_round_types_tests/
-│   └── check_invariants/    # 22 invariant implementations
+│   └── check_invariants/    # Invariant testing
 └── slashing/               # Idleness and violation tests
 
 scripts/                     # Utility scripts
-├── generate_path_jsons.py   # Generate compressed JSON files for all paths
-└── decode_path_json.py      # Decode and visualize JSON path files
+├── 01_generate_test_vectors.py  # Generate compressed JSON files for all paths
+├── 02_decode_test_vector.py     # Decode and visualize JSON path files
+├── 03_analyze_incentives.py     # Analyze incentive structures
+└── 04_interactive_simulator.py  # Interactive path builder and simulator
+
+examples/                    # Example scenarios
+├── 01_basic_transaction.py      # Simple majority agreement
+├── 02_validator_appeal.py       # Successful validator appeal
+├── 03_leader_timeout.py         # Leader timeout scenario
+└── 04_complex_path.py           # Multiple appeals example
 ```
 
 ## How It Works
@@ -172,16 +192,16 @@ Generate compressed JSON files for all possible paths (useful for external verif
 
 ```bash
 # Generate all paths up to length 7 (484 paths)
-python scripts/generate_path_jsons.py --max-length 7
+python scripts/01_generate_test_vectors.py --max-length 7
 
 # Generate paths up to length 17 (~113M paths, requires significant time and storage)
-python scripts/generate_path_jsons.py --max-length 17
+python scripts/01_generate_test_vectors.py --max-length 17
 
 # Test mode (generates only 10 paths per length)
-python scripts/generate_path_jsons.py --max-length 7 --test-mode
+python scripts/01_generate_test_vectors.py --max-length 7 --test-mode
 
 # Specify custom output directory
-python scripts/generate_path_jsons.py --max-length 7 --output-dir custom_output
+python scripts/01_generate_test_vectors.py --max-length 7 --output-dir custom_output
 ```
 
 The generated files will be organized in directories by path length:
@@ -202,13 +222,13 @@ Decode compressed JSON files and visualize the transaction:
 
 ```bash
 # Show compressed data summary and summary table (default)
-python scripts/decode_path_json.py path_jsons/length_03/02-0cd0354f.json
+python scripts/02_decode_test_vector.py path_jsons/length_03/02-0cd0354f.json
 
 # Show all visualizations
-python scripts/decode_path_json.py path_jsons/length_03/02-0cd0354f.json --show-all
+python scripts/02_decode_test_vector.py path_jsons/length_03/02-0cd0354f.json --show-all
 
 # Show specific visualizations
-python scripts/decode_path_json.py path_jsons/length_03/02-0cd0354f.json -t -f
+python scripts/02_decode_test_vector.py path_jsons/length_03/02-0cd0354f.json -t -f
 # -c: compressed data summary
 # -t: transaction results
 # -f: fee distribution details
@@ -216,19 +236,94 @@ python scripts/decode_path_json.py path_jsons/length_03/02-0cd0354f.json -t -f
 # -a: all visualizations
 
 # Use custom path_jsons directory
-python scripts/decode_path_json.py custom_output/length_03/02-0cd0354f.json --json-dir custom_output
+python scripts/02_decode_test_vector.py custom_output/length_03/02-0cd0354f.json --json-dir custom_output
 ```
+
+### Analyze Incentive Structures
+
+Analyze different validator strategies and their financial outcomes:
+
+```bash
+# Analyze incentive structures for different path lengths
+python scripts/03_analyze_incentives.py --max-length 7
+
+# Generate detailed table of outcomes
+python scripts/03_analyze_incentives.py --max-length 5 --show-details
+```
+
+### Interactive Simulator
+
+Use the interactive simulator to build custom transaction paths and see all outputs:
+
+```bash
+# Run the interactive simulator
+python scripts/04_interactive_simulator.py
+```
+
+Features:
+- **Build custom paths**: Interactively select nodes to create your transaction path
+- **Predefined examples**: Quick access to simple, appeal, and complex scenarios
+- **Full visualization**: See transaction details, fee distribution, and summary tables
+- **Invariant verification**: Automatically checks all 22 invariants
+- **Parameter customization**: Set custom leader and validator timeout values
+
+The interactive simulator provides a menu-driven interface where you can:
+1. Build paths step-by-step with valid node suggestions
+2. Use predefined example paths
+3. Customize simulation parameters
+4. View comprehensive results with all tables and visualizations
+
+## Examples
+
+The `examples/` directory contains ready-to-run scripts demonstrating various transaction scenarios:
+
+### Basic Examples
+
+```bash
+# 1. Basic transaction with majority agreement
+python examples/01_basic_transaction.py
+
+# 2. Successful validator appeal
+python examples/02_validator_appeal.py
+
+# 3. Leader timeout scenario
+python examples/03_leader_timeout.py
+
+# 4. Complex path with multiple appeals
+python examples/04_complex_path.py
+```
+
+Each example script:
+- Shows a specific transaction scenario
+- Displays all visualization tables (transaction details, fee distribution, summary)
+- Verifies all 22 invariants
+- Provides detailed explanations of the outcomes
+
+### Example Output
+
+When you run an example, you'll see:
+1. **Transaction Details**: Round-by-round vote breakdown
+2. **Fee Distribution**: Detailed fee events for each participant
+3. **Summary Table**: Consolidated view of all participants' earnings and costs
+4. **Invariant Verification**: Confirmation that all 22 invariants pass
+5. **Outcome Explanation**: Clear description of what happened and why
+
+These examples are perfect for:
+- Understanding how the fee distribution system works
+- Testing different scenarios
+- Learning the impact of appeals and timeouts
+- Demonstrating the system to others
 
 ### Creating Custom Scenarios
 
 You can create and simulate custom transaction scenarios programmatically:
 
 ```python
-from fee_simulator.models import TransactionBudget, TransactionRoundResults, Round, Rotation
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.core.round_labeling import label_rounds
-from fee_simulator.utils import generate_random_eth_address
-from fee_simulator.display import display_summary_table, display_transaction_results
+from src.fee_simulator.protocol.models import TransactionBudget, TransactionRoundResults, Round, Rotation
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.display import display_summary_table, display_transaction_results
 
 # Generate addresses
 addresses = [generate_random_eth_address() for _ in range(6)]

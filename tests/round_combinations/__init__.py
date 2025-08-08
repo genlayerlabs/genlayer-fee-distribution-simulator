@@ -5,7 +5,7 @@ A clean, modular implementation for analyzing transaction paths
 in the fee simulator system.
 """
 
-from .path_types import (
+from src.fee_simulator.specification.state_machine.path_analysis.path_types import (
     PathConstraints,
     PathStatistics,
     CountingResult,
@@ -14,18 +14,24 @@ from .path_types import (
     Graph,
 )
 
-from .graph_data import TRANSACTION_GRAPH, get_graph
+from src.fee_simulator.specification.state_machine.graph import (
+    TRANSACTION_GRAPH,
+    get_graph,
+)
 
-from .path_counter import count_paths_between_nodes, get_reachable_nodes
+from src.fee_simulator.specification.state_machine.path_analysis.path_counter import (
+    count_paths_between_nodes,
+    get_reachable_nodes,
+)
 
-from .path_generator import (
+from src.fee_simulator.specification.state_machine.path_analysis.path_generator import (
     generate_all_paths,
     generate_paths_lazy,
     filter_paths_containing_pattern,
     count_paths_by_length,
 )
 
-from .path_analyzer import (
+from src.fee_simulator.specification.state_machine.path_analysis.path_analyzer import (
     analyze_paths,
     find_extreme_paths,
     find_paths_with_rare_patterns,
@@ -33,7 +39,9 @@ from .path_analyzer import (
     group_paths_by_feature,
 )
 
-from .round_combinations import TransactionPathAnalyzer
+from src.fee_simulator.specification.state_machine.path_analysis.round_combinations import (
+    TransactionPathAnalyzer,
+)
 
 __version__ = "1.0.0"
 

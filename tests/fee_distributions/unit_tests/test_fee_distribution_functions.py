@@ -7,7 +7,7 @@ its behavior in isolation.
 
 import pytest
 from typing import List, Dict
-from fee_simulator.models import (
+from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     TransactionBudget,
     Round,
@@ -16,34 +16,36 @@ from fee_simulator.models import (
     EventSequence,
     FeeEvent,
 )
-from fee_simulator.types import RoundLabel
-from fee_simulator.utils import generate_random_eth_address
-from fee_simulator.constants import PENALTY_REWARD_COEFFICIENT
+from src.fee_simulator.protocol.types import RoundLabel
+from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.protocol.constants import PENALTY_REWARD_COEFFICIENT
 
 # Import all fee distribution functions
-from fee_simulator.core.round_fee_distribution.normal_round import apply_normal_round
-from fee_simulator.core.round_fee_distribution.appeal_leader_successful import (
+from src.fee_simulator.core.round_fee_distribution.normal_round import (
+    apply_normal_round,
+)
+from src.fee_simulator.core.round_fee_distribution.appeal_leader_successful import (
     apply_appeal_leader_successful,
 )
-from fee_simulator.core.round_fee_distribution.appeal_validator_successful import (
+from src.fee_simulator.core.round_fee_distribution.appeal_validator_successful import (
     apply_appeal_validator_successful,
 )
-from fee_simulator.core.round_fee_distribution.appeal_validator_unsuccessful import (
+from src.fee_simulator.core.round_fee_distribution.appeal_validator_unsuccessful import (
     apply_appeal_validator_unsuccessful,
 )
-from fee_simulator.core.round_fee_distribution.appeal_leader_timeout_successful import (
+from src.fee_simulator.core.round_fee_distribution.appeal_leader_timeout_successful import (
     apply_appeal_leader_timeout_successful,
 )
-from fee_simulator.core.round_fee_distribution.leader_timeout_50_percent import (
+from src.fee_simulator.core.round_fee_distribution.leader_timeout_50_percent import (
     apply_leader_timeout_50_percent,
 )
-from fee_simulator.core.round_fee_distribution.leader_timeout_150_previous_normal_round import (
+from src.fee_simulator.core.round_fee_distribution.leader_timeout_150_previous_normal_round import (
     apply_leader_timeout_150_previous_normal_round,
 )
-from fee_simulator.core.round_fee_distribution.leader_timeout_50_previous_appeal_bond import (
+from src.fee_simulator.core.round_fee_distribution.leader_timeout_50_previous_appeal_bond import (
     apply_leader_timeout_50_previous_appeal_bond,
 )
-from fee_simulator.core.round_fee_distribution.split_previous_appeal_bond import (
+from src.fee_simulator.core.round_fee_distribution.split_previous_appeal_bond import (
     apply_split_previous_appeal_bond,
 )
 

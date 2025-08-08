@@ -1,24 +1,24 @@
 import pytest
-from fee_simulator.models import (
+from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     Round,
     Rotation,
     TransactionBudget,
 )
-from fee_simulator.core.transaction_processing import process_transaction
-from fee_simulator.utils import compute_total_cost, generate_random_eth_address
-from fee_simulator.fee_aggregators.address_metrics import (
+from src.fee_simulator.core.transaction_processing import process_transaction
+from src.fee_simulator.utils import compute_total_cost, generate_random_eth_address
+from src.fee_simulator.metrics.address_metrics import (
     compute_total_earnings,
     compute_total_costs,
     compute_all_zeros,
 )
-from fee_simulator.display import (
+from src.fee_simulator.display import (
     display_transaction_results,
     display_fee_distribution,
     display_summary_table,
     display_test_description,
 )
-from tests.fee_distributions.check_invariants.invariant_checks import check_invariants
+from src.fee_simulator.specification.invariants.checker import check_all_invariants
 
 leaderTimeout = 100
 validatorsTimeout = 200
@@ -78,7 +78,9 @@ def test_leader_timeout_50_percent(verbose, debug):
     ], f"Expected ['LEADER_TIMEOUT_50_PERCENT'], got {round_labels}"
 
     # Invariant Check
-    check_invariants(fee_events, transaction_budget, transaction_results)
+    check_all_invariants(
+        fee_events, transaction_budget, transaction_results, round_labels
+    )
 
     # Leader Fees Assert
     assert (

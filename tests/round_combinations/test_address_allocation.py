@@ -7,10 +7,10 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from fee_simulator.core.path_to_transaction import path_to_transaction_results
-from fee_simulator.utils import generate_random_eth_address
-from fee_simulator.constants import NORMAL_ROUND_SIZES, APPEAL_ROUND_SIZES
-from fee_simulator.core.round_labeling import label_rounds
+from src.fee_simulator.core.path_to_transaction import path_to_transaction_results
+from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.protocol.constants import NORMAL_ROUND_SIZES, APPEAL_ROUND_SIZES
+from src.fee_simulator.core.round_labeling import label_rounds
 
 
 class TestAddressAllocation:
