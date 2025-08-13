@@ -29,6 +29,9 @@ from src.fee_simulator.core.round_fee_distribution.appeal_validator_unsuccessful
 from src.fee_simulator.core.round_fee_distribution.split_previous_appeal_bond import (
     apply_split_previous_appeal_bond,
 )
+from src.fee_simulator.core.round_fee_distribution.skip_round import (
+    apply_skip_round,
+)
 
 
 __all__ = [
@@ -43,4 +46,5 @@ __all__ = [
     "apply_appeal_validator_successful",
     "apply_appeal_validator_unsuccessful",
     "apply_split_previous_appeal_bond",
+    "apply_skip_round",
 ]

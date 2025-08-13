@@ -8,6 +8,7 @@ from src.fee_simulator.protocol.models import (
 )
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
 from src.fee_simulator.utils import is_appeal_round
+from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 
 
 def apply_appeal_leader_timeout_successful(
@@ -34,11 +35,9 @@ def apply_appeal_leader_timeout_successful(
     appealant_address = appeal.appealantAddress
 
     # Find the most recent normal round before this appeal
-    normal_round_index = round_index - 1  # Default
-    for i in range(round_index - 1, -1, -1):
-        if not is_appeal_round(round_labels[i]):
-            normal_round_index = i
-            break
+    normal_round_index = find_previous_normal_round(round_index, round_labels)
+    if normal_round_index is None:
+        normal_round_index = round_index - 1  # Default
 
     appeal_bond = compute_appeal_bond(
         normal_round_index=normal_round_index,

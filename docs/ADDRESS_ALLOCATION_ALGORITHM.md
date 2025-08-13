@@ -70,6 +70,46 @@ Appeal round sizes are determined by the previous round:
 - Addresses: Pull entirely NEW addresses that haven't been used yet
 - This creates a "shrinking" effect for consecutive unsuccessful appeals
 
+### The `-2` Rule: A Mechanical Brake on Escalation
+
+The `-2` rule acts as a **mechanical brake** to prevent security levels from escalating uncontrollably after chains of unsuccessful appeals.
+
+#### Why is this necessary?
+
+The key insight is that normal rounds use the **cumulative active set** of all addresses that have participated in any previous round. Since appeal rounds always introduce entirely new addresses, a chain of unsuccessful appeals rapidly inflates this cumulative pool.
+
+#### The Problem Without the `-2` Rule
+
+Consider the path: `Normal → Appeal(U) → Appeal(U) → Appeal(U) → Normal`
+
+**Without the `-2` rule:**
+
+| Round | Type | Size | New Addresses | Cumulative Pool |
+|-------|------|------|---------------|-----------------|
+| 0 | Normal | 5 | 5 | 5 |
+| 1 | Appeal | 7 | 7 | 12 |
+| 2 | Appeal | 13 | 13 | 25 |
+| 3 | Appeal | 25 | 25 | **50** |
+
+The next normal round needs size 47 (from NORMAL_ROUND_SIZES), but the pool already has 50 addresses. The system would be forced to skip to size 95, escalating too quickly.
+
+#### The Solution With the `-2` Rule
+
+**With the `-2` rule:**
+
+| Round | Type | Base Size | Adjustment | Final Size | New Addresses | Cumulative Pool |
+|-------|------|-----------|------------|------------|---------------|-----------------|
+| 0 | Normal | 5 | 0 | 5 | 5 | 5 |
+| 1 | Appeal | 7 | 0 | 7 | 7 | 12 |
+| 2 | Appeal | 13 | -2 | **11** | 11 | 23 |
+| 3 | Appeal | 25 | -2 | **23** | 23 | **46** |
+
+Now the pool has 46 addresses, and the next normal round needs 47. The system can proceed orderly, using all 46 from the pool plus 1 new address. No security tier is skipped.
+
+#### Why `-2` Specifically?
+
+The `-2` is the **minimal necessary adjustment** to maintain smooth progression. It's the gentlest brake that still prevents overshooting the next security tier. A larger adjustment would be unnecessarily harsh, while a smaller one wouldn't prevent the escalation problem.
+
 ## Address Allocation Examples
 
 ### Example 1: Simple Path (Normal → Appeal → Normal)

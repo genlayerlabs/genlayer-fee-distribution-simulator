@@ -3,6 +3,7 @@ from typing import List
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
 from src.fee_simulator.protocol.types import RoundLabel
 from src.fee_simulator.utils import is_appeal_round
+from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 
 
 def compute_unsuccessful_leader_appeal_burn(
@@ -34,11 +35,7 @@ def compute_unsuccessful_validator_appeal_burn(
     burn = 0
 
     # Find the most recent normal round before this appeal
-    normal_round_index = None
-    for i in range(current_round_index - 1, -1, -1):
-        if i < len(round_labels) and not is_appeal_round(round_labels[i]):
-            normal_round_index = i
-            break
+    normal_round_index = find_previous_normal_round(current_round_index, round_labels)
 
     if normal_round_index is None:
         raise ValueError(

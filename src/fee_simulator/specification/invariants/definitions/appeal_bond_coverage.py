@@ -11,7 +11,7 @@ from src.fee_simulator.protocol.models import (
 )
 from src.fee_simulator.protocol.types import RoundLabel
 from src.fee_simulator.utils import is_appeal_round
-from src.fee_simulator.utils_round_sizes import get_round_size_for_bond
+from src.fee_simulator.utils_round_sizes import get_round_size_for_bond, find_previous_normal_round
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
 from .common import InvariantViolation
 
@@ -26,11 +26,7 @@ def check_appeal_bond_coverage(
     for i, label in enumerate(round_labels):
         if is_appeal_round(label) and i > 0:
             # Find the most recent normal round before this appeal
-            normal_round_index = None
-            for j in range(i - 1, -1, -1):
-                if not is_appeal_round(round_labels[j]):
-                    normal_round_index = j
-                    break
+            normal_round_index = find_previous_normal_round(i, round_labels)
 
             if normal_round_index is None:
                 raise InvariantViolation(

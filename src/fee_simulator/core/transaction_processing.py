@@ -16,6 +16,7 @@ from src.fee_simulator.utils import (
     initialize_constant_stakes,
     is_appeal_round,
 )
+from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
 from src.fee_simulator.core.round_labeling import label_rounds
@@ -89,11 +90,9 @@ def process_transaction(
                         appeal_index
                     ].appealantAddress
                     # Find the most recent normal round before this appeal
-                    normal_round_index = i - 1  # Default to previous round
-                    for j in range(i - 1, -1, -1):
-                        if not is_appeal_round(labels[j]):
-                            normal_round_index = j
-                            break
+                    normal_round_index = find_previous_normal_round(i, labels)
+                    if normal_round_index is None:
+                        normal_round_index = i - 1  # Default to previous round
                     bond = compute_appeal_bond(
                         normal_round_index=normal_round_index,
                         leader_timeout=transaction_budget.leaderTimeout,

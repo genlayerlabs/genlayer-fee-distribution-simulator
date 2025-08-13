@@ -145,48 +145,18 @@ def compute_round_size_indices(round_types: List[RoundLabel]) -> List[int]:
 
 def get_round_size(round_index: int, round_types: List[RoundLabel]) -> int:
     """
+    DEPRECATED: Use src.fee_simulator.utils_round_sizes.get_round_size() instead.
+    
+    This function does NOT implement the -2 rule for consecutive unsuccessful appeals.
+    It is kept only for backward compatibility and should not be used in new code.
+    
     Get the size of a round based on its index and type.
-
-    With the new split structure, this is much simpler:
-    - Count how many normal rounds came before this one
-    - Count how many appeal rounds came before this one
-    - Use the appropriate list (NORMAL_ROUND_SIZES or APPEAL_ROUND_SIZES)
     """
-    if round_index >= len(round_types):
-        raise IndexError(
-            f"Round index {round_index} out of bounds for {len(round_types)} rounds"
-        )
-
-    # Count normal and appeal rounds up to this index
-    normal_count = 0
-    appeal_count = 0
-
-    for i in range(round_index + 1):
-        if i < len(round_types):
-            if is_appeal_round(round_types[i]):
-                appeal_count += 1
-            else:
-                normal_count += 1
-
-    # Get the size based on the round type
-    if is_appeal_round(round_types[round_index]):
-        # This is an appeal round
-        appeal_index = appeal_count - 1  # 0-based index
-        if appeal_index < len(APPEAL_ROUND_SIZES):
-            return APPEAL_ROUND_SIZES[appeal_index]
-        else:
-            return APPEAL_ROUND_SIZES[
-                -1
-            ]  # Use the last size for rounds beyond the list
-    else:
-        # This is a normal round
-        normal_index = normal_count - 1  # 0-based index
-        if normal_index < len(NORMAL_ROUND_SIZES):
-            return NORMAL_ROUND_SIZES[normal_index]
-        else:
-            return NORMAL_ROUND_SIZES[
-                -1
-            ]  # Use the last size for rounds beyond the list
+    # Import here to avoid circular dependency
+    from src.fee_simulator.utils_round_sizes import get_round_size as new_get_round_size
+    
+    # Use the new implementation which properly handles the -2 rule
+    return new_get_round_size(round_index, round_types)
 
 
 def is_appeal_round(round_label: RoundLabel) -> bool:

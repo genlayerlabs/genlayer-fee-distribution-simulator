@@ -13,6 +13,7 @@ from src.fee_simulator.core.majority import (
 )
 from src.fee_simulator.protocol.constants import PENALTY_REWARD_COEFFICIENT
 from src.fee_simulator.utils import is_appeal_round
+from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 from src.fee_simulator.core.burns import compute_unsuccessful_leader_appeal_burn
 
 
@@ -137,11 +138,9 @@ def apply_normal_round(
             appealant_address = budget.appeals[appeal_index].appealantAddress
 
             # Find the most recent normal round before the appeal
-            normal_round_index = round_index - 2  # Default
-            for j in range(round_index - 2, -1, -1):
-                if not is_appeal_round(round_labels[j]):
-                    normal_round_index = j
-                    break
+            normal_round_index = find_previous_normal_round(round_index - 1, round_labels)
+            if normal_round_index is None:
+                normal_round_index = round_index - 2  # Default
 
             # Compute the appeal bond to know the total amount
             from src.fee_simulator.core.bond_computing import compute_appeal_bond

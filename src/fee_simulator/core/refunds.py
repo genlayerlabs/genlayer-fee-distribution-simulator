@@ -4,6 +4,7 @@ from src.fee_simulator.display.fee_distribution import display_fee_distribution
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
 from src.fee_simulator.protocol.types import RoundLabel
 from src.fee_simulator.utils import is_appeal_round
+from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 
 
 def compute_sender_refund(
@@ -24,11 +25,9 @@ def compute_sender_refund(
         if event.role == "APPEALANT":
             if event.earned > 0 and event.round_index is not None:
                 # Find the most recent normal round before this appeal
-                normal_round_index = event.round_index - 1  # Default
-                for i in range(event.round_index - 1, -1, -1):
-                    if i < len(round_labels) and not is_appeal_round(round_labels[i]):
-                        normal_round_index = i
-                        break
+                normal_round_index = find_previous_normal_round(event.round_index, round_labels)
+                if normal_round_index is None:
+                    normal_round_index = event.round_index - 1  # Default fallback
 
                 appeal_bond = compute_appeal_bond(
                     normal_round_index=normal_round_index,
