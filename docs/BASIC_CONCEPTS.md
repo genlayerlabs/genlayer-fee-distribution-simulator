@@ -1,5 +1,3 @@
-Answering your request to fill the `BASIC_CONCEPTS.md` and the `DEV_SETUP.md` files.
-
 # Basic Concepts of GenLayer Fee Distribution
 
 This document explains the fundamental concepts behind the GenLayer consensus and fee distribution mechanism. Understanding these concepts is essential to comprehending the purpose and function of this simulator.
