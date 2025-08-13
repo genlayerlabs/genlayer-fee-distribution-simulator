@@ -22,12 +22,14 @@ Invariant: S_cost == E_total + B_total + R_sender
 ```
 
 ### 2. Appeal Bond Coverage
-**Statement:** The bond posted by an appellant must be covered by their staked amount.
-**Importance:** Prevents a denial-of-service or insolvency attack where a user could trigger a costly appeal without having sufficient funds at stake to cover the bond, ensuring the dispute resolution process is always solvent.
+**Statement:** The bond posted by an appellant must be sufficient to cover the costs of the appeal round.
+**Importance:** Ensures that the appeal bond is large enough to compensate validators for their participation in the appeal round, preventing underfunded appeals that could disrupt the consensus process.
 **Mathematical Formulation:**
 ```
-For each FeeEvent `e` where e.role == "APPEALANT":
-  Invariant: e.staked >= e.cost
+For each appeal round i:
+  Let bond = actual bond paid by appellant
+  Let round_cost = round_size * validator_timeout + leader_timeout
+  Invariant: bond >= round_cost
 ```
 
 ### 3. Burn Non-Negativity

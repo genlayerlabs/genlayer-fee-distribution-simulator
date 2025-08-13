@@ -233,7 +233,7 @@ def display_results(transaction_results, budget, labels, fee_events, path):
     print("="*80)
     try:
         check_all_invariants(fee_events, budget, transaction_results, labels)
-        print("✅ All 22 invariants passed!")
+        print("✅ All 24 invariants passed!")
     except Exception as e:
         print(f"❌ Invariant violation: {e}")
     

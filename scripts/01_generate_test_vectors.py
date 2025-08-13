@@ -80,27 +80,29 @@ LABEL_TO_IDX = {
 ROLE_TO_IDX = {"LEADER": 0, "VALIDATOR": 1, "SENDER": 2, "APPEALANT": 3}
 INVARIANT_BITS = {
     "conservation_of_value": 0,
-    "non_negative_balances": 1,
-    "appeal_bond_coverage": 2,
-    "majority_minority_consistency": 3,
-    "role_exclusivity": 4,
-    "sequential_processing": 5,
-    "appeal_follows_normal": 6,
+    "appeal_bond_coverage": 1,
+    "majority_minority_consistency": 2,
+    "sequential_processing": 3,
+    "appeal_follows_normal": 4,
+    "round_label_validity": 5,
+    "appellant_consistency": 6,
     "burn_non_negativity": 7,
-    "refund_non_negativity": 8,
-    "vote_consistency": 9,
-    "idle_slashing_correctness": 10,
-    "deterministic_violation_slashing": 11,
-    "leader_timeout_earning_limits": 12,
-    "appeal_bond_consistency": 13,
-    "round_size_consistency": 14,
-    "fee_event_ordering": 15,
-    "stake_immutability": 16,
-    "round_label_validity": 17,
-    "no_double_penalties": 18,
-    "earning_justification": 19,
-    "cost_accounting": 20,
-    "slashing_proportionality": 21,
+    "no_double_penalties": 8,
+    "bounded_slashing_impact": 9,
+    "no_profit_from_griefing": 10,
+    "cost_of_contention": 11,
+    "griefing_amplification": 12,
+    "progress_monotonicity": 13,
+    "resource_pool_integrity": 14,
+    "irreversibility_of_finality": 15,
+    "temporal_event_consistency": 16,
+    "refund_non_negativity": 17,
+    "vote_consistency": 18,
+    "idle_slashing": 19,
+    "deterministic_violation_slashing": 20,
+    "leader_timeout_earning": 21,
+    "appeal_bond_consistency": 22,
+    "round_size_consistency": 23,
 }
 
 
@@ -194,9 +196,10 @@ def process_path(path: List[str], addresses: List[str]) -> Tuple[Dict[str, Any],
 
 
 def generate_filename(path: List[str]) -> str:
-    path_length = len(path) - 2
+    # Count intermediate nodes (excluding START and END)
+    intermediate_nodes = len(path) - 2
     path_hash = hash_path(path)[:8]
-    return f"{path_length:02d}-{path_hash}.json"
+    return f"{intermediate_nodes:02d}-{path_hash}.json"
 
 
 def save_lookup_tables(output_dir: Path):
@@ -222,7 +225,7 @@ def main():
     parser.add_argument(
         "--output-dir", type=str, default="path_jsons", help="Output directory"
     )
-    parser.add_argument("--max-length", type=int, default=16, help="Max path length")
+    parser.add_argument("--max-length", type=int, default=16, help="Max number of edges in path (min is 2)")
     parser.add_argument(
         "--test-mode", action="store_true", help="Run with limited paths"
     )
@@ -231,14 +234,15 @@ def main():
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)
-    output_dir.mkdir(exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     save_lookup_tables(output_dir)
 
     addresses = [generate_random_eth_address() for _ in range(1000)]
     processed, errors = 0, 0
 
     console.rule("[bold cyan]Path Generation Setup[/bold cyan]")
-    console.print(f"Generating paths up to length [bold]{args.max_length}[/bold]...")
+    intermediate_nodes_max = args.max_length - 1
+    console.print(f"Generating paths with up to [bold]{intermediate_nodes_max} intermediate nodes[/bold] (between START and END)...")
     if not args.no_filter:
         console.print(
             "[yellow]Filtering enabled[/yellow]: Only processing paths valid with 1000 validators"
@@ -247,15 +251,17 @@ def main():
     # --- Path Counting ---
     total_paths, total_valid_paths = 0, 0
     console.print("[bold]Counting total paths...[/bold]")
-    count_table = Table(title="Path Counts by Length")
-    count_table.add_column("Length", justify="right")
+    count_table = Table(title="Path Counts by Intermediate Nodes")
+    count_table.add_column("Intermediate Nodes", justify="right")
     count_table.add_column("Valid Paths", justify="right")
     count_table.add_column("Total Paths", justify="right")
     count_table.add_column("Validity Rate", justify="right")
 
-    for length in range(3, args.max_length + 1):
+    # Start at 2 edges (1 intermediate node), go up to max_length edges
+    for edge_count in range(2, args.max_length + 1):
+        intermediate_nodes = edge_count - 1  # edges - 1 = intermediate nodes
         constraints = PathConstraints(
-            source_node="START", target_node="END", min_length=length, max_length=length
+            source_node="START", target_node="END", min_length=edge_count, max_length=edge_count
         )
         all_paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
         path_count = len(all_paths)
@@ -267,7 +273,7 @@ def main():
         total_paths += path_count
         total_valid_paths += valid_count
         rate = f"{(valid_count/path_count*100):.1f}%" if path_count > 0 else "N/A"
-        count_table.add_row(str(length), f"{valid_count:,}", f"{path_count:,}", rate)
+        count_table.add_row(str(intermediate_nodes), f"{valid_count:,}", f"{path_count:,}", rate)
 
     console.print(count_table)
     paths_to_process_count = total_valid_paths if not args.no_filter else total_paths
@@ -287,16 +293,18 @@ def main():
     ) as progress:
         task = progress.add_task("Processing...", total=paths_to_process_count)
 
-        for length in range(3, args.max_length + 1):
-            length_dir = output_dir / f"length_{length:02d}"
-            length_dir.mkdir(exist_ok=True)
+        # Start at 2 edges (1 intermediate node)
+        for edge_count in range(2, args.max_length + 1):
+            intermediate_nodes = edge_count - 1  # edges - 1 = intermediate nodes
+            length_dir = output_dir / f"length_{intermediate_nodes:02d}"
+            length_dir.mkdir(parents=True, exist_ok=True)
             length_count = 0
 
             constraints = PathConstraints(
                 source_node="START",
                 target_node="END",
-                min_length=length,
-                max_length=length,
+                min_length=edge_count,
+                max_length=edge_count,
             )
             all_paths = list(generate_all_paths(TRANSACTION_GRAPH, constraints))
             paths_to_process = (

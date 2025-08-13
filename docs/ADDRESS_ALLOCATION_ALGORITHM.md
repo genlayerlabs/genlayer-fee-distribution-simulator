@@ -70,24 +70,66 @@ Appeal round sizes are determined by the previous round:
 - Addresses: Pull entirely NEW addresses that haven't been used yet
 - This creates a "shrinking" effect for consecutive unsuccessful appeals
 
+### The `-2` Rule: A Mechanical Brake on Escalation
+
+The `-2` rule acts as a **mechanical brake** to prevent security levels from escalating uncontrollably after chains of unsuccessful appeals.
+
+#### Why is this necessary?
+
+The key insight is that normal rounds use the **cumulative active set** of all addresses that have participated in any previous round. Since appeal rounds always introduce entirely new addresses, a chain of unsuccessful appeals rapidly inflates this cumulative pool.
+
+#### The Problem Without the `-2` Rule
+
+Consider the path: `Normal → Appeal(U) → Appeal(U) → Appeal(U) → Normal`
+
+**Without the `-2` rule:**
+
+| Round | Type | Size | New Addresses | Cumulative Pool |
+|-------|------|------|---------------|-----------------|
+| 0 | Normal | 5 | 5 | 5 |
+| 1 | Appeal | 7 | 7 | 12 |
+| 2 | Appeal | 13 | 13 | 25 |
+| 3 | Appeal | 25 | 25 | **50** |
+
+The next normal round needs size 47 (from NORMAL_ROUND_SIZES), but the pool already has 50 addresses. The system would be forced to skip to size 95, escalating too quickly.
+
+#### The Solution With the `-2` Rule
+
+**With the `-2` rule:**
+
+| Round | Type | Base Size | Adjustment | Final Size | New Addresses | Cumulative Pool |
+|-------|------|-----------|------------|------------|---------------|-----------------|
+| 0 | Normal | 5 | 0 | 5 | 5 | 5 |
+| 1 | Appeal | 7 | 0 | 7 | 7 | 12 |
+| 2 | Appeal | 13 | -2 | **11** | 11 | 23 |
+| 3 | Appeal | 25 | -2 | **23** | 23 | **46** |
+
+Now the pool has 46 addresses, and the next normal round needs 47. The system can proceed orderly, using all 46 from the pool plus 1 new address. No security tier is skipped.
+
+#### Why `-2` Specifically?
+
+The `-2` is the **minimal necessary adjustment** to maintain smooth progression. It's the gentlest brake that still prevents overshooting the next security tier. A larger adjustment would be unnecessarily harsh, while a smaller one wouldn't prevent the escalation problem.
+
 ## Address Allocation Examples
 
 ### Example 1: Simple Path (Normal → Appeal → Normal)
 ```
 Round 0 (Normal, size 5): addresses [0, 1, 2, 3, 4]
 Round 1 (Appeal from normal, size 7): addresses [5, 6, 7, 8, 9, 10, 11]
-Round 2 (Normal, size 11): addresses [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+Round 2 (Normal, size 11): addresses [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 ```
 - Round 2 reuses all 12 previously used addresses but only needs 11
 
 ### Example 2: Complex Path with Mixed Appeals
 ```
 Round 0 (Normal, size 5): addresses [0, 1, 2, 3, 4]
-Round 1 (Appeal from normal, size 7): addresses [5, 6, 7, 8, 9, 10, 11]
-Round 2 (Unsuccessful appeal, size 11): addresses [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] 
-Round 3 (Successful appeal, size 23): addresses [23, 24, 25, 26, 27, 28, 29, 30, 31, ... , 46] 
+Round 1 (Unsuccessful Appeal from normal - either LEADER or VALIDATOR, size 7): addresses [5, 6, 7, 8, 9, 10, 11]
+Round 2 (Unsuccessful appeal - either LEADER or VALIDATOR, size 11): addresses [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] 
+Round 3 (Successful appeal - either LEADER or VALIDATOR, size 23): addresses [23, 24, 25, 26, 27, 28, 29, 30, 31, ... , 46] 
 Round 4 (Normal, size 47): addresses [1, 2, 3, 4, ... 46, 47] (pulled one new address to reach 47 which is the size we should use)
 ```
+
+**Note on Appeal Terminology**: In this document, "Unsuccessful appeal" and "Successful appeal" refer to both LEADER and VALIDATOR appeals. The address allocation algorithm treats both types identically - the distinction only matters for fee distribution, not for address selection.
 
 ## Edge Cases
 
@@ -188,33 +230,48 @@ def allocate_addresses(path, address_pool, removed_addresses=None):
 
 def allocate_normal_round(state, address_pool, removed_addresses):
     """Allocate addresses for a normal round."""
-    # Calculate blockchain index and size
-    blockchain_idx = state['normal_count'] * 2
-    size = NORMAL_ROUND_SIZES[min(blockchain_idx // 2, len(NORMAL_ROUND_SIZES) - 1)]
-    
-    # Get available addresses (cumulative minus leaders and removed)
-    available = (state['cumulative_active'] - 
-                set(state['previous_leaders']) - 
-                removed_addresses)
-    
-    # Sort for deterministic selection
-    sorted_available = sorted(available)
-    
-    # If first round or not enough addresses, pull new ones
+    # Calculate size based on how many normal rounds have occurred
+    # IMPORTANT: The size escalates based on the number of appeals that have occurred
+    # This ensures that after many appeals, the normal round is large enough to 
+    # accommodate the inflated cumulative pool
     if state['normal_count'] == 0:
+        # First normal round always uses index 0 (size 5)
+        size_idx = 0
+    else:
+        # Subsequent normal rounds escalate based on appeal count
+        # After 1 appeal: use NORMAL_ROUND_SIZES[1] (size 11)
+        # After 2 appeals: use NORMAL_ROUND_SIZES[2] (size 23)
+        # This matches the blockchain index pattern where appeals push normal rounds
+        # to higher security tiers
+        size_idx = state['appeal_count']
+    
+    size = NORMAL_ROUND_SIZES[min(size_idx, len(NORMAL_ROUND_SIZES) - 1)]
+    
+    if state['normal_count'] == 0:
+        # First normal round: pull new addresses starting from index 0
         addresses = pull_new_addresses(state, address_pool, removed_addresses, size)
     else:
+        # Subsequent normal rounds: use cumulative active set
+        # Get available addresses (cumulative minus previous leaders and removed)
+        available = (state['cumulative_active'] - 
+                    set(state['previous_leaders']) - 
+                    removed_addresses)
+        
+        # Sort for deterministic selection
+        sorted_available = sorted(list(available))
+        
         if len(sorted_available) >= size:
+            # Have enough addresses in the pool
             addresses = sorted_available[:size]
         else:
-            # Use all available and pull new ones
-            addresses = sorted_available
+            # Need more addresses
+            addresses = sorted_available[:]
             needed = size - len(addresses)
             new_addrs = pull_new_addresses(state, address_pool, removed_addresses, needed)
             addresses.extend(new_addrs)
-            addresses.sort()
+            addresses = sorted(addresses)  # Re-sort after adding new addresses
     
-    # Record leader (first address)
+    # Record leader (first address after sorting)
     if addresses:
         state['previous_leaders'].append(addresses[0])
     
@@ -268,6 +325,29 @@ def is_appeal_round(round_type):
 - Verify address pool exhaustion handling
 - Ensure proper leader rotation in normal rounds
 - Validate shrinking behavior in appeal chains
+
+## Testing
+
+The address allocation algorithm is thoroughly tested in `tests/round_combinations/test_address_allocation.py`. This test file verifies:
+
+1. **Basic address allocation patterns**
+2. **Leader rotation in normal rounds**
+3. **Consecutive unsuccessful appeals with -2 rule**
+4. **Address pool exhaustion handling**
+5. **Removed addresses (slashed/idle) exclusion**
+
+### Running the Tests
+
+```bash
+pytest tests/round_combinations/test_address_allocation.py -v
+```
+
+All 10 tests should pass, confirming that:
+- Addresses are allocated deterministically
+- The cumulative pool is maintained correctly
+- Leaders rotate as expected
+- The -2 rule is applied for consecutive unsuccessful appeals
+- Edge cases are handled properly
 
 ## Validation and Testing Scenarios
 

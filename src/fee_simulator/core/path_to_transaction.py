@@ -319,12 +319,13 @@ def path_to_transaction_results(
     for i, node in enumerate(path[1:-1]):
         if is_appeal_node(node):
             # Determine if previous was unsuccessful appeal
+            # Note: path[i] is the previous node because we're iterating path[1:-1]
+            # so path[0] is START, path[i] is the node before current, path[i+1] is current
+            previous_node = path[i] if i > 0 else None
             prev_was_unsuccessful = (
-                i > 0
-                and is_appeal_node(
-                    path[i]
-                )  # Previous node (i, not i-1 because of START)
-                and "UNSUCCESSFUL" in path[i]
+                previous_node is not None
+                and is_appeal_node(previous_node)
+                and "UNSUCCESSFUL" in previous_node
             )
 
             # Calculate appeal size

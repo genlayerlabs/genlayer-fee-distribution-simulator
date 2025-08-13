@@ -12,6 +12,7 @@ from src.fee_simulator.core.majority import (
 )
 
 from src.fee_simulator.metrics.address_metrics import compute_current_stake
+from src.fee_simulator.protocol.constants import DETERMINISTIC_VIOLATION_PENALTY_COEFFICIENT
 
 
 def handle_deterministic_violations(
@@ -36,14 +37,13 @@ def handle_deterministic_violations(
                 # Slash validators in hash minority
                 for addr in hash_minority_addresses:
                     if normalize_vote(votes[addr]) != "Idle":
-                        # Leader is slashed more (5%) than validators (1%)
+                        # All validators are slashed the same percentage for deterministic violations
                         current_stake = compute_current_stake(addr, fee_events)
-                        slash_rate = 0.05 if addr == next(iter(votes.keys())) else 0.01
                         fee_events.append(
                             FeeEvent(
                                 sequence_id=new_event_index,
                                 address=addr,
-                                slashed=current_stake * (1 - slash_rate),
+                                slashed=int(current_stake * DETERMINISTIC_VIOLATION_PENALTY_COEFFICIENT),
                             )
                         )
                         new_event_index += 1

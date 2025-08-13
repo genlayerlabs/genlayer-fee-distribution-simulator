@@ -4,6 +4,8 @@
 
 The GenLayer Fee Distribution Simulator is a comprehensive Python-based system for modeling and testing fee distribution mechanisms in the GenLayer blockchain validator network. It uses a path-based approach to exhaustively test all possible transaction scenarios, ensuring correctness through rigorous invariant checking.
 
+To understand how this works, one should understand how does the voting process at genlayer works, and how appeals work, etc. So [here are the docs for that](docs/BASIC_CONCEPTS.md).
+
 The simulator follows a deterministic flow: **TRANSITIONS_GRAPH → Path → TransactionRoundResults → Round Labels → Fee Distribution**, where each step is purely functional and content-based rather than index-based.
 
 ## Key Features
@@ -264,7 +266,7 @@ Features:
 - **Build custom paths**: Interactively select nodes to create your transaction path
 - **Predefined examples**: Quick access to simple, appeal, and complex scenarios
 - **Full visualization**: See transaction details, fee distribution, and summary tables
-- **Invariant verification**: Automatically checks all 22 invariants
+- **Invariant verification**: Automatically checks all 24 invariants
 - **Parameter customization**: Set custom leader and validator timeout values
 
 The interactive simulator provides a menu-driven interface where you can:
@@ -296,7 +298,7 @@ python examples/04_complex_path.py
 Each example script:
 - Shows a specific transaction scenario
 - Displays all visualization tables (transaction details, fee distribution, summary)
-- Verifies all 22 invariants
+- Verifies all 24 invariants
 - Provides detailed explanations of the outcomes
 
 ### Example Output
@@ -305,7 +307,7 @@ When you run an example, you'll see:
 1. **Transaction Details**: Round-by-round vote breakdown
 2. **Fee Distribution**: Detailed fee events for each participant
 3. **Summary Table**: Consolidated view of all participants' earnings and costs
-4. **Invariant Verification**: Confirmation that all 22 invariants pass
+4. **Invariant Verification**: Confirmation that all 24 invariants pass
 5. **Outcome Explanation**: Clear description of what happened and why
 
 These examples are perfect for:
@@ -370,36 +372,38 @@ The test suite covers:
 - **Scenario-Based Tests**: Test specific round types (e.g., normal rounds, successful/unsuccessful appeals)
 - **Property-Based Tests**: Use Hypothesis to generate test cases for round labeling
 - **Path-Based Tests**: Exhaustively test all paths through TRANSITIONS_GRAPH
-- **Invariant Tests**: Verify 22 invariants for every test case
+- **Invariant Tests**: Verify 24 invariants for every test case
 - **Slashing Tests**: Verify slashing for idleness and deterministic violations
 - **Edge Cases**: Handle empty rounds, undetermined majorities, and consecutive appeals
 
 ## Invariants
 
-The system maintains 22 invariants that are checked for every test:
+The system maintains 24 invariants that are checked for every test:
 
-1. Conservation of value
-2. Non-negative balances
-3. Appeal bond coverage
-4. Majority/minority consistency
-5. Role exclusivity
-6. Sequential processing
-7. Appeal follows normal
-8. Burn non-negativity
-9. Refund non-negativity
-10. Vote consistency
-11. Idle slashing correctness
-12. Deterministic violation slashing
-13. Leader timeout earning limits
-14. Appeal bond consistency
-15. Round size consistency
-16. Fee event ordering
-17. Stake immutability
-18. Round label validity
-19. No double penalties
-20. Earning justification
-21. Cost accounting
-22. Slashing proportionality
+1. **Conservation of value** - Total in = Total out
+2. **Appeal bond coverage** - Bonds fully distributed
+3. **Majority/minority consistency** - Vote counts accurate
+4. **Sequential processing** - Rounds processed in order
+5. **Appeal follows normal** - Appeals only after normal rounds
+6. **Round label validity** - Only valid labels used
+7. **Appellant consistency** - Appellant role properly assigned
+8. **Burn non-negativity** - Burns are non-negative
+9. **No double penalties** - Single penalty per violation
+10. **Bounded slashing impact** - Slashing within reasonable bounds
+11. **No profit from griefing** - Can't profit from attacks
+12. **Cost of contention** - Contention has economic cost
+13. **Griefing amplification** - Attack costs scale appropriately
+14. **Progress monotonicity** - System makes forward progress
+15. **Resource pool integrity** - Resource pools remain consistent
+16. **Irreversibility of finality** - Finalized decisions are permanent
+17. **Temporal event consistency** - Events ordered in time
+18. **Refund non-negativity** - Refunds are non-negative
+19. **Vote consistency** - Votes match transaction data
+20. **Idle slashing** - Idle validators properly penalized
+21. **Deterministic violation slashing** - Hash mismatches penalized
+22. **Leader timeout earning** - Bounded leader earnings
+23. **Appeal bond consistency** - Bond amounts match round sizes
+24. **Round size consistency** - Sizes follow NORMAL/APPEAL arrays
 
 ## Use Cases
 
