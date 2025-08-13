@@ -77,7 +77,7 @@ def main():
     print("="*80)
     try:
         check_all_invariants(fee_events, budget, transaction_results, labels)
-        print("✅ All 22 invariants passed!")
+        print("✅ All 24 invariants passed!")
     except Exception as e:
         print(f"❌ Invariant violation: {e}")
     
@@ -88,9 +88,9 @@ def main():
     print("In this scenario:")
     print("1. The leader times out and doesn't submit a result")
     print("2. All validators also timeout waiting for the leader")
-    print("3. Leader earns 50% of their timeout value")
-    print("4. Validators each earn their full timeout value")
-    print("5. This represents a failed round but participants still earn for participation")
+    print("3. Leader earns 50% of their timeout value as compensation")
+    print("4. Validators don't earn anything in this round (no fee events generated)")
+    print("5. This represents a failed round with minimal compensation to the leader")
     
     print("\n" + "="*80)
     print(" TRANSACTION COMPLETE ")

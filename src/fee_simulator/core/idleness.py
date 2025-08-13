@@ -12,6 +12,7 @@ from src.fee_simulator.core.majority import (
 )
 
 from src.fee_simulator.metrics.address_metrics import compute_current_stake
+from src.fee_simulator.protocol.constants import IDLE_PENALTY_COEFFICIENT
 
 
 def replace_idle_participants(
@@ -42,7 +43,7 @@ def replace_idle_participants(
                 FeeEvent(
                     sequence_id=event_sequence.next_id(),
                     address=addr,
-                    slashed=current_stake * 0.01,
+                    slashed=int(current_stake * IDLE_PENALTY_COEFFICIENT),
                 )
             )
 

@@ -148,9 +148,9 @@ NORMAL_ROUND_SIZES = [5, 11, 23, 47, 95, 191, 383, 767, 1000]
 APPEAL_ROUND_SIZES = [7, 13, 25, 49, 97, 193, 385, 769, 1000]
 
 # Penalty coefficients
-PENALTY_REWARD_COEFFICIENT = 1
-IDLE_PENALTY_COEFFICIENT = 10
-DETERMINISTIC_VIOLATION_PENALTY_COEFFICIENT = 100
+PENALTY_REWARD_COEFFICIENT = 1  # Multiplier for minority validator penalties
+IDLE_PENALTY_COEFFICIENT = 0.01  # 1% of stake for idleness
+DETERMINISTIC_VIOLATION_PENALTY_COEFFICIENT = 0.1  # 10% of stake for hash mismatches
 ```
 
 ### Vote Types
@@ -259,7 +259,7 @@ FeeEvent(
 - Minority validators: Burned `PENALTY_REWARD_COEFFICIENT * validator_timeout`
 
 #### Successful Appeal
-- Appealant: Earns `appeal_bond + leader_timeout` (leader appeal) or `appeal_bond` (validator appeal)
+- Appealant: Earns `1.5 * appeal_bond` (50% return on investment)
 - Validators: Distribution depends on appeal type
 
 #### Split Bond (Undetermined after unsuccessful appeal)
@@ -287,7 +287,7 @@ graph TD
     P --> CP[Combination Paths]
     P --> EP[Edge Cases]
     
-    V --> CI[22 Invariants]
+    V --> CI[24 Invariants]
     
     E --> PE[Path Export]
     E --> PV[Path Verification]
@@ -322,31 +322,33 @@ graph TD
    - Test deterministic violation penalties
    - Test tribunal appeals
 
-### 22 Invariants
-The system maintains critical invariants checked in `comprehensive_invariants.py`:
+### 24 Invariants
+The system maintains critical invariants checked in `checker.py`:
 
-1. Conservation of value
-2. Non-negative balances
-3. Appeal bond coverage
-4. Majority/minority consistency
-5. Role exclusivity
-6. Sequential processing
-7. Appeal follows normal
-8. Burn non-negativity
-9. Refund non-negativity
-10. Vote consistency
-11. Idle slashing correctness
-12. Deterministic violation slashing
-13. Leader timeout earning limits
-14. Appeal bond consistency
-15. Round size consistency
-16. Fee event ordering
-17. Stake immutability
-18. Round label validity
-19. No double penalties
-20. Earning justification
-21. Cost accounting
-22. Slashing proportionality
+1. **Conservation of value** - Total in = Total out
+2. **Appeal bond coverage** - Bonds fully distributed
+3. **Majority/minority consistency** - Vote counts accurate
+4. **Sequential processing** - Rounds processed in order
+5. **Appeal follows normal** - Appeals only after normal rounds
+6. **Round label validity** - Only valid labels used
+7. **Appellant consistency** - Appellant role properly assigned
+8. **Burn non-negativity** - Burns are non-negative
+9. **No double penalties** - Single penalty per violation
+10. **Bounded slashing impact** - Slashing within reasonable bounds
+11. **No profit from griefing** - Can't profit from attacks
+12. **Cost of contention** - Contention has economic cost
+13. **Griefing amplification** - Attack costs scale appropriately
+14. **Progress monotonicity** - System makes forward progress
+15. **Resource pool integrity** - Resource pools remain consistent
+16. **Irreversibility of finality** - Finalized decisions are permanent
+17. **Temporal event consistency** - Events ordered in time
+18. **Refund non-negativity** - Refunds are non-negative
+19. **Vote consistency** - Votes match transaction data
+20. **Idle slashing** - Idle validators properly penalized
+21. **Deterministic violation slashing** - Hash mismatches penalized
+22. **Leader timeout earning** - Bounded leader earnings
+23. **Appeal bond consistency** - Bond amounts match round sizes
+24. **Round size consistency** - Sizes follow NORMAL/APPEAL arrays
 
 ### Test Execution Flow
 ```python
@@ -385,7 +387,7 @@ check_comprehensive_invariants(fee_events, transaction, labels)
       "b": 0                      // burned
     }
   },
-  "invariants": 4194303,          // Bitfield (all 22 bits set)
+  "invariants": 16777215,         // Bitfield (all 24 bits set)
   "hash": "0cd0354f..."           // Path hash
 }
 ```
@@ -483,30 +485,18 @@ These sizes follow an exponential growth pattern (approximately doubling) to:
 - Scale security with transaction importance
 - Balance between decentralization and efficiency
 
-### Validator Selection Patterns
+### Address Allocation Algorithm
 
-There are two main patterns for validator selection depending on appeal outcomes:
+The system uses a sophisticated address allocation algorithm that determines which addresses participate in each round. The complete algorithm is documented in detail in `docs/ADDRESS_ALLOCATION_ALGORITHM.md`.
 
-#### Pattern 1: Successful Appeal
-When an appeal is successful, validators are combined:
-```
-Next round size = Previous normal round + Appeal round - 1
-```
-Where the `-1` represents excluding the original leader who was appealed.
+#### Key Principles:
 
-#### Pattern 2: Chained Unsuccessful Appeals
-When appeals are unsuccessful and chained, the system progresses through the arrays independently:
-```
-Normal rounds: Use next index in NORMAL_ROUND_SIZES
-Appeal rounds: Use next index in APPEAL_ROUND_SIZES
-```
+1. **Normal Rounds**: Reuse addresses from the cumulative active set of all previous rounds (excluding past leaders)
+2. **Appeal Rounds**: Always pull entirely new addresses that haven't been used yet
+3. **Leader Rotation**: Previous normal round leaders are excluded from future normal rounds
+4. **Deterministic Selection**: The algorithm is fully deterministic given the same path
 
-### Key Properties
-
-1. **Leader Exclusion**: Only occurs after successful appeals
-2. **Independent Progression**: Unsuccessful appeals don't affect round size calculation
-3. **Array Index Tracking**: System maintains separate indices for normal and appeal rounds
-4. **Validator Pool Growth**: New validators are added as needed to meet round sizes
+For full details including edge cases, pseudocode, and examples, see [ADDRESS_ALLOCATION_ALGORITHM.md](./ADDRESS_ALLOCATION_ALGORITHM.md)
 
 ## Future Enhancements
 

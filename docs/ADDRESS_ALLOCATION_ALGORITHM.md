@@ -83,11 +83,13 @@ Round 2 (Normal, size 11): addresses [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ### Example 2: Complex Path with Mixed Appeals
 ```
 Round 0 (Normal, size 5): addresses [0, 1, 2, 3, 4]
-Round 1 (Appeal from normal, size 7): addresses [5, 6, 7, 8, 9, 10, 11]
-Round 2 (Unsuccessful appeal, size 11): addresses [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] 
-Round 3 (Successful appeal, size 23): addresses [23, 24, 25, 26, 27, 28, 29, 30, 31, ... , 46] 
+Round 1 (Appeal from normal - either LEADER or VALIDATOR, size 7): addresses [5, 6, 7, 8, 9, 10, 11]
+Round 2 (Unsuccessful appeal - either LEADER or VALIDATOR, size 11): addresses [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] 
+Round 3 (Successful appeal - either LEADER or VALIDATOR, size 23): addresses [23, 24, 25, 26, 27, 28, 29, 30, 31, ... , 46] 
 Round 4 (Normal, size 47): addresses [1, 2, 3, 4, ... 46, 47] (pulled one new address to reach 47 which is the size we should use)
 ```
+
+**Note on Appeal Terminology**: In this document, "Unsuccessful appeal" and "Successful appeal" refer to both LEADER and VALIDATOR appeals. The address allocation algorithm treats both types identically - the distinction only matters for fee distribution, not for address selection.
 
 ## Edge Cases
 

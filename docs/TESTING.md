@@ -14,7 +14,7 @@ The GenLayer Fee Distribution Simulator employs a comprehensive testing strategy
   - Integration tests for complete workflows
   - Property-based tests using Hypothesis
   - Exhaustive path testing (484 paths for length ≤7)
-  - Invariant verification (22 invariants checked)
+  - Invariant verification (24 invariants checked)
 
 ## Environment Setup
 
@@ -184,29 +184,31 @@ def test_round_labeling_properties(num_rounds, appeal_pattern):
 ### 5. Invariant Testing
 **Purpose**: Ensure mathematical and business rules always hold
 
-**22 Core Invariants**:
+**24 Core Invariants**:
 1. **Conservation of value**: Total in = Total out
-2. **Non-negative balances**: No negative balances
-3. **Appeal bond coverage**: Bonds fully distributed
-4. **Majority/minority consistency**: Vote counts accurate
-5. **Role exclusivity**: One role per participant per round
-6. **Sequential processing**: Rounds processed in order
-7. **Appeal follows normal**: Appeals only after normal rounds
+2. **Appeal bond coverage**: Bonds fully distributed
+3. **Majority/minority consistency**: Vote counts accurate
+4. **Sequential processing**: Rounds processed in order
+5. **Appeal follows normal**: Appeals only after normal rounds
+6. **Round label validity**: Only valid labels used
+7. **Appellant consistency**: Appellant role properly assigned
 8. **Burn non-negativity**: Burns are non-negative
-9. **Refund non-negativity**: Refunds are non-negative
-10. **Vote consistency**: Votes match transaction data
-11. **Idle slashing correctness**: Idle penalties applied correctly
-12. **Deterministic violation slashing**: Hash mismatches penalized
-13. **Leader timeout earning limits**: Bounded leader earnings
-14. **Appeal bond consistency**: Bond amounts match round sizes
-15. **Round size consistency**: Sizes follow NORMAL/APPEAL arrays
-16. **Fee event ordering**: Sequential IDs maintained
-17. **Stake immutability**: Stakes don't change
-18. **Round label validity**: Only valid labels used
-19. **No double penalties**: Single penalty per violation
-20. **Earning justification**: All earnings have valid reason
-21. **Cost accounting**: All costs accounted for
-22. **Slashing proportionality**: Penalties proportional to offense
+9. **No double penalties**: Single penalty per violation
+10. **Bounded slashing impact**: Slashing within reasonable bounds
+11. **No profit from griefing**: Can't profit from attacks
+12. **Cost of contention**: Contention has economic cost
+13. **Griefing amplification**: Attack costs scale appropriately
+14. **Progress monotonicity**: System makes forward progress
+15. **Resource pool integrity**: Resource pools remain consistent
+16. **Irreversibility of finality**: Finalized decisions are permanent
+17. **Temporal event consistency**: Events ordered in time
+18. **Refund non-negativity**: Refunds are non-negative
+19. **Vote consistency**: Votes match transaction data
+20. **Idle slashing**: Idle validators properly penalized
+21. **Deterministic violation slashing**: Hash mismatches penalized
+22. **Leader timeout earning**: Bounded leader earnings
+23. **Appeal bond consistency**: Bond amounts match round sizes
+24. **Round size consistency**: Sizes follow NORMAL/APPEAL arrays
 
 ## Test Organization Patterns
 
