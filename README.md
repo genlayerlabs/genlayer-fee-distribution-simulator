@@ -4,7 +4,7 @@
 
 The GenLayer Fee Distribution Simulator is a comprehensive Python-based system for modeling and testing fee distribution mechanisms in the GenLayer blockchain validator network. It uses a path-based approach to exhaustively test all possible transaction scenarios, ensuring correctness through rigorous invariant checking.
 
-To understand how this works, one should understand how does the voting process at genlayer works, and how appeals work, etc. So here are the docs for this @docs/BASIC_CONCEPTS.md
+To understand how this works, one should understand how does the voting process at genlayer works, and how appeals work, etc. So [here are the docs for that](docs/BASIC_CONCEPTS.md).
 
 The simulator follows a deterministic flow: **TRANSITIONS_GRAPH → Path → TransactionRoundResults → Round Labels → Fee Distribution**, where each step is purely functional and content-based rather than index-based.
 
