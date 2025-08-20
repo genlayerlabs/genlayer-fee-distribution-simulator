@@ -1,0 +1,79 @@
+{
+    "category": "leader_timeout_appeal_unsuccessful",
+    "total_test_cases": 1,
+    "unique_patterns": 1,
+    "test_cases": [
+        {
+            "description": "Test Case: LEADER_TIMEOUT -> LEADER_APPEAL_TIMEOUT_UNSUCCESSFUL -> LEADER_TIMEOUT",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x33114e...27ea67",
+                        "stake": "2000000",
+                        "vote": "NA"
+                    },
+                    {
+                        "address": "0x70df26...06e278",
+                        "stake": "2000000",
+                        "vote": "NA"
+                    },
+                    {
+                        "address": "0x7190ec...136788",
+                        "stake": "2000000",
+                        "vote": "NA"
+                    },
+                    {
+                        "address": "0xe0a3eb...d49d07",
+                        "stake": "2000000",
+                        "vote": "NA"
+                    },
+                    {
+                        "address": "0xec7c5c...e781a9",
+                        "stake": "2000000",
+                        "vote": "LEADER_TIMEOUT"
+                    }
+                ],
+                "leader": "0xec7c5c...e781a9",
+                "sender": "0x441666...3e0f19"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0xec7c5c...e781a9",
+                        "amount": "50"
+                    },
+                    {
+                        "address": "0x01e756...357a59",
+                        "amount": "50"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0x1c7445...d88904",
+                        "amount": "1450"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0x441666...3e0f19",
+                    "net_change": "5600"
+                }
+            }
+        }
+    ],
+    "statistics": {
+        "average_validators": 5.0,
+        "total_rewards_distributed": 100,
+        "total_penalties_applied": 1450,
+        "sender_net_changes": {
+            "positive": 1,
+            "negative": 0,
+            "neutral": 0
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "total_test_cases": 33,
+    "categories": {
+        "validator_appeal_successful": {
+            "count": 14,
+            "unique_patterns": 14
+        },
+        "validator_appeal_unsuccessful": {
+            "count": 4,
+            "unique_patterns": 4
+        },
+        "leader_appeal_successful": {
+            "count": 8,
+            "unique_patterns": 8
+        },
+        "leader_appeal_unsuccessful": {
+            "count": 2,
+            "unique_patterns": 2
+        },
+        "leader_timeout_appeal_successful": {
+            "count": 4,
+            "unique_patterns": 4
+        },
+        "leader_timeout_appeal_unsuccessful": {
+            "count": 1,
+            "unique_patterns": 1
+        }
+    }
+}

@@ -1,0 +1,78 @@
+{
+    "category": "leader_timeout_appeal_unsuccessful",
+    "total_cases": 1,
+    "patterns": {
+        "LEADER_TIMEOUT -> LEADER_APPEAL_TIMEOUT_UNSUCCESSFUL -> LEADER_TIMEOUT": {
+            "count": 1,
+            "examples": [
+                {
+                    "description": "Test Case: LEADER_TIMEOUT -> LEADER_APPEAL_TIMEOUT_UNSUCCESSFUL -> LEADER_TIMEOUT",
+                    "initialState": {
+                        "validators": [
+                            {
+                                "address": "validator1",
+                                "stake": "2000000",
+                                "vote": "NA"
+                            },
+                            {
+                                "address": "validator2",
+                                "stake": "2000000",
+                                "vote": "NA"
+                            },
+                            {
+                                "address": "validator3",
+                                "stake": "2000000",
+                                "vote": "NA"
+                            },
+                            {
+                                "address": "validator4",
+                                "stake": "2000000",
+                                "vote": "NA"
+                            },
+                            {
+                                "address": "validator5",
+                                "stake": "2000000",
+                                "vote": "LEADER_TIMEOUT"
+                            }
+                        ],
+                        "leader": "validator5",
+                        "sender": "sender"
+                    },
+                    "actions": [
+                        {
+                            "type": "DISTRIBUTE_FEES",
+                            "epoch": 1
+                        }
+                    ],
+                    "expectedState": {
+                        "rewards": [
+                            {
+                                "address": "validator5",
+                                "amount": "50"
+                            },
+                            {
+                                "address": "validator6",
+                                "amount": "50"
+                            }
+                        ],
+                        "penalties": [
+                            {
+                                "address": "validator7",
+                                "amount": "1450"
+                            }
+                        ],
+                        "sender_outcome": {
+                            "address": "sender",
+                            "net_change": "5600"
+                        }
+                    }
+                }
+            ],
+            "summary": {
+                "rewards": 100,
+                "penalties": 1450,
+                "sender_outcomes": 5600
+            }
+        }
+    }
+}

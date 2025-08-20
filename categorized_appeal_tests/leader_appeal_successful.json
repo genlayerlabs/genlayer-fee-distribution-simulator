@@ -1,0 +1,832 @@
+{
+    "category": "leader_appeal_successful",
+    "total_test_cases": 8,
+    "unique_patterns": 8,
+    "test_cases": [
+        {
+            "description": "Test Case: LEADER_RECEIPT_UNDETERMINED -> LEADER_APPEAL_SUCCESSFUL -> LEADER_RECEIPT_MAJORITY_AGREE",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x0a482a...157d79",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0x1a8fd1...559e78",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0x740925...077efb",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    },
+                    {
+                        "address": "0xa3a7a4...0f8c1a",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xe01c3c...d87c03",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    }
+                ],
+                "leader": "0x740925...077efb",
+                "sender": "0xbc525c...ea4c69"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0xdd8651...1050d8",
+                        "amount": "2250"
+                    },
+                    {
+                        "address": "0x0a482a...157d79",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1a8fd1...559e78",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x200d3c...c6b292",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x2ec22f...7703ee",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x6d0285...02e516",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xa3a7a4...0f8c1a",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x0a482a...157d79",
+                        "amount": "100"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0xa705fa...df871f",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xd05a43...560a61",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xe2646a...00fc71",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xbd3acf...222185",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xe01c3c...d87c03",
+                        "amount": "200"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0xbc525c...ea4c69",
+                    "net_change": "3600"
+                }
+            }
+        },
+        {
+            "description": "Test Case: LEADER_RECEIPT_UNDETERMINED -> LEADER_APPEAL_SUCCESSFUL -> LEADER_TIMEOUT",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x03046f...4905d2",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0x5bf145...22729a",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    },
+                    {
+                        "address": "0x73439c...f6effc",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0xd235f7...5cf031",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0xfb9f17...df4195",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    }
+                ],
+                "leader": "0x5bf145...22729a",
+                "sender": "0x1c52b8...64162e"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0x5bf145...22729a",
+                        "amount": "100"
+                    },
+                    {
+                        "address": "0x5bf145...22729a",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xd235f7...5cf031",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xfb9f17...df4195",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x03046f...4905d2",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x73439c...f6effc",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xaf8300...9fdb8e",
+                        "amount": "2250"
+                    },
+                    {
+                        "address": "0x015619...0f825d",
+                        "amount": "50"
+                    }
+                ],
+                "penalties": [],
+                "sender_outcome": {
+                    "address": "0x1c52b8...64162e",
+                    "net_change": "3750"
+                }
+            }
+        },
+        {
+            "description": "Test Case: LEADER_RECEIPT_MAJORITY_DISAGREE -> LEADER_APPEAL_SUCCESSFUL -> LEADER_TIMEOUT",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x70facd...d82ae8",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0x768f7f...b2a59d",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0xbcbd5d...15e668",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xf5281e...a203dd",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0xf8dad4...ef5340",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    }
+                ],
+                "leader": "0xf8dad4...ef5340",
+                "sender": "0x746081...2f5b92"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0xf8dad4...ef5340",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xbcbd5d...15e668",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x70facd...d82ae8",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xf8dad4...ef5340",
+                        "amount": "100"
+                    },
+                    {
+                        "address": "0xb3c37b...8b0e1e",
+                        "amount": "2250"
+                    },
+                    {
+                        "address": "0x2a1e78...df1abc",
+                        "amount": "50"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0xf5281e...a203dd",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x768f7f...b2a59d",
+                        "amount": "200"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0x746081...2f5b92",
+                    "net_change": "4150"
+                }
+            }
+        },
+        {
+            "description": "Test Case: LEADER_RECEIPT_MAJORITY_DISAGREE -> LEADER_APPEAL_SUCCESSFUL -> LEADER_RECEIPT_MAJORITY_AGREE",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x029dfb...c14045",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0x1b1cba...a44b1b",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xa43af0...0ac36f",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    },
+                    {
+                        "address": "0xc198d8...e8fac5",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xe8ebcf...76adbb",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    }
+                ],
+                "leader": "0xa43af0...0ac36f",
+                "sender": "0xccf893...5f0c91"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0x51b0ea...b0ce77",
+                        "amount": "2250"
+                    },
+                    {
+                        "address": "0x029dfb...c14045",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x08af39...defa32",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1a8572...dc03f1",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1b1cba...a44b1b",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x2fa068...b3d429",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x462199...64bef7",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x029dfb...c14045",
+                        "amount": "100"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0x501d0f...db3ebf",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xe8ebcf...76adbb",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x806a8a...51c2ba",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xc198d8...e8fac5",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x48a8ba...6ab5f9",
+                        "amount": "200"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0xccf893...5f0c91",
+                    "net_change": "3600"
+                }
+            }
+        },
+        {
+            "description": "Test Case: LEADER_RECEIPT_UNDETERMINED -> LEADER_APPEAL_SUCCESSFUL -> LEADER_RECEIPT_MAJORITY_TIMEOUT",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x24da91...7a6576",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    },
+                    {
+                        "address": "0x838d5c...7cecbc",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0x88f100...635eec",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0xf3b9d2...335276",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0xf593c3...9676d3",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    }
+                ],
+                "leader": "0x24da91...7a6576",
+                "sender": "0xcf5398...98c3ea"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0xa854c2...42cd11",
+                        "amount": "2250"
+                    },
+                    {
+                        "address": "0x1721c3...6f0bb7",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x3509ef...228fbd",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x4eaa8f...ec44f0",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x838d5c...7cecbc",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x88f100...635eec",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xa234fa...61483f",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1721c3...6f0bb7",
+                        "amount": "100"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0xc9efd5...9a49a4",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xa24def...b016cf",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xe049a7...fec588",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xf593c3...9676d3",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xf3b9d2...335276",
+                        "amount": "200"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0xcf5398...98c3ea",
+                    "net_change": "3600"
+                }
+            }
+        },
+        {
+            "description": "Test Case: LEADER_RECEIPT_MAJORITY_DISAGREE -> LEADER_APPEAL_SUCCESSFUL -> LEADER_RECEIPT_MAJORITY_DISAGREE",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x01bd81...492337",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0xc251c5...f72eaa",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xc6be16...cc7a39",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0xed6a65...160ea7",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    },
+                    {
+                        "address": "0xf8e17f...101f23",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    }
+                ],
+                "leader": "0xed6a65...160ea7",
+                "sender": "0x74bab9...6386ae"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0xed6a65...160ea7",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xf8e17f...101f23",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xc251c5...f72eaa",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xed6a65...160ea7",
+                        "amount": "100"
+                    },
+                    {
+                        "address": "0x01bd81...492337",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x157866...80c077",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x3c530f...59b3d1",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x4584b8...0be5cb",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x473a61...02d401",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x71582f...6fef1a",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x01bd81...492337",
+                        "amount": "100"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0x01bd81...492337",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xc6be16...cc7a39",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xc6be16...cc7a39",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xc251c5...f72eaa",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x74b24b...f5e3f8",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xca20de...05362a",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xf8e17f...101f23",
+                        "amount": "200"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0x74bab9...6386ae",
+                    "net_change": "4950"
+                }
+            }
+        },
+        {
+            "description": "Test Case: LEADER_RECEIPT_UNDETERMINED -> LEADER_APPEAL_SUCCESSFUL -> LEADER_RECEIPT_MAJORITY_DISAGREE",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x18fd1f...697a5d",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0x3fd137...0ee5fb",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0xad579d...fac2a7",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0xaffc73...c25090",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xc448a6...ac3eda",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    }
+                ],
+                "leader": "0xc448a6...ac3eda",
+                "sender": "0x2142ff...33e062"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0xc448a6...ac3eda",
+                        "amount": "100"
+                    },
+                    {
+                        "address": "0xc448a6...ac3eda",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x3fd137...0ee5fb",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xaffc73...c25090",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x18fd1f...697a5d",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xad579d...fac2a7",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x117184...48652e",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x18fd1f...697a5d",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x3fd137...0ee5fb",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x400ce4...6187ab",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x54d3d2...30d381",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x6db5ae...b6e167",
+                        "amount": "233"
+                    },
+                    {
+                        "address": "0x117184...48652e",
+                        "amount": "100"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0xea7483...9bfeb9",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xee8a78...bd3051",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xad579d...fac2a7",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xaffc73...c25090",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xa0dd9f...1cb562",
+                        "amount": "200"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0x2142ff...33e062",
+                    "net_change": "4550"
+                }
+            }
+        },
+        {
+            "description": "Test Case: LEADER_RECEIPT_MAJORITY_DISAGREE -> LEADER_APPEAL_SUCCESSFUL -> LEADER_RECEIPT_MAJORITY_TIMEOUT",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x2ced57...6c0647",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    },
+                    {
+                        "address": "0x3e7afe...64b2cc",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0x663edd...6be9cc",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0xb50e09...721581",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xf0a4ed...fe2427",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    }
+                ],
+                "leader": "0x2ced57...6c0647",
+                "sender": "0x82bdeb...b1264f"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0x9cd24b...acbf17",
+                        "amount": "2250"
+                    },
+                    {
+                        "address": "0x1255f1...15cec8",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1466a3...d1daef",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1a7cc9...107edf",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x314d6c...d34e29",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x3e7afe...64b2cc",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x663edd...6be9cc",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1255f1...15cec8",
+                        "amount": "100"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0xb0af64...69c226",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xfb932f...f1d608",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xb2026c...4de560",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xf0a4ed...fe2427",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xb50e09...721581",
+                        "amount": "200"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0x82bdeb...b1264f",
+                    "net_change": "3600"
+                }
+            }
+        }
+    ],
+    "statistics": {
+        "average_validators": 5.0,
+        "total_rewards_distributed": 25396,
+        "total_penalties_applied": 6800,
+        "sender_net_changes": {
+            "positive": 8,
+            "negative": 0,
+            "neutral": 0
+        }
+    }
+}

@@ -1,0 +1,566 @@
+{
+    "category": "validator_appeal_unsuccessful",
+    "total_cases": 4,
+    "patterns": {
+        "LEADER_RECEIPT_MAJORITY_TIMEOUT -> VALIDATOR_APPEAL_UNSUCCESSFUL": {
+            "count": 1,
+            "examples": [
+                {
+                    "description": "Test Case: LEADER_RECEIPT_MAJORITY_TIMEOUT -> VALIDATOR_APPEAL_UNSUCCESSFUL",
+                    "initialState": {
+                        "validators": [
+                            {
+                                "address": "validator1",
+                                "stake": "2000000",
+                                "vote": "DISAGREE"
+                            },
+                            {
+                                "address": "validator2",
+                                "stake": "2000000",
+                                "vote": "LEADER_RECEIPT"
+                            },
+                            {
+                                "address": "validator3",
+                                "stake": "2000000",
+                                "vote": "AGREE"
+                            },
+                            {
+                                "address": "validator4",
+                                "stake": "2000000",
+                                "vote": "TIMEOUT"
+                            },
+                            {
+                                "address": "validator5",
+                                "stake": "2000000",
+                                "vote": "TIMEOUT"
+                            }
+                        ],
+                        "leader": "validator2",
+                        "sender": "sender"
+                    },
+                    "actions": [
+                        {
+                            "type": "DISTRIBUTE_FEES",
+                            "epoch": 1
+                        }
+                    ],
+                    "expectedState": {
+                        "rewards": [
+                            {
+                                "address": "validator2",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator5",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator4",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator2",
+                                "amount": "100"
+                            }
+                        ],
+                        "penalties": [
+                            {
+                                "address": "validator3",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator1",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator6",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator7",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator8",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator9",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator10",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator11",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator12",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator13",
+                                "amount": "1500"
+                            }
+                        ],
+                        "sender_outcome": {
+                            "address": "sender",
+                            "net_change": "4950"
+                        }
+                    }
+                }
+            ],
+            "summary": {
+                "rewards": 700,
+                "penalties": 3300,
+                "sender_outcomes": 4950
+            }
+        },
+        "LEADER_RECEIPT_MAJORITY_AGREE -> VALIDATOR_APPEAL_UNSUCCESSFUL": {
+            "count": 1,
+            "examples": [
+                {
+                    "description": "Test Case: LEADER_RECEIPT_MAJORITY_AGREE -> VALIDATOR_APPEAL_UNSUCCESSFUL",
+                    "initialState": {
+                        "validators": [
+                            {
+                                "address": "validator1",
+                                "stake": "2000000",
+                                "vote": "AGREE"
+                            },
+                            {
+                                "address": "validator2",
+                                "stake": "2000000",
+                                "vote": "AGREE"
+                            },
+                            {
+                                "address": "validator3",
+                                "stake": "2000000",
+                                "vote": "TIMEOUT"
+                            },
+                            {
+                                "address": "validator4",
+                                "stake": "2000000",
+                                "vote": "DISAGREE"
+                            },
+                            {
+                                "address": "validator5",
+                                "stake": "2000000",
+                                "vote": "LEADER_RECEIPT"
+                            }
+                        ],
+                        "leader": "validator5",
+                        "sender": "sender"
+                    },
+                    "actions": [
+                        {
+                            "type": "DISTRIBUTE_FEES",
+                            "epoch": 1
+                        }
+                    ],
+                    "expectedState": {
+                        "rewards": [
+                            {
+                                "address": "validator5",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator1",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator2",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator5",
+                                "amount": "100"
+                            },
+                            {
+                                "address": "validator6",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator7",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator8",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator9",
+                                "amount": "200"
+                            }
+                        ],
+                        "penalties": [
+                            {
+                                "address": "validator4",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator3",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator10",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator11",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator12",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator13",
+                                "amount": "700"
+                            }
+                        ],
+                        "sender_outcome": {
+                            "address": "sender",
+                            "net_change": "4950"
+                        }
+                    }
+                }
+            ],
+            "summary": {
+                "rewards": 1500,
+                "penalties": 1700,
+                "sender_outcomes": 4950
+            }
+        },
+        "LEADER_RECEIPT_MAJORITY_TIMEOUT -> VALIDATOR_APPEAL_UNSUCCESSFUL -> VALIDATOR_APPEAL_UNSUCCESSFUL": {
+            "count": 1,
+            "examples": [
+                {
+                    "description": "Test Case: LEADER_RECEIPT_MAJORITY_TIMEOUT -> VALIDATOR_APPEAL_UNSUCCESSFUL -> VALIDATOR_APPEAL_UNSUCCESSFUL",
+                    "initialState": {
+                        "validators": [
+                            {
+                                "address": "validator1",
+                                "stake": "2000000",
+                                "vote": "AGREE"
+                            },
+                            {
+                                "address": "validator2",
+                                "stake": "2000000",
+                                "vote": "TIMEOUT"
+                            },
+                            {
+                                "address": "validator3",
+                                "stake": "2000000",
+                                "vote": "LEADER_RECEIPT"
+                            },
+                            {
+                                "address": "validator4",
+                                "stake": "2000000",
+                                "vote": "DISAGREE"
+                            },
+                            {
+                                "address": "validator5",
+                                "stake": "2000000",
+                                "vote": "TIMEOUT"
+                            }
+                        ],
+                        "leader": "validator3",
+                        "sender": "sender"
+                    },
+                    "actions": [
+                        {
+                            "type": "DISTRIBUTE_FEES",
+                            "epoch": 1
+                        }
+                    ],
+                    "expectedState": {
+                        "rewards": [
+                            {
+                                "address": "validator3",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator5",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator2",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator3",
+                                "amount": "100"
+                            }
+                        ],
+                        "penalties": [
+                            {
+                                "address": "validator1",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator4",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator6",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator7",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator8",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator9",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator10",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator11",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator12",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator13",
+                                "amount": "1500"
+                            },
+                            {
+                                "address": "validator14",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator15",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator16",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator17",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator18",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator19",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator20",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator21",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator22",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator23",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator24",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator13",
+                                "amount": "2300"
+                            }
+                        ],
+                        "sender_outcome": {
+                            "address": "sender",
+                            "net_change": "13700"
+                        }
+                    }
+                }
+            ],
+            "summary": {
+                "rewards": 700,
+                "penalties": 7800,
+                "sender_outcomes": 13700
+            }
+        },
+        "LEADER_RECEIPT_MAJORITY_AGREE -> VALIDATOR_APPEAL_UNSUCCESSFUL -> VALIDATOR_APPEAL_UNSUCCESSFUL": {
+            "count": 1,
+            "examples": [
+                {
+                    "description": "Test Case: LEADER_RECEIPT_MAJORITY_AGREE -> VALIDATOR_APPEAL_UNSUCCESSFUL -> VALIDATOR_APPEAL_UNSUCCESSFUL",
+                    "initialState": {
+                        "validators": [
+                            {
+                                "address": "validator1",
+                                "stake": "2000000",
+                                "vote": "AGREE"
+                            },
+                            {
+                                "address": "validator2",
+                                "stake": "2000000",
+                                "vote": "LEADER_RECEIPT"
+                            },
+                            {
+                                "address": "validator3",
+                                "stake": "2000000",
+                                "vote": "AGREE"
+                            },
+                            {
+                                "address": "validator4",
+                                "stake": "2000000",
+                                "vote": "TIMEOUT"
+                            },
+                            {
+                                "address": "validator5",
+                                "stake": "2000000",
+                                "vote": "DISAGREE"
+                            }
+                        ],
+                        "leader": "validator2",
+                        "sender": "sender"
+                    },
+                    "actions": [
+                        {
+                            "type": "DISTRIBUTE_FEES",
+                            "epoch": 1
+                        }
+                    ],
+                    "expectedState": {
+                        "rewards": [
+                            {
+                                "address": "validator2",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator1",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator3",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator2",
+                                "amount": "100"
+                            },
+                            {
+                                "address": "validator6",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator7",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator8",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator9",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator10",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator11",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator12",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator13",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator14",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator15",
+                                "amount": "200"
+                            }
+                        ],
+                        "penalties": [
+                            {
+                                "address": "validator5",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator4",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator16",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator17",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator18",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator19",
+                                "amount": "700"
+                            },
+                            {
+                                "address": "validator20",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator21",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator22",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator23",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator24",
+                                "amount": "200"
+                            },
+                            {
+                                "address": "validator19",
+                                "amount": "1100"
+                            }
+                        ],
+                        "sender_outcome": {
+                            "address": "sender",
+                            "net_change": "13700"
+                        }
+                    }
+                }
+            ],
+            "summary": {
+                "rewards": 2700,
+                "penalties": 3800,
+                "sender_outcomes": 13700
+            }
+        }
+    }
+}
