@@ -1,11 +1,11 @@
-# Categorized Appeal Test Cases
+# Simplified Test Results
 
-This directory contains test cases from length_03 paths categorized by appeal type.
+This directory contains simplified test results from length_03 paths categorized by appeal type with human-readable addresses.
 
 ## Directory Structure
 
 ```
-categorized_appeal_tests/
+simplified_test_results/
 ├── README.md                               # This file
 ├── summary.json                            # Overall summary statistics
 ├── compressed/                             # Compressed format files
@@ -68,10 +68,10 @@ To regenerate these categorized files:
 
 ```bash
 # Generate full categorized files
-python3 scripts/05_categorize_appeal_tests.py --pretty
+python3 scripts/06_categorize_appeal_tests.py --pretty
 
 # Generate compressed summaries
-python3 scripts/05_categorize_appeal_tests.py --compressed --pretty
+python3 scripts/06_categorize_appeal_tests.py --compressed --pretty
 ```
 
 ## Summary Statistics
@@ -82,7 +82,7 @@ python3 scripts/05_categorize_appeal_tests.py --compressed --pretty
 
 ## Usage
 
-These categorized test files are designed for:
+These simplified test files are designed for:
 1. Solidity smart contract testing of appeal mechanisms
 2. Validation of fee distribution in appeal scenarios
 3. Testing edge cases in consensus appeal logic

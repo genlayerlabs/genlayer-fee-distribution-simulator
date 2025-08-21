@@ -215,7 +215,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Categorize and compress length_03 appeal test cases",
         epilog="Example:\n"
-        "  python 05_categorize_appeal_tests.py --input-dir solidity_test_jsons/length_03 --output-dir categorized_tests",
+        "  python 06_categorize_appeal_tests.py --input-dir solidity_test_jsons/length_03 --output-dir simplified_test_results",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -233,8 +233,8 @@ def main():
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="categorized_appeal_tests",
-        help="Output directory for categorized tests (default: categorized_appeal_tests)"
+        default="simplified_test_results",
+        help="Output directory for categorized tests (default: simplified_test_results)"
     )
     parser.add_argument(
         "--compressed",
