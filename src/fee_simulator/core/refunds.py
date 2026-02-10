@@ -45,6 +45,7 @@ def compute_sender_refund(
         if round_label in [
             "SPLIT_PREVIOUS_APPEAL_BOND",
             "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND",
+            "EQUAL_SPLIT",
         ]:
             continue
 

@@ -11,6 +11,10 @@ from src.fee_simulator.specification.state_machine.path_analysis.path_generator 
 from src.fee_simulator.specification.state_machine.path_analysis.path_types import (
     PathConstraints,
 )
+from src.fee_simulator.specification.state_machine.path_analysis.variant_generator import (
+    generate_all_path_variants,
+    VariantConfig,
+)
 from src.fee_simulator.utils import generate_random_eth_address
 
 from src.fee_simulator.display import (
@@ -217,3 +221,113 @@ def test_paths_with_invariants(verbose, debug, path):
     # Re-raise the error to mark test as failed
     if not success:
         pytest.fail(f"Test failed: {error_message}")
+
+
+# --- Variant-expanded tests (rotations + idleness) ---
+
+# Generate all paths for variant expansion
+_variant_base_paths = list(
+    generate_all_paths(
+        TRANSACTION_GRAPH,
+        PathConstraints(
+            min_length=3, max_length=5, source_node="START", target_node="END"
+        ),
+    )
+)
+
+# Expand into variants with max_rotations=1, max_idle=1 for pytest
+# This keeps the test count manageable (~200 tests) while covering rotation/idle combos
+_all_variants = list(
+    generate_all_path_variants(_variant_base_paths, max_rotations=1, max_idle=1)
+)
+
+
+def _variant_id(variant: VariantConfig) -> str:
+    """Generate a human-readable test ID for a variant."""
+    path_str = "-".join(variant.path[1:-1])  # Skip START/END for brevity
+    parts = [path_str]
+    if variant.rotation_counts:
+        rot_str = ",".join(f"r{k}={v}" for k, v in sorted(variant.rotation_counts.items()))
+        parts.append(rot_str)
+    if variant.idle_config:
+        idle_str = ",".join(f"i{k}={v}" for k, v in sorted(variant.idle_config.items()))
+        parts.append(idle_str)
+    return "|".join(parts)
+
+
+@pytest.mark.parametrize(
+    "variant",
+    _all_variants,
+    ids=lambda v: _variant_id(v),
+)
+def test_variant_paths_with_invariants(verbose, debug, variant):
+    """
+    Test each variant (path + rotations + idleness) with comprehensive invariants.
+
+    This test extends test_paths_with_invariants by exercising rotation and
+    idle validator combinations for every base path.
+    """
+    path, rotation_counts, idle_config = variant
+
+    try:
+        transaction_results, transaction_budget = path_to_transaction_results(
+            path=path,
+            addresses=addresses_pool,
+            sender_address=sender_address,
+            appealant_address=appealant_address,
+            leader_timeout=LEADER_TIMEOUT,
+            validators_timeout=VALIDATORS_TIMEOUT,
+            rotation_counts=rotation_counts,
+            idle_config=idle_config,
+        )
+
+        round_labels = label_rounds(transaction_results)
+
+        fee_events, _ = process_transaction(
+            addresses=addresses_pool,
+            transaction_results=transaction_results,
+            transaction_budget=transaction_budget,
+        )
+
+        # Compute tolerance: account for split-round rounding and rotation rounding
+        total_rotations = sum(rotation_counts.values()) if rotation_counts else 0
+        num_rounds = len(round_labels)
+        split_rounds = sum(
+            1
+            for label in round_labels
+            if label
+            in [
+                "NORMAL_ROUND",
+                "SPLIT_PREVIOUS_APPEAL_BOND",
+                "EQUAL_SPLIT",
+                "APPEAL_VALIDATOR_SUCCESSFUL",
+                "APPEAL_VALIDATOR_UNSUCCESSFUL",
+                "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
+            ]
+        )
+        tolerance = split_rounds * 200 + num_rounds * 2 + total_rotations * 2
+
+        check_all_invariants(
+            fee_events,
+            transaction_budget,
+            transaction_results,
+            round_labels,
+            tolerance=tolerance,
+        )
+
+        if verbose:
+            display_summary_table(
+                fee_events, transaction_results, transaction_budget, round_labels
+            )
+
+    except Exception as e:
+        import traceback
+
+        detail = (
+            f"Path: {' -> '.join(path)}\n"
+            f"Rotations: {rotation_counts}\n"
+            f"Idle: {idle_config}\n"
+            f"Error: {e}\n"
+            f"Traceback:\n{traceback.format_exc()}"
+        )
+        pytest.fail(detail)

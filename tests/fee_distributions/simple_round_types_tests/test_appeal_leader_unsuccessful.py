@@ -102,8 +102,8 @@ def test_appeal_leader_unsuccessful(verbose, debug):
     assert round_labels == [
         "NORMAL_ROUND",
         "APPEAL_LEADER_UNSUCCESSFUL",
-        "SPLIT_PREVIOUS_APPEAL_BOND",
-    ], f"Expected ['NORMAL_ROUND', 'APPEAL_LEADER_UNSUCCESSFUL', 'SPLIT_PREVIOUS_APPEAL_BOND'], got {round_labels}"
+        "EQUAL_SPLIT",
+    ], f"Expected ['NORMAL_ROUND', 'APPEAL_LEADER_UNSUCCESSFUL', 'EQUAL_SPLIT'], got {round_labels}"
 
     # Invariant Check
     check_all_invariants(
@@ -124,9 +124,6 @@ def test_appeal_leader_unsuccessful(verbose, debug):
         validators_timeout=validatorsTimeout,
         round_labels=round_labels,
     )
-    undet_split_amount = (
-        (appeal_bond - leaderTimeout) * 10**18 // len(rotation3.votes)
-    ) // 10**18
     assert (
         compute_total_costs(fee_events, addresses_pool[23]) == appeal_bond
     ), f"Appealant should have cost equal to appeal_bond ({appeal_bond})"
@@ -134,30 +131,33 @@ def test_appeal_leader_unsuccessful(verbose, debug):
         compute_total_earnings(fee_events, addresses_pool[23]) == 0
     ), "Appealant should have no earnings"
 
-    # First Leader Fees Assert
+    # First Leader Fees Assert (Round 1: NORMAL_ROUND undetermined)
+    # In undetermined, leader gets leaderTimeout + validatorsTimeout
     assert (
         compute_total_earnings(fee_events, addresses_pool[0])
         == leaderTimeout + validatorsTimeout
     ), f"First leader should earn leaderTimeout ({leaderTimeout}) + validatorsTimeout ({validatorsTimeout})"
 
-    # First Validator Fees Assert
+    # First Validator Fees Assert (Round 1: NORMAL_ROUND + Round 3: EQUAL_SPLIT)
+    # In EQUAL_SPLIT, all validators earn validatorsTimeout (no penalties)
     assert all(
         compute_total_earnings(fee_events, addresses_pool[i])
-        == validatorsTimeout + undet_split_amount
+        == validatorsTimeout + validatorsTimeout  # round1 + round3
         for i in [1, 2, 3, 4]
-    ), f"First validators should earn 2*validatorsTimeout ({2*validatorsTimeout}) + undet_split_amount ({undet_split_amount})"
+    ), f"First validators should earn 2*validatorsTimeout ({2*validatorsTimeout})"
 
-    # Second Leader Fees Assert
+    # Second Leader Fees Assert (Round 3: EQUAL_SPLIT)
+    # Leader gets leaderTimeout + validatorsTimeout (as validator in equal split)
     assert (
         compute_total_earnings(fee_events, addresses_pool[5])
-        == leaderTimeout + undet_split_amount
-    ), f"Second leader should earn leaderTimeout ({leaderTimeout}) + undet_split_amount ({undet_split_amount})"
+        == leaderTimeout + validatorsTimeout
+    ), f"Second leader should earn leaderTimeout ({leaderTimeout}) + validatorsTimeout ({validatorsTimeout})"
 
-    # Second Validator Fees Assert
+    # Second Validator Fees Assert (Round 3: EQUAL_SPLIT only)
     assert all(
-        compute_total_earnings(fee_events, addresses_pool[i]) == undet_split_amount
+        compute_total_earnings(fee_events, addresses_pool[i]) == validatorsTimeout
         for i in [6, 7, 8, 9, 10, 11]
-    ), f"Second validators should earn undet_split_amount ({undet_split_amount})"
+    ), f"Second validators should earn validatorsTimeout ({validatorsTimeout})"
 
     # Sender Fees Assert
     total_cost = compute_total_cost(transaction_budget)

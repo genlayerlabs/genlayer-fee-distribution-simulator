@@ -853,6 +853,7 @@ def test_all_valid_label_values():
         "SPLIT_PREVIOUS_APPEAL_BOND",
         "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND",
         "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
+        "EQUAL_SPLIT",
     }
 
     # Generate various test cases

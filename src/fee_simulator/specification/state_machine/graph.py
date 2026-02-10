@@ -3,7 +3,7 @@ Graph data structure for the fee simulator round combinations.
 """
 
 from types import MappingProxyType
-from typing import Dict, List
+from typing import Dict, List, Any
 
 
 # The dependency graph as pure data
@@ -92,3 +92,17 @@ def get_graph() -> Dict[str, List[str]]:
     Returns a mutable copy for algorithms that need to modify the structure.
     """
     return dict(_GRAPH_DATA)
+
+
+# --- Node metadata for variant generation ---
+# Documents which graph nodes support rotations (leader timeout before final outcome)
+# and idle validators. This is the single source of truth for variant expansion.
+_NODE_METADATA = {
+    "LEADER_RECEIPT_MAJORITY_AGREE": {"rotations": True, "idle": True},
+    "LEADER_RECEIPT_MAJORITY_DISAGREE": {"rotations": True, "idle": True},
+    "LEADER_RECEIPT_MAJORITY_TIMEOUT": {"rotations": True, "idle": True},
+    "LEADER_RECEIPT_UNDETERMINED": {"rotations": True, "idle": True},
+    "LEADER_TIMEOUT": {"rotations": True, "idle": False},
+}
+
+GRAPH_NODE_METADATA: Dict[str, Dict[str, Any]] = MappingProxyType(_NODE_METADATA)

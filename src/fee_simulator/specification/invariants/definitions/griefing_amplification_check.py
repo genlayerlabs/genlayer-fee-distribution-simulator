@@ -52,7 +52,7 @@ def check_griefing_amplification(
             next_round_index = round_index + 1
             if (
                 next_round_index < len(round_labels)
-                and round_labels[next_round_index] == "SPLIT_PREVIOUS_APPEAL_BOND"
+                and round_labels[next_round_index] in ("SPLIT_PREVIOUS_APPEAL_BOND", "EQUAL_SPLIT")
             ):
                 affected_rounds.add(next_round_index)
 

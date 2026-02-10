@@ -32,6 +32,9 @@ from src.fee_simulator.core.round_fee_distribution.split_previous_appeal_bond im
 from src.fee_simulator.core.round_fee_distribution.skip_round import (
     apply_skip_round,
 )
+from src.fee_simulator.core.round_fee_distribution.equal_split import (
+    apply_equal_split,
+)
 
 
 __all__ = [
@@ -47,4 +50,5 @@ __all__ = [
     "apply_appeal_validator_unsuccessful",
     "apply_split_previous_appeal_bond",
     "apply_skip_round",
+    "apply_equal_split",
 ]

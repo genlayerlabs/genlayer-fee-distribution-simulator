@@ -242,6 +242,7 @@ class RoundLabelingInvariants:
             "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND",
             "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
             "VALIDATORS_PENALTY_ONLY_ROUND",
+            "EQUAL_SPLIT",
         }
         for i, label in enumerate(labels):
             assert (

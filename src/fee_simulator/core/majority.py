@@ -45,12 +45,17 @@ def extract_hash(vote_value: Vote) -> str:
         return vote_value[1]
 
 
-def compute_majority(rotation: Dict[str, Vote]) -> MajorityOutcome:
+def compute_majority(
+    rotation: Dict[str, Vote],
+    count_idle_as_disagree: bool = False,
+) -> MajorityOutcome:
     """
     Compute the majority vote type.
 
     Args:
         rotation: Dictionary mapping addresses to votes
+        count_idle_as_disagree: If True, IDLE votes are counted as DISAGREE
+            for majority calculation (matches Solidity partial reveal behavior)
 
     Returns:
         Majority vote type or "UNDETERMINED" if no majority
@@ -64,6 +69,11 @@ def compute_majority(rotation: Dict[str, Vote]) -> MajorityOutcome:
         vote_type = normalize_vote(vote)
         if vote_type in vote_counts:
             vote_counts[vote_type] += 1
+
+    # Apply idle-as-disagree counting if requested
+    if count_idle_as_disagree and vote_counts["IDLE"] > 0:
+        vote_counts["DISAGREE"] += vote_counts["IDLE"]
+        vote_counts["IDLE"] = 0
 
     # Determine if there's a majority
     total_votes = len(rotation)

@@ -123,6 +123,14 @@ def reconstruct_transaction(
         else:
             full_addresses.append(generate_random_eth_address())
 
+    # Extract variant parameters if present
+    rotation_counts = {}
+    idle_config = {}
+    if "rotation_counts" in compressed_data:
+        rotation_counts = {int(k): v for k, v in compressed_data["rotation_counts"].items()}
+    if "idle_config" in compressed_data:
+        idle_config = {int(k): v for k, v in compressed_data["idle_config"].items()}
+
     transaction_results, transaction_budget = path_to_transaction_results(
         path=path,
         addresses=full_addresses,
@@ -130,6 +138,8 @@ def reconstruct_transaction(
         appealant_address=appealant_address,
         leader_timeout=100,  # Default values
         validators_timeout=200,
+        rotation_counts=rotation_counts,
+        idle_config=idle_config,
     )
 
     return transaction_results, transaction_budget, full_addresses
@@ -148,6 +158,12 @@ def display_compressed_data(compressed_data: Dict, lookup_tables: Dict):
 
     # Display labels
     print(f"\nRound Labels: {labels}")
+
+    # Display variant info if present
+    if "rotation_counts" in compressed_data:
+        print(f"\nRotation Counts: {compressed_data['rotation_counts']}")
+    if "idle_config" in compressed_data:
+        print(f"\nIdle Config: {compressed_data['idle_config']}")
 
     # Display hash
     print(f"\nPath Hash: {compressed_data['hash']}")

@@ -22,9 +22,7 @@ def apply_leader_timeout_50_percent(
 ) -> List[FeeEvent]:
     events = []
     round = transaction_results.rounds[round_index]
-    if (
-        not round.rotations
-    ):  # TODO: this is a hack, rotations are not properly implemented
+    if not round.rotations:
         return events
     votes = round.rotations[-1].votes
     first_addr = next(iter(votes.keys()), None)

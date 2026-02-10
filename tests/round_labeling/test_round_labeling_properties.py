@@ -142,6 +142,7 @@ class TestRoundLabelingProperties:
             "SPLIT_PREVIOUS_APPEAL_BOND",
             "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND",
             "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
+            "EQUAL_SPLIT",
         }
 
         labels = label_rounds(transaction_results)

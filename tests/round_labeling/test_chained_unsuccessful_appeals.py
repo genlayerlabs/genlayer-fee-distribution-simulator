@@ -940,6 +940,7 @@ def test_invariants_with_chained_appeals():
             "SPLIT_PREVIOUS_APPEAL_BOND",
             "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND",
             "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
+            "EQUAL_SPLIT",
         }
         assert all(label in valid_labels for label in labels)
 

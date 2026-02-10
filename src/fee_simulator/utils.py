@@ -54,8 +54,8 @@ def compute_total_cost(transaction_budget: TransactionBudget) -> int:
             if i < len(transaction_budget.rotations)
             else 0
         )
-        max_round_price += (
-            round_size * (rotation_count + 1) * transaction_budget.validatorsTimeout
+        max_round_price += (rotation_count + 1) * (
+            round_size * transaction_budget.validatorsTimeout
             + transaction_budget.leaderTimeout
         )
 

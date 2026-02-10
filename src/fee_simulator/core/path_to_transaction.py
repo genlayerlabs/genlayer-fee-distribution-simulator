@@ -5,7 +5,7 @@ This module provides the bridge between graph paths and the transaction
 data structures used by the fee distribution system.
 """
 
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional, Tuple
 from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
     TransactionBudget,
@@ -275,6 +275,8 @@ def path_to_transaction_results(
     leader_timeout: int = 100,
     validators_timeout: int = 200,
     removed_addresses: set = None,
+    rotation_counts: Optional[Dict[int, int]] = None,
+    idle_config: Optional[Dict[int, int]] = None,
 ) -> Tuple[TransactionRoundResults, TransactionBudget]:
     """
     Convert a TRANSITIONS_GRAPH path to TransactionRoundResults and TransactionBudget.
@@ -287,6 +289,11 @@ def path_to_transaction_results(
         leader_timeout: Leader timeout value
         validators_timeout: Validators timeout value
         removed_addresses: Set of addresses that have been slashed/removed
+        rotation_counts: Optional mapping of round index (0-based, counting only normal
+            rounds) to number of leader timeout rotations before the final outcome.
+            E.g. {0: 2} means the first normal round has 2 timeouts before the final leader.
+        idle_config: Optional mapping of round index to number of idle validators.
+            E.g. {0: 2} means 2 validators in the first round are IDLE.
 
     Returns:
         Tuple of (TransactionRoundResults, TransactionBudget)
@@ -297,6 +304,10 @@ def path_to_transaction_results(
         appealant_address = addresses[-2]
     if removed_addresses is None:
         removed_addresses = set()
+    if rotation_counts is None:
+        rotation_counts = {}
+    if idle_config is None:
+        idle_config = {}
 
     rounds = []
     appeals = []
@@ -411,30 +422,85 @@ def path_to_transaction_results(
                     # Sort to maintain order
                     normal_addresses.sort()
 
-            # Create normal round
-            round_obj = create_normal_round(node, normal_addresses)
+            # Build rotations list for this round
+            num_timeout_rotations = rotation_counts.get(normal_count, 0)
+            num_idle = idle_config.get(normal_count, 0)
+            rotations_list = []
+
+            if num_timeout_rotations > 0:
+                # Create timeout rotations before the final outcome
+                # Each timeout rotation uses the next leader from the address pool
+                for rot_idx in range(num_timeout_rotations):
+                    # The leader for this rotation is the current first address
+                    rot_leader_idx = rot_idx  # index within normal_addresses
+                    if rot_leader_idx < len(normal_addresses):
+                        timeout_votes = create_leader_timeout_votes(
+                            len(normal_addresses), normal_addresses
+                        )
+                        # Rotate addresses: put the rot_idx-th leader first
+                        rot_addresses = normal_addresses[rot_idx:] + normal_addresses[:rot_idx]
+                        timeout_votes = create_leader_timeout_votes(
+                            len(rot_addresses), rot_addresses
+                        )
+                        rotations_list.append(Rotation(votes=timeout_votes))
+                        # Track this timed-out leader
+                        previous_leaders.append(rot_addresses[0])
+
+                # Final rotation: shift addresses so next available leader is first
+                final_addresses = normal_addresses[num_timeout_rotations:] + normal_addresses[:num_timeout_rotations]
+                final_round = create_normal_round(node, final_addresses)
+                rotations_list.append(final_round.rotations[0])
+                round_obj = Round(rotations=rotations_list)
+            else:
+                # No rotations, create a normal single-rotation round
+                round_obj = create_normal_round(node, normal_addresses)
+
+            # Apply idle config: replace some validator votes with IDLE
+            if num_idle > 0 and round_obj.rotations:
+                last_rot = round_obj.rotations[-1]
+                votes = dict(last_rot.votes)
+                # Make the last num_idle validators IDLE
+                validator_addrs = [
+                    addr for addr in votes.keys()
+                    if not (isinstance(votes[addr], list) and votes[addr][0] in ["LEADER_RECEIPT", "LEADER_TIMEOUT"])
+                ]
+                for idle_idx in range(min(num_idle, len(validator_addrs))):
+                    idle_addr = validator_addrs[-(idle_idx + 1)]
+                    votes[idle_addr] = "IDLE"
+                new_last_rot = Rotation(votes=votes)
+                new_rotations = list(round_obj.rotations[:-1]) + [new_last_rot]
+                round_obj = Round(rotations=new_rotations)
+
             rounds.append(round_obj)
 
             # Update state
             cumulative_active.update(normal_addresses)
-            if normal_addresses:
+            if normal_addresses and num_timeout_rotations == 0:
                 previous_leaders.append(normal_addresses[0])
+            elif normal_addresses and num_timeout_rotations > 0:
+                # The final leader is already not in previous_leaders, track them
+                final_leader = normal_addresses[num_timeout_rotations] if num_timeout_rotations < len(normal_addresses) else normal_addresses[0]
+                previous_leaders.append(final_leader)
             normal_count += 1
 
-            # Track majority for appeals
-            if round_obj.rotations and round_obj.rotations[0].votes:
-                last_normal_majority = compute_majority(round_obj.rotations[0].votes)
+            # Track majority for appeals (always from last rotation)
+            if round_obj.rotations and round_obj.rotations[-1].votes:
+                last_normal_majority = compute_majority(round_obj.rotations[-1].votes)
 
-        # Track the majority outcome of this round
-        if round_obj.rotations and round_obj.rotations[0].votes:
-            prev_majority = compute_majority(round_obj.rotations[0].votes)
+        # Track the majority outcome of this round (from the final rotation)
+        if round_obj.rotations and round_obj.rotations[-1].votes:
+            prev_majority = compute_majority(round_obj.rotations[-1].votes)
 
-    # Create budget
+    # Create budget with actual rotation counts
+    budget_rotations = []
+    for nc in range(normal_count):
+        budget_rotations.append(rotation_counts.get(nc, 0))
+
     budget = TransactionBudget(
         leaderTimeout=leader_timeout,
         validatorsTimeout=validators_timeout,
         appealRounds=appeal_count,
-        rotations=[0] * normal_count,
+        rotations=budget_rotations,
         senderAddress=sender_address,
         appeals=appeals,
         staking_distribution="constant",

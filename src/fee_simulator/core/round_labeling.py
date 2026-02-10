@@ -248,6 +248,18 @@ SPECIAL_CASE_PATTERNS = [
         "changes": {0: "SKIP_ROUND", 2: "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND"},
     },
     {
+        "name": "Equal split after unsuccessful leader appeal with undetermined outcome",
+        "pattern": [
+            "NORMAL_ROUND",
+            "APPEAL_LEADER_UNSUCCESSFUL",
+            "NORMAL_ROUND",
+        ],
+        "condition": lambda rounds, i: i + 2 < len(rounds)
+        and rounds[i + 2]
+        and compute_majority(rounds[i + 2]) == "UNDETERMINED",
+        "changes": {2: "EQUAL_SPLIT"},
+    },
+    {
         "name": "Split appeal bond after unsuccessful appeal",
         "pattern": [
             "NORMAL_ROUND",
