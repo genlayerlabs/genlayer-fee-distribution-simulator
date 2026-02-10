@@ -1,0 +1,260 @@
+{
+    "category": "leader_appeal_unsuccessful",
+    "total_test_cases": 2,
+    "unique_patterns": 2,
+    "test_cases": [
+        {
+            "description": "Test Case: LEADER_RECEIPT_MAJORITY_DISAGREE -> LEADER_APPEAL_UNSUCCESSFUL -> LEADER_RECEIPT_UNDETERMINED",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x322444...62ab5f",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0x37ec4e...1f2014",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xe1ce99...a9aa72",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xf649e6...70aa70",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    },
+                    {
+                        "address": "0xffcce2...05a87f",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    }
+                ],
+                "leader": "0xf649e6...70aa70",
+                "sender": "0x181422...cbb2c3"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0xf649e6...70aa70",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xe1ce99...a9aa72",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x37ec4e...1f2014",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xf649e6...70aa70",
+                        "amount": "100"
+                    },
+                    {
+                        "address": "0x079191...870665",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x07bc97...9619fa",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x322444...62ab5f",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x37ec4e...1f2014",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x54f174...9ff56b",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x5c53a5...9ab30e",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x6f3529...40a9c2",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x7093a8...b05ce7",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x7db117...530b39",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xe1ce99...a9aa72",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xffcce2...05a87f",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x079191...870665",
+                        "amount": "100"
+                    }
+                ],
+                "penalties": [
+                    {
+                        "address": "0x322444...62ab5f",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xffcce2...05a87f",
+                        "amount": "200"
+                    }
+                ],
+                "sender_outcome": {
+                    "address": "0x181422...cbb2c3",
+                    "net_change": "4950"
+                }
+            }
+        },
+        {
+            "description": "Test Case: LEADER_RECEIPT_UNDETERMINED -> LEADER_APPEAL_UNSUCCESSFUL -> LEADER_RECEIPT_UNDETERMINED",
+            "initialState": {
+                "validators": [
+                    {
+                        "address": "0x1db1e3...68f47d",
+                        "stake": "2000000",
+                        "vote": "AGREE"
+                    },
+                    {
+                        "address": "0x633661...8b3341",
+                        "stake": "2000000",
+                        "vote": "LEADER_RECEIPT"
+                    },
+                    {
+                        "address": "0x917b20...b91a20",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    },
+                    {
+                        "address": "0xc6c7a2...aefb98",
+                        "stake": "2000000",
+                        "vote": "DISAGREE"
+                    },
+                    {
+                        "address": "0xea6970...f21dd9",
+                        "stake": "2000000",
+                        "vote": "TIMEOUT"
+                    }
+                ],
+                "leader": "0x633661...8b3341",
+                "sender": "0x57a39b...0b85a2"
+            },
+            "actions": [
+                {
+                    "type": "DISTRIBUTE_FEES",
+                    "epoch": 1
+                }
+            ],
+            "expectedState": {
+                "rewards": [
+                    {
+                        "address": "0x633661...8b3341",
+                        "amount": "100"
+                    },
+                    {
+                        "address": "0x633661...8b3341",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1db1e3...68f47d",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xc6c7a2...aefb98",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x917b20...b91a20",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0xea6970...f21dd9",
+                        "amount": "200"
+                    },
+                    {
+                        "address": "0x1db1e3...68f47d",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x3233a2...bda81b",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x83b44f...0383fe",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x917b20...b91a20",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xb4f491...1580a2",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xc6c7a2...aefb98",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xcea82f...44acc7",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xd72e90...447b11",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xe99dee...2ddd5b",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xea6970...f21dd9",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0xf01caa...94a6d2",
+                        "amount": "127"
+                    },
+                    {
+                        "address": "0x1db1e3...68f47d",
+                        "amount": "100"
+                    }
+                ],
+                "penalties": [],
+                "sender_outcome": {
+                    "address": "0x57a39b...0b85a2",
+                    "net_change": "4550"
+                }
+            }
+        }
+    ],
+    "statistics": {
+        "average_validators": 5.0,
+        "total_rewards_distributed": 4794,
+        "total_penalties_applied": 400,
+        "sender_net_changes": {
+            "positive": 2,
+            "negative": 0,
+            "neutral": 0
+        }
+    }
+}

@@ -112,7 +112,8 @@ def reconstruct_transaction(
             addr_map[idx] = generate_random_eth_address()
 
     sender_address = addr_map[sender_idx]
-    appealant_address = addr_map[appealant_idx]
+    
+    appealant_address = addr_map[appealant_idx] if appealant_idx < 999 else None
 
     # Use path_to_transaction_results to recreate the transaction
     # We need the full address list with correct mapping

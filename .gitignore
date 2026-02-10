@@ -5,6 +5,7 @@ checkpoints/
 .hypothesis/
 .claude/memory/
 path_jsons/
+solidity_test_jsons/
 .env
 
 # all .md concatenated from spec-in-repo branch of genlayer-consensus
