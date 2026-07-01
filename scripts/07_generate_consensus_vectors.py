@@ -73,13 +73,15 @@ APPEAL_NODE_TO_CATEGORY = {
     "VALIDATOR_APPEAL_UNSUCCESSFUL": "validator_appeal_unsuccessful",
     "LEADER_APPEAL_SUCCESSFUL": "leader_appeal_successful",
     "LEADER_APPEAL_UNSUCCESSFUL": "leader_appeal_unsuccessful",
-    "LEADER_TIMEOUT_APPEAL_SUCCESSFUL": "leader_timeout_appeal_successful",
-    "LEADER_TIMEOUT_APPEAL_UNSUCCESSFUL": "leader_timeout_appeal_unsuccessful",
+    "LEADER_APPEAL_TIMEOUT_SUCCESSFUL": "leader_timeout_appeal_successful",
+    "LEADER_APPEAL_TIMEOUT_UNSUCCESSFUL": "leader_timeout_appeal_unsuccessful",
 }
 
 
 def categorize(path):
-    for node in path:
+    # Convention (matches the original vector set): the LAST appeal in the
+    # path determines the category.
+    for node in reversed(path):
         if node in APPEAL_NODE_TO_CATEGORY:
             return APPEAL_NODE_TO_CATEGORY[node]
     return "no_appeal"
