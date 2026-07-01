@@ -1,24 +1,42 @@
 # GenLayer Fee Distribution Simulator
 
-## Overview
+## What this is
 
-The GenLayer Fee Distribution Simulator is a comprehensive Python-based system for modeling and testing fee distribution mechanisms in the GenLayer blockchain validator network. It uses a path-based approach to exhaustively test all possible transaction scenarios, ensuring correctness through rigorous invariant checking.
+The **executable specification of GenLayer's time-unit fee model** — a pure-Python mirror of the fee distribution implemented by the `genlayer-consensus` contracts (`FeesProcessor`, `FeesRecorder`, `FeeManager.calculateMinAppealBond`). It models a consensus transaction as a path through a state machine (**TRANSITIONS_GRAPH → Path → TransactionRoundResults → Round Labels → Fee Distribution**), computes who earns/loses what, and checks 24 economic invariants (value conservation, bond coverage, non-negative balances, …) on every run.
 
-To understand how this works, one should understand how does the voting process at genlayer works, and how appeals work, etc. So [here are the docs for that](docs/BASIC_CONCEPTS.md).
+Because each simulation takes milliseconds, it can do what the on-chain test harness cannot: sweep **every generatable consensus path** (thousands of scenarios, deep appeal chains included) and assert the economics hold on all of them.
 
-The simulator follows a deterministic flow: **TRANSITIONS_GRAPH → Path → TransactionRoundResults → Round Labels → Fee Distribution**, where each step is purely functional and content-based rather than index-based.
+To understand the consensus concepts (voting, appeals, rounds), see [docs/BASIC_CONCEPTS.md](docs/BASIC_CONCEPTS.md).
 
-## Key Features
+## What it does
 
-- **Path-Based Testing**: Generates all valid transaction paths from TRANSITIONS_GRAPH for exhaustive testing
-- **Content-Based Round Detection**: Identifies round types by analyzing vote patterns, not indices
-- **22 Invariants**: Comprehensive invariant checking ensures correctness (conservation of value, non-negative balances, etc.)
-- **Role-Based Fee Distribution**: Allocates fees based on participant roles (Leader, Validator, Sender, Appealant)
-- **Appeal Mechanisms**: Handles leader and validator appeals with proper bond calculations
-- **Special Pattern Recognition**: Automatically transforms round labels based on transaction patterns
-- **Visualization Tools**: Rich formatted tables for transaction results and fee distributions
-- **Path JSON Export**: Generate compressed JSON files for all paths for external verification
-- **Modular Architecture**: Clean separation between path generation, transaction processing, and fee distribution
+- **Exhaustive path sweeps**: generates all valid transaction paths (normal rounds, leader/validator appeals, chained appeals, leader rotations, idleness) and runs the fee pipeline + invariants on each.
+- **Per-scenario simulation with rich CLI tables**: who earned what, per round and per role (Leader / Validator / Sender / Appealant), penalties, refunds.
+- **Appeal bond pricing**, mirroring `FeeManager.calculateMinAppealBond` per appeal type (validator / undetermined-leader / leader-timeout).
+- **Test-vector generation for the contracts**: `scripts/07_generate_consensus_vectors.py` produces `genlayer-consensus/test/fees/simulator_results/*` in its final schema — the reference data consumed by the `fee_finalization_tests` hardhat suites.
+- **Incentive analysis**: net outcomes by validator strategy across the path space (`scripts/03_analyze_incentives.py`).
+
+## What it does NOT do
+
+- **It does not verify the contracts — it models them.** Parity holds only as long as both sides move together (see *Parity discipline* below). The enforcement point is the vector-driven test suites in `genlayer-consensus`, not this repo.
+- **It only models the time-unit fee layer.** Out of scope: the unified execution budget (gas/receipt/storage fees), the developer-fee gross-up, the GEN-per-time-unit price multiplier, message fees, and top-ups. Amounts here are raw time-unit fees (e.g. `leaderTimeout=100`, `validatorsTimeout=200`).
+- **It abstracts validator identity.** Committee sizes, roles and vote alignment match the contracts; the concrete address selection (VRF, consumed-validator tracking) does not — compare quantities and roles, never addresses.
+- **Round sizes cap at 1000** for simulation purposes; the on-chain `VALIDATORS_PER_ROUND` continues to 1535/1537.
+
+## What it's for
+
+1. **Designing fee-model changes**: adjust a formula or constant here first, run the suite + exhaustive sweep in ~3 minutes, inspect the tables — then port to Solidity.
+2. **Regression**: any change to `contracts/fees/*` in `genlayer-consensus` gets mirrored here and validated against the invariants before regenerating vectors.
+3. **Vector oracle**: the source of the reference data the contract test suites consume.
+4. **Understanding**: "who gets paid what if X happens" answered in one command, with tables.
+
+## Parity discipline
+
+This simulator and the contracts implement the same model twice; they drift unless changes travel in pairs. The rule:
+
+> **Every PR touching `genlayer-consensus/contracts/fees` or `FeeManager` fee math must (1) mirror the change here, (2) run the test suite and the exhaustive sweep, (3) regenerate the vectors with `scripts/07_generate_consensus_vectors.py` and refresh `genlayer-consensus/test/fees/simulator_results/`, and (4) run the `fee_finalization_tests` hardhat suite against them.**
+
+The gap analysis that motivated this rule (18 contract/simulator divergences found and resolved) lives in `genlayer-consensus/test/fees/contract_gap_analysis/`.
 
 ## Project Structure
 
@@ -45,7 +63,7 @@ src/
     ├── specification/           # Formal specification
     │   ├── invariants/          # System invariants
     │   │   ├── checker.py       # Main invariant checker
-    │   │   └── definitions/     # 22 invariant implementations
+    │   │   └── definitions/     # 24 invariant implementations
     │   └── state_machine/       # State machine specification
     │       ├── graph.py         # TRANSACTION_GRAPH definition
     │       └── path_analysis/   # Path analysis tools
@@ -153,6 +171,13 @@ Rounds are identified by their vote patterns, not their position:
     ```bash
     pip install -r requirements.txt
     ```
+
+Alternatively, on Nix/NixOS, no environment setup is needed:
+
+```bash
+nix-shell -p "python311.withPackages (ps: [ps.pytest ps.pytest-xdist ps.pydantic ps.tabulate ps.hypothesis ps.numpy ps.rich])" \
+  --run "pytest tests -q"
+```
 
 ## Usage
 
