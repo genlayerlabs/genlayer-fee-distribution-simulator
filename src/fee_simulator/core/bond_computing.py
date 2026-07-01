@@ -1,5 +1,6 @@
 from src.fee_simulator.utils import is_appeal_round
 from src.fee_simulator.utils_round_sizes import (
+    get_round_size,
     get_round_size_for_bond,
     get_appeal_index,
     get_normal_round_size,
@@ -7,13 +8,22 @@ from src.fee_simulator.utils_round_sizes import (
 from src.fee_simulator.protocol.types import RoundLabel
 from typing import List, Optional
 
-# Leader-type appeals (UNDETERMINED and LEADER_TIMEOUT appeals). Their bond
-# covers the full cost of the next normal round the appeal triggers, matching
-# FeeManager.calculateMinAppealBond (LeaderTimeout/Undetermined branch).
+# Leader appeals from UNDETERMINED. Their bond covers the full cost of the
+# next normal round the appeal triggers (round + 2 schedule), matching
+# FeeManager.calculateMinAppealBond (Undetermined branch).
 LEADER_APPEAL_LABELS = frozenset(
     [
         "APPEAL_LEADER_SUCCESSFUL",
         "APPEAL_LEADER_UNSUCCESSFUL",
+    ]
+)
+
+# Leader appeals from LEADER_TIMEOUT. The induced round ROTATES the existing
+# committee (no new validators — RoundsCreation.createNewLeaderTimeoutAppealRound),
+# so the bond covers the current committee size, matching
+# FeeManager.calculateMinAppealBond (LeaderTimeout branch).
+LEADER_TIMEOUT_APPEAL_LABELS = frozenset(
+    [
         "APPEAL_LEADER_TIMEOUT_SUCCESSFUL",
         "APPEAL_LEADER_TIMEOUT_UNSUCCESSFUL",
     ]
@@ -37,12 +47,20 @@ def compute_appeal_bond(
       The N+2 appeal validators re-evaluate the existing proposal; no new
       leader executes, so there is no leader fee component.
 
-    - Leader appeal (Undetermined / LeaderTimeout):
+    - Leader appeal (Undetermined):
         bond = (rotations_next + 1) * (leader_timeout + next_normal_round_size * validators_timeout)
       The appeal triggers a full new normal round (round + 2 on-chain),
       so the bond covers that round's complete cost, including its allowed
-      leader rotations. `rotations` is the per-normal-round rotations list
-      from the transaction budget; when omitted, 0 extra rotations are assumed.
+      leader rotations.
+
+    - Leader timeout appeal (LeaderTimeout):
+        bond = (rotations_next + 1) * (leader_timeout + current_committee_size * validators_timeout)
+      The induced round rotates the EXISTING committee (no new validators),
+      so the bond covers the current committee size, not the round + 2
+      schedule.
+
+    `rotations` is the per-normal-round rotations list from the transaction
+    budget; when omitted, 0 extra rotations are assumed.
     """
 
     # Validate this is actually a normal round index
@@ -73,16 +91,21 @@ def compute_appeal_bond(
     if not is_appeal_round(round_labels[appeal_round_index]):
         raise ValueError(f"Round {appeal_round_index} is not an appeal round")
 
-    if round_labels[appeal_round_index] in LEADER_APPEAL_LABELS:
-        # Leader appeal: bond covers the full next normal round
+    label = round_labels[appeal_round_index]
+    if label in LEADER_APPEAL_LABELS or label in LEADER_TIMEOUT_APPEAL_LABELS:
         appeal_index = get_appeal_index(appeal_round_index, round_labels)
-        next_normal_size = get_normal_round_size(appeal_index + 1)
+        if label in LEADER_TIMEOUT_APPEAL_LABELS:
+            # Timeout appeal: the induced round reuses the current committee
+            committee_size = get_round_size(normal_round_index, round_labels)
+        else:
+            # Undetermined appeal: full next normal round (round + 2 schedule)
+            committee_size = get_normal_round_size(appeal_index + 1)
         rotations_next = 0
         if rotations is not None and (appeal_index + 1) < len(rotations):
             rotations_next = rotations[appeal_index + 1]
         attempts = rotations_next + 1
         total_cost = attempts * (
-            leader_timeout + next_normal_size * validators_timeout
+            leader_timeout + committee_size * validators_timeout
         )
         return max(total_cost, 0)
 
