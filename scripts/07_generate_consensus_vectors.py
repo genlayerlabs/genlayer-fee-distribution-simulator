@@ -266,7 +266,8 @@ def main():
         generate_all_paths(
             TRANSACTION_GRAPH,
             PathConstraints(
-                min_length=3,
+                # min_length=2 keeps the single-round (no appeal) paths
+                min_length=2,
                 max_length=args.max_length,
                 source_node="START",
                 target_node="END",
