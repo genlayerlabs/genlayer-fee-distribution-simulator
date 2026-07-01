@@ -277,8 +277,9 @@ class TestAppealLeaderSuccessful:
         assert appealant_event.address == addresses_pool[98]
         assert appealant_event.role == "APPEALANT"
         # Appealant should earn 1.5x appeal bond for 50% return
-        # Appeal bond = 7 validators * 200 + 100 = 1500
-        assert appealant_event.earned == int(1500 * 1.5)  # 2250
+        # Leader appeal bond covers the full next normal round:
+        # 100 + 11 validators * 200 = 2300
+        assert appealant_event.earned == int(2300 * 1.5)  # 3450
         assert appealant_event.cost == 0  # Cost is recorded separately
 
 
@@ -348,10 +349,11 @@ class TestAppealValidatorSuccessful:
         assert len(events) == 8  # appealant + 7 from appeal round
 
         # Appealant should earn 1.5x appeal bond for 50% return
+        # Validator appeal bond covers only the appeal validators (no leader fee)
         appealant_event = next(e for e in events if e.address == addresses_pool[98])
         assert appealant_event.earned == int(
-            (7 * 200 + 100) * 1.5
-        )  # 1.5x appeal_bond = 2250
+            (7 * 200) * 1.5
+        )  # 1.5x appeal_bond = 2100
 
         # In successful appeal
         # Appeal round: 4 DISAGREE, 3 AGREE
@@ -511,9 +513,9 @@ class TestSplitPreviousAppealBond:
         assert leader_event.earned == 100
 
         # Each validator should earn their share of the appeal bond minus leader timeout
-        # Appeal bond = 7 * 200 + 100 = 1500
-        # Amount to split = 1500 - 100 = 1400
-        # Split among 11 validators = ~127 each (with rounding)
+        # Validator appeal bond = 7 * 200 = 1400 (no leader fee component)
+        # Amount to split = 1400 - 100 = 1300
+        # Split among 11 validators = ~118 each (with rounding)
         for i in range(1, 12):  # addresses_pool[1] through addresses_pool[11]
             validator_events = [
                 e
@@ -521,8 +523,8 @@ class TestSplitPreviousAppealBond:
                 if e.address == addresses_pool[i] and e.role == "VALIDATOR"
             ]
             if validator_events:
-                # Due to integer division, some might get 127, others 128
-                assert validator_events[0].earned in [127, 128]
+                # Due to integer division, some might get 118, others 119
+                assert validator_events[0].earned in [118, 119]
                 assert validator_events[0].role == "VALIDATOR"
 
 
@@ -715,9 +717,9 @@ class TestChainedAppealScenarios:
         # Since 13 > 11 (which is 23/2), TIMEOUT is the majority
         # So the bond is split only among TIMEOUT voters
 
-        # The second appeal bond (13 * 200 + 100 = 2700)
-        # Amount to split = 2700 - 100 = 2600
-        # Split among 13 TIMEOUT voters = 200 each
+        # The second appeal bond (validator appeal, no leader fee: 13 * 200 = 2600)
+        # Amount to split = 2600 - 100 = 2500
+        # Split among 13 TIMEOUT voters = 192 each (integer division)
 
         validator_events = [e for e in events3 if e.role == "VALIDATOR"]
 
@@ -725,7 +727,7 @@ class TestChainedAppealScenarios:
         timeout_voters = [e for e in validator_events if e.vote == "TIMEOUT"]
         assert len(timeout_voters) == 13
         for event in timeout_voters:
-            assert event.earned == 200  # 2600 / 13 = 200
+            assert event.earned == 192  # 2500 // 13 = 192
 
         # Check AGREE and DISAGREE voters get 0 and are penalized
         non_timeout_voters = [e for e in validator_events if e.vote != "TIMEOUT"]

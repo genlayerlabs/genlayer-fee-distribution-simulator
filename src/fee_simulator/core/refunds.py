@@ -35,6 +35,7 @@ def compute_sender_refund(
                     validators_timeout=transaction_budget.validatorsTimeout,
                     round_labels=round_labels,  # Pass round labels
                     appeal_round_index=event.round_index,  # Pass the appeal round index
+                    rotations=transaction_budget.rotations,
                 )
                 total_paid_from_sender += event.earned - appeal_bond
             continue

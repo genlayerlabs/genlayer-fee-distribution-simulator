@@ -39,6 +39,7 @@ def apply_leader_timeout_150_previous_normal_round(
         leader_timeout=budget.leaderTimeout,
         validators_timeout=budget.validatorsTimeout,
         round_labels=round_labels,
+        rotations=budget.rotations,
     )
 
     # Award the leader 150% of leaderTimeout

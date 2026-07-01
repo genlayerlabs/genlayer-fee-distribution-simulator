@@ -51,6 +51,7 @@ def apply_split_previous_appeal_bond(
         leader_timeout=budget.leaderTimeout,
         validators_timeout=budget.validatorsTimeout,
         round_labels=round_labels,
+        rotations=budget.rotations,
     )
 
     # Amount to split is appeal bond minus leader timeout
