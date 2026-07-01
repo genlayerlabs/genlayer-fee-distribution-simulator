@@ -121,16 +121,14 @@ def test_appeal_validator_unsuccessful(verbose, debug):
         == leaderTimeout + validatorsTimeout
     ), f"First leader should earn leaderTimeout ({leaderTimeout}) + validatorsTimeout ({validatorsTimeout})"
 
-    # Second Leader Fees Assert
-    assert (
-        compute_total_earnings(fee_events, addresses_pool[5]) == validatorsTimeout
-    ), f"Second leader should earn validatorsTimeout ({validatorsTimeout})"
-
-    # Majority Validator Fees Assert
+    # Appeal Round Validator Fees Assert (contract semantics: the appellant's
+    # bond is pooled with ALL the round's validator fees and split among the
+    # aligned validators: (7*V + bond) // 7)
+    pool_share = (7 * validatorsTimeout + appeal_bond) // 7
     assert all(
-        compute_total_earnings(fee_events, addresses_pool[i]) == validatorsTimeout
-        for i in [6, 7, 8, 9, 10, 11]
-    ), f"Majority validators should earn validatorsTimeout ({validatorsTimeout})"
+        compute_total_earnings(fee_events, addresses_pool[i]) == pool_share
+        for i in [5, 6, 7, 8, 9, 10, 11]
+    ), f"Appeal validators should earn their pool share ({pool_share})"
 
     # Minority Validator Fees Assert
     assert all(

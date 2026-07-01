@@ -3,7 +3,7 @@ from src.fee_simulator.protocol.models import FeeEvent, TransactionBudget
 from src.fee_simulator.display.fee_distribution import display_fee_distribution
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
 from src.fee_simulator.protocol.types import RoundLabel
-from src.fee_simulator.utils import is_appeal_round
+from src.fee_simulator.utils import is_appeal_round, compute_total_cost
 from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 
 
@@ -11,59 +11,63 @@ def compute_sender_refund(
     sender_address: str,
     fee_events: List[FeeEvent],
     transaction_budget: TransactionBudget,
-    round_labels: List[RoundLabel],  # New parameter
+    round_labels: List[RoundLabel],
 ) -> float:
+    """
+    Mirror the contract's settlement (FeeManagerHelpers.finalizeFeesDistribution):
+    the sender receives whatever is left of the fee pot after every credit.
 
+    Conservation over the fee pot:
+      money in  = total_cost (sender) + appeal bonds (appellants)
+      money out = every `earned` credit (validators, leaders, appellant
+                  rewards, explicit sender legs) + residual appellant bond
+                  burns (paths where the simulator still destroys a bond)
+                  + this refund
+
+    ⇒ refund = total_cost + Σ bonds − Σ earned − Σ appellant burns
+
+    Division remainders are never credited to anyone, so they flow back to
+    the sender automatically — same as the contract's leftOverFees.
+
+    Note: `burned` on VALIDATOR events is a stake-level penalty, not a fee
+    pot flow, so it does not participate here. Only APPEALANT burns (bond
+    value the simulator destroys on fallback paths) reduce the pot.
+    """
     # TODO: when introducing toppers, we need to change this function
-    sender_cost = 0
-    total_paid_from_sender = 0
 
+    total_cost = compute_total_cost(transaction_budget)
+
+    # Bonds paid into the pot by appellants, one per appeal round
+    bonds_total = 0
+    for i, label in enumerate(round_labels):
+        if not is_appeal_round(label):
+            continue
+        normal_round_index = find_previous_normal_round(i, round_labels)
+        if normal_round_index is None:
+            normal_round_index = max(i - 1, 0)
+        bonds_total += compute_appeal_bond(
+            normal_round_index=normal_round_index,
+            leader_timeout=transaction_budget.leaderTimeout,
+            validators_timeout=transaction_budget.validatorsTimeout,
+            round_labels=round_labels,
+            appeal_round_index=i,
+            rotations=transaction_budget.rotations,
+        )
+
+    earned_total = 0
+    appellant_burns = 0
     for event in fee_events:
-        # Skip unsuccessful appeal costs, if leader appeal we skip 2 rounds
-        round_label = event.round_label if event.round_label is not None else ""
-
+        earned_total += event.earned
         if event.role == "APPEALANT":
-            if event.earned > 0 and event.round_index is not None:
-                # Find the most recent normal round before this appeal
-                normal_round_index = find_previous_normal_round(event.round_index, round_labels)
-                if normal_round_index is None:
-                    normal_round_index = event.round_index - 1  # Default fallback
+            appellant_burns += event.burned
 
-                appeal_bond = compute_appeal_bond(
-                    normal_round_index=normal_round_index,
-                    leader_timeout=transaction_budget.leaderTimeout,
-                    validators_timeout=transaction_budget.validatorsTimeout,
-                    round_labels=round_labels,  # Pass round labels
-                    appeal_round_index=event.round_index,  # Pass the appeal round index
-                    rotations=transaction_budget.rotations,
-                )
-                total_paid_from_sender += event.earned - appeal_bond
-            continue
-
-        if "UNSUCCESSFUL" in round_label:
-            continue
-
-        if round_label in [
-            "SPLIT_PREVIOUS_APPEAL_BOND",
-            "LEADER_TIMEOUT_50_PREVIOUS_APPEAL_BOND",
-            "EQUAL_SPLIT",
-        ]:
-            continue
-
-        if event.address == sender_address:
-            sender_cost += event.cost
-            # Don't count sender's earnings as they include the refund itself
-            # which would create a circular dependency
-            continue
-
-        total_paid_from_sender += event.earned
-
-    refund = sender_cost - total_paid_from_sender
+    refund = total_cost + bonds_total - earned_total - appellant_burns
 
     if refund < 0:
         display_fee_distribution(fee_events)
         raise ValueError(
-            f"Total paid from sender is greater than sender cost: {total_paid_from_sender} > {sender_cost}"
+            f"Fee pot overdrawn: credits ({earned_total + appellant_burns}) exceed "
+            f"pot ({total_cost + bonds_total})"
         )
 
     return refund

@@ -512,10 +512,10 @@ class TestSplitPreviousAppealBond:
         )
         assert leader_event.earned == 100
 
-        # Each validator should earn their share of the appeal bond minus leader timeout
+        # Contract semantics: aligned validators earn validatorsTimeout plus
+        # an equal share of the FULL bond.
         # Validator appeal bond = 7 * 200 = 1400 (no leader fee component)
-        # Amount to split = 1400 - 100 = 1300
-        # Split among 11 validators = ~118 each (with rounding)
+        # UNDETERMINED → all 11 aligned: 200 + 1400 // 11 = 200 + 127 = 327
         for i in range(1, 12):  # addresses_pool[1] through addresses_pool[11]
             validator_events = [
                 e
@@ -523,8 +523,7 @@ class TestSplitPreviousAppealBond:
                 if e.address == addresses_pool[i] and e.role == "VALIDATOR"
             ]
             if validator_events:
-                # Due to integer division, some might get 118, others 119
-                assert validator_events[0].earned in [118, 119]
+                assert validator_events[0].earned == 327
                 assert validator_events[0].role == "VALIDATOR"
 
 
@@ -679,8 +678,9 @@ class TestChainedAppealScenarios:
             round_labels=round_labels,
         )
 
-        # Verify first appeal has events for validators and appealant
-        assert len(events1) == 8  # 7 validators + 1 appealant
+        # Verify first appeal has events for its validators (the appellant's
+        # loss is the bond cost recorded at bond subtraction, no burn event)
+        assert len(events1) == 7  # 7 validators
 
         # Second unsuccessful appeal
         events2 = apply_appeal_validator_unsuccessful(
@@ -691,8 +691,8 @@ class TestChainedAppealScenarios:
             round_labels=round_labels,
         )
 
-        # Verify second appeal has events for validators and appealant
-        assert len(events2) == 14  # 13 validators + 1 appealant
+        # Verify second appeal has events for its validators
+        assert len(events2) == 13  # 13 validators
 
         # The split bond function should handle the second appeal's bond
         events3 = apply_split_previous_appeal_bond(
@@ -718,8 +718,8 @@ class TestChainedAppealScenarios:
         # So the bond is split only among TIMEOUT voters
 
         # The second appeal bond (validator appeal, no leader fee: 13 * 200 = 2600)
-        # Amount to split = 2600 - 100 = 2500
-        # Split among 13 TIMEOUT voters = 192 each (integer division)
+        # Contract semantics: aligned validators earn V + full bond share:
+        # 200 + 2600 // 13 = 400 each
 
         validator_events = [e for e in events3 if e.role == "VALIDATOR"]
 
@@ -727,7 +727,7 @@ class TestChainedAppealScenarios:
         timeout_voters = [e for e in validator_events if e.vote == "TIMEOUT"]
         assert len(timeout_voters) == 13
         for event in timeout_voters:
-            assert event.earned == 192  # 2500 // 13 = 192
+            assert event.earned == 400  # 200 + 2600 // 13
 
         # Check AGREE and DISAGREE voters get 0 and are penalized
         non_timeout_voters = [e for e in validator_events if e.vote != "TIMEOUT"]
