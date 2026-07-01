@@ -51,6 +51,7 @@ def apply_skip_round(
                 validators_timeout=budget.validatorsTimeout,
                 round_labels=round_labels,
                 appeal_round_index=round_index - 1,  # The unsuccessful appeal round
+                rotations=budget.rotations,
             )
 
             # Use the burn computation method to calculate how much to burn

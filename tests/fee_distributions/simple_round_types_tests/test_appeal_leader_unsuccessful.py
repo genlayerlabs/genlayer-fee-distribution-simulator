@@ -139,25 +139,28 @@ def test_appeal_leader_unsuccessful(verbose, debug):
     ), f"First leader should earn leaderTimeout ({leaderTimeout}) + validatorsTimeout ({validatorsTimeout})"
 
     # First Validator Fees Assert (Round 1: NORMAL_ROUND + Round 3: EQUAL_SPLIT)
-    # In EQUAL_SPLIT, all validators earn validatorsTimeout (no penalties)
+    # In EQUAL_SPLIT (contract semantics), all non-leader validators earn
+    # validatorsTimeout + an equal share of the failed appeal bond
+    bond_share = appeal_bond // 10  # 10 non-leader validators in round 3
     assert all(
         compute_total_earnings(fee_events, addresses_pool[i])
-        == validatorsTimeout + validatorsTimeout  # round1 + round3
+        == validatorsTimeout + validatorsTimeout + bond_share  # round1 + round3
         for i in [1, 2, 3, 4]
-    ), f"First validators should earn 2*validatorsTimeout ({2*validatorsTimeout})"
+    ), f"First validators should earn 2*validatorsTimeout + bond share ({2*validatorsTimeout + bond_share})"
 
     # Second Leader Fees Assert (Round 3: EQUAL_SPLIT)
-    # Leader gets leaderTimeout + validatorsTimeout (as validator in equal split)
+    # Leader gets leaderTimeout only (excluded from the validator pool,
+    # contract skipLeader=true)
     assert (
-        compute_total_earnings(fee_events, addresses_pool[5])
-        == leaderTimeout + validatorsTimeout
-    ), f"Second leader should earn leaderTimeout ({leaderTimeout}) + validatorsTimeout ({validatorsTimeout})"
+        compute_total_earnings(fee_events, addresses_pool[5]) == leaderTimeout
+    ), f"Second leader should earn leaderTimeout ({leaderTimeout})"
 
     # Second Validator Fees Assert (Round 3: EQUAL_SPLIT only)
     assert all(
-        compute_total_earnings(fee_events, addresses_pool[i]) == validatorsTimeout
+        compute_total_earnings(fee_events, addresses_pool[i])
+        == validatorsTimeout + bond_share
         for i in [6, 7, 8, 9, 10, 11]
-    ), f"Second validators should earn validatorsTimeout ({validatorsTimeout})"
+    ), f"Second validators should earn validatorsTimeout + bond share ({validatorsTimeout + bond_share})"
 
     # Sender Fees Assert
     total_cost = compute_total_cost(transaction_budget)

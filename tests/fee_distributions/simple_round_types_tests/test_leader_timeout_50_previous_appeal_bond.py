@@ -131,10 +131,20 @@ def test_leader_timeout_50_previous_appeal_bond(verbose, debug):
         compute_total_earnings(fee_events, addresses_pool[0]) == leaderTimeout * 0.5
     ), f"First leader should earn 50% of leaderTimeout ({leaderTimeout * 0.5})"
 
-    # Second Leader Fees Assert
+    # Second Leader Fees Assert (contract semantics: the failed timeout
+    # appeal bond is split 50/50 between the new leader and the sender)
     assert (
-        compute_total_earnings(fee_events, addresses_pool[5]) == leaderTimeout * 0.5
-    ), f"Second leader should earn 50% of leaderTimeout ({leaderTimeout * 0.5})"
+        compute_total_earnings(fee_events, addresses_pool[5]) == appeal_bond // 2
+    ), f"Second leader should earn half the appeal bond ({appeal_bond // 2})"
+
+    # Sender receives the other half of the bond as an explicit credit
+    sender_bond_half = appeal_bond - appeal_bond // 2
+    sender_earned = compute_total_earnings(
+        fee_events, transaction_budget.senderAddress
+    )
+    assert (
+        sender_earned >= sender_bond_half
+    ), f"Sender earnings ({sender_earned}) should include half the bond ({sender_bond_half})"
 
     # Sender Fees Assert
     total_cost = compute_total_cost(transaction_budget)

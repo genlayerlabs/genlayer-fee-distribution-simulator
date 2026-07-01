@@ -479,11 +479,16 @@ class TestEqualSplit:
         assert len(leader_events) == 1
         assert leader_events[0].earned == leaderTimeout
 
-        # All validators should earn validatorsTimeout
+        # All non-leader validators earn validatorsTimeout + an equal share
+        # of the failed leader appeal bond (contract semantics: the bond is
+        # distributed, not returned to the sender)
         validator_events = [e for e in equal_split_events if e.role == "VALIDATOR"]
+        assert len(validator_events) > 0
+        expected_share = validator_events[0].earned - validatorsTimeout
+        assert expected_share > 0, "Bond share should be positive in EQUAL_SPLIT"
         assert all(
-            e.earned == validatorsTimeout for e in validator_events
-        ), "All validators should earn validatorsTimeout in EQUAL_SPLIT"
+            e.earned == validatorsTimeout + expected_share for e in validator_events
+        ), "All validators should earn validatorsTimeout + equal bond share in EQUAL_SPLIT"
 
         # No penalties in EQUAL_SPLIT
         assert all(

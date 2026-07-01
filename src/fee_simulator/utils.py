@@ -71,17 +71,26 @@ def compute_total_cost(transaction_budget: TransactionBudget) -> int:
             + transaction_budget.leaderTimeout
         )
 
-    # Calculate appeal rewards (50% return on appeal bonds)
+    # Calculate appeal rewards (50% return on appeal bonds). The appeal type
+    # is unknown when budgeting, so reserve for the worst case: a leader
+    # appeal, whose bond covers the full next normal round (incl. rotations).
+    # Validator appeal bonds (appeal_size * validatorsTimeout) are always
+    # smaller than this.
     total_appeal_rewards = 0
     for i in range(transaction_budget.appealRounds):
-        round_size = (
-            APPEAL_ROUND_SIZES[i]
-            if i < len(APPEAL_ROUND_SIZES)
-            else APPEAL_ROUND_SIZES[-1]
+        next_normal_size = (
+            NORMAL_ROUND_SIZES[i + 1]
+            if i + 1 < len(NORMAL_ROUND_SIZES)
+            else NORMAL_ROUND_SIZES[-1]
         )
-        appeal_bond = (
-            round_size * transaction_budget.validatorsTimeout
-            + transaction_budget.leaderTimeout
+        rotations_next = (
+            transaction_budget.rotations[i + 1]
+            if i + 1 < len(transaction_budget.rotations)
+            else 0
+        )
+        appeal_bond = (rotations_next + 1) * (
+            transaction_budget.leaderTimeout
+            + next_normal_size * transaction_budget.validatorsTimeout
         )
         appeal_reward = int(appeal_bond * 0.5)  # 50% additional return
         total_appeal_rewards += appeal_reward
