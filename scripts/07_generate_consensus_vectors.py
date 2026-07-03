@@ -87,10 +87,14 @@ def categorize(path):
     return "no_appeal"
 
 
-def pattern_name(path, total_rotations):
+def pattern_name(path, total_rotations, rotation_kind="timeout"):
     core = " -> ".join(n for n in path if n not in ("START", "END"))
     if total_rotations:
-        return f"{core} [rot:{total_rotations}]"
+        # [rot:N] = leader-timeout rotations (entries pay only the 50% comp);
+        # [vrot:N] = vote-based rotations (entries also pay their aligned
+        # validators per the backward rotation loop).
+        tag = "vrot" if rotation_kind == "vote" else "rot"
+        return f"{core} [{tag}:{total_rotations}]"
     return core
 
 
@@ -123,7 +127,7 @@ def leader_vote_string(vote):
     return normalize_vote(vote)
 
 
-def build_example(path, rotation_counts, addresses_pool, sender, appealant):
+def build_example(path, rotation_counts, addresses_pool, sender, appealant, rotation_kind="timeout"):
     transaction_results, budget = path_to_transaction_results(
         path=path,
         addresses=addresses_pool,
@@ -132,6 +136,7 @@ def build_example(path, rotation_counts, addresses_pool, sender, appealant):
         leader_timeout=LEADER_TIMEOUT,
         validators_timeout=VALIDATORS_TIMEOUT,
         rotation_counts=rotation_counts or {},
+        rotation_kind=rotation_kind,
     )
     fee_events, round_labels = process_transaction(
         addresses=addresses_pool,
@@ -206,7 +211,7 @@ def build_example(path, rotation_counts, addresses_pool, sender, appealant):
             )
 
     total_rotations = sum((rotation_counts or {}).values())
-    name = pattern_name(path, total_rotations)
+    name = pattern_name(path, total_rotations, rotation_kind)
     example = {
         "description": f"Test Case: {name}",
         "initialState": {"rounds": rounds_out, "sender": "sender"},
@@ -285,24 +290,30 @@ def main():
     for variant in generate_all_path_variants(
         paths, max_rotations=args.max_rotations, max_idle=0
     ):
-        try:
-            name, example = build_example(
-                variant.path,
-                variant.rotation_counts,
-                addresses_pool,
-                sender,
-                appealant,
-            )
-        except Exception as e:  # noqa: BLE001 - report and continue
-            errors.append((variant.path, variant.rotation_counts, str(e)[:150]))
-            continue
-        category = categorize(variant.path)
         total_rotations = sum((variant.rotation_counts or {}).values())
-        bucket = rot if total_rotations else base
-        max_examples = 1 if total_rotations else 2
-        if len(bucket[category][name]) < max_examples:
-            bucket[category][name].append(example)
-        counts[category] += 1
+        # Rotation variants are emitted in both flavors: leader-timeout
+        # rotations ([rot:N]) and vote-based rotations ([vrot:N]), which pay
+        # their entries' aligned validators per the backward rotation loop.
+        kinds = ("timeout", "vote") if total_rotations else ("timeout",)
+        for rotation_kind in kinds:
+            try:
+                name, example = build_example(
+                    variant.path,
+                    variant.rotation_counts,
+                    addresses_pool,
+                    sender,
+                    appealant,
+                    rotation_kind=rotation_kind,
+                )
+            except Exception as e:  # noqa: BLE001 - report and continue
+                errors.append((variant.path, variant.rotation_counts, str(e)[:150]))
+                continue
+            category = categorize(variant.path)
+            bucket = rot if total_rotations else base
+            max_examples = 1 if total_rotations else 2
+            if len(bucket[category][name]) < max_examples:
+                bucket[category][name].append(example)
+            counts[category] += 1
 
     def write_category(category, patterns, suffix):
         data = {

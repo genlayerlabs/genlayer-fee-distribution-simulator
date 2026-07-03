@@ -52,21 +52,29 @@ def create_majority_agree_votes(
 def create_majority_disagree_votes(
     size: int, addresses: List[str], offset: int = 0
 ) -> Dict[str, Vote]:
-    """Create votes where majority disagrees."""
+    """Create votes where majority disagrees.
+
+    The leader cannot vote against its own receipt: on-chain the proposal IS
+    the leader's implicit AGREE vote (the contracts derive it from
+    leaderRevealVote), so a disagree majority must come entirely from the
+    validators — majority_count of them — and the leader ends up non-aligned
+    (penalized as a validator while still earning the leader fee).
+    """
     votes = {
-        addresses[0]: ["LEADER_RECEIPT", "DISAGREE"],  # Leader
+        addresses[0]: ["LEADER_RECEIPT", "AGREE"],  # Leader (implicit agree)
     }
 
     # Calculate majority threshold (more than half)
     majority_count = (size // 2) + 1
 
-    # First majority_count-1 validators disagree (we already have leader disagreeing)
-    for i in range(1, min(majority_count, size)):
+    # majority_count validators disagree (the leader's implicit AGREE does not
+    # contribute to the disagree majority)
+    for i in range(1, min(majority_count + 1, size)):
         votes[addresses[i]] = "DISAGREE"
 
     # Rest of validators split between AGREE and TIMEOUT
-    for i in range(majority_count, size):
-        if (i - majority_count) % 2 == 0:
+    for i in range(majority_count + 1, size):
+        if (i - majority_count - 1) % 2 == 0:
             votes[addresses[i]] = "AGREE"
         else:
             votes[addresses[i]] = "TIMEOUT"
@@ -77,21 +85,27 @@ def create_majority_disagree_votes(
 def create_majority_timeout_votes(
     size: int, addresses: List[str], offset: int = 0
 ) -> Dict[str, Vote]:
-    """Create votes where majority times out."""
+    """Create votes where majority times out.
+
+    As with the disagree case, the leader's receipt is an implicit AGREE vote
+    (a leader that itself times out is the LEADER_TIMEOUT path, not a receipt
+    round), so the timeout majority must come from majority_count validators
+    and the leader ends up non-aligned.
+    """
     votes = {
-        addresses[0]: ["LEADER_RECEIPT", "TIMEOUT"],  # Leader
+        addresses[0]: ["LEADER_RECEIPT", "AGREE"],  # Leader (implicit agree)
     }
 
     # Calculate majority threshold (more than half)
     majority_count = (size // 2) + 1
 
-    # First majority_count-1 validators timeout (we already have leader timing out)
-    for i in range(1, min(majority_count, size)):
+    # majority_count validators time out
+    for i in range(1, min(majority_count + 1, size)):
         votes[addresses[i]] = "TIMEOUT"
 
     # Rest of validators split between AGREE and DISAGREE
-    for i in range(majority_count, size):
-        if (i - majority_count) % 2 == 0:
+    for i in range(majority_count + 1, size):
+        if (i - majority_count - 1) % 2 == 0:
             votes[addresses[i]] = "AGREE"
         else:
             votes[addresses[i]] = "DISAGREE"
@@ -132,6 +146,25 @@ def create_undetermined_votes(
         votes[addresses[validator_idx]] = "TIMEOUT"
         validator_idx += 1
 
+    return votes
+
+
+def create_vote_rotation_votes(
+    size: int, addresses: List[str], offset: int = 0
+) -> Dict[str, Vote]:
+    """Create votes for a vote-based rotation entry: the committee unanimously
+    rejects the leader's proposal (majority DISAGREE), rotating the leader.
+
+    Mirrors the on-chain vote-based rotation trigger. In the backward rotation
+    loop every disagreeing validator of the entry is aligned with the entry's
+    own result and earns its validator fee; the rotated-out leader earns the
+    50% compensation and is neither paid a validator fee nor penalized.
+    """
+    votes = {
+        addresses[0]: ["LEADER_RECEIPT", "AGREE"],  # Leader (implicit agree)
+    }
+    for i in range(1, size):
+        votes[addresses[i]] = "DISAGREE"
     return votes
 
 
@@ -277,6 +310,7 @@ def path_to_transaction_results(
     removed_addresses: set = None,
     rotation_counts: Optional[Dict[int, int]] = None,
     idle_config: Optional[Dict[int, int]] = None,
+    rotation_kind: str = "timeout",
 ) -> Tuple[TransactionRoundResults, TransactionBudget]:
     """
     Convert a TRANSITIONS_GRAPH path to TransactionRoundResults and TransactionBudget.
@@ -290,8 +324,12 @@ def path_to_transaction_results(
         validators_timeout: Validators timeout value
         removed_addresses: Set of addresses that have been slashed/removed
         rotation_counts: Optional mapping of round index (0-based, counting only normal
-            rounds) to number of leader timeout rotations before the final outcome.
-            E.g. {0: 2} means the first normal round has 2 timeouts before the final leader.
+            rounds) to number of leader rotations before the final outcome.
+            E.g. {0: 2} means the first normal round has 2 rotations before the final leader.
+        rotation_kind: How the intermediate rotations happen — "timeout" (the
+            leader never proposes; only the 50% compensation is due) or "vote"
+            (the committee unanimously rejects the proposal; the entry's
+            aligned validators are paid per the backward rotation loop).
         idle_config: Optional mapping of round index to number of idle validators.
             E.g. {0: 2} means 2 validators in the first round are IDLE.
 
@@ -428,22 +466,25 @@ def path_to_transaction_results(
             rotations_list = []
 
             if num_timeout_rotations > 0:
-                # Create timeout rotations before the final outcome
-                # Each timeout rotation uses the next leader from the address pool
+                # Create rotation entries before the final outcome. Each entry
+                # uses the next leader from the address pool; "timeout" entries
+                # carry no votes, "vote" entries carry a unanimous rejection.
+                make_rotation_votes = (
+                    create_vote_rotation_votes
+                    if rotation_kind == "vote"
+                    else create_leader_timeout_votes
+                )
                 for rot_idx in range(num_timeout_rotations):
                     # The leader for this rotation is the current first address
                     rot_leader_idx = rot_idx  # index within normal_addresses
                     if rot_leader_idx < len(normal_addresses):
-                        timeout_votes = create_leader_timeout_votes(
-                            len(normal_addresses), normal_addresses
-                        )
                         # Rotate addresses: put the rot_idx-th leader first
                         rot_addresses = normal_addresses[rot_idx:] + normal_addresses[:rot_idx]
-                        timeout_votes = create_leader_timeout_votes(
+                        rotation_votes = make_rotation_votes(
                             len(rot_addresses), rot_addresses
                         )
-                        rotations_list.append(Rotation(votes=timeout_votes))
-                        # Track this timed-out leader
+                        rotations_list.append(Rotation(votes=rotation_votes))
+                        # Track this rotated-out leader
                         previous_leaders.append(rot_addresses[0])
 
                 # Final rotation: shift addresses so next available leader is first

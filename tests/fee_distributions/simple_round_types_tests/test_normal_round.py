@@ -303,11 +303,19 @@ def test_normal_round_majority_disagree(verbose, debug):
     )
 
     # Leader Fees Assert
-    # In our implementation, the leader also disagrees (part of majority)
+    # The leader's receipt is an implicit AGREE vote (it cannot vote against
+    # its own proposal), so under a disagree majority the leader is
+    # non-aligned: it earns the leader fee but no validator fee, and is
+    # penalized as a validator — mirroring the on-chain contracts.
     assert (
-        compute_total_earnings(fee_events, addresses_pool[0])
-        == leaderTimeout + validatorsTimeout
-    ), "Leader should have 100 (leader) + 200 (validator) as part of majority"
+        compute_total_earnings(fee_events, addresses_pool[0]) == leaderTimeout
+    ), "Leader should earn only the leader fee when the majority disagrees"
+    leader_burns = sum(
+        e.burned for e in fee_events if e.burned and e.address == addresses_pool[0]
+    )
+    assert (
+        leader_burns == PENALTY_REWARD_COEFFICIENT * validatorsTimeout
+    ), "Leader should be penalized as a non-aligned validator"
 
     # Check that minority validators burn
     # Find validators who are in minority (those who agreed or timed out)
