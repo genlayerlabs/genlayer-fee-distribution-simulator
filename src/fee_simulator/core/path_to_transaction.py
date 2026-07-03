@@ -346,6 +346,10 @@ def path_to_transaction_results(
         rotation_counts = {}
     if idle_config is None:
         idle_config = {}
+    if rotation_kind not in ("timeout", "vote"):
+        raise ValueError(
+            f"rotation_kind must be 'timeout' or 'vote', got {rotation_kind!r}"
+        )
 
     rounds = []
     appeals = []

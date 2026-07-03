@@ -366,7 +366,8 @@ def main():
                     continue
                 new_patterns = {}
                 for nm, pd in old["patterns"].items():
-                    core = nm.split(" [rot:")[0]
+                    rotation_kind = "vote" if " [vrot:" in nm else "timeout"
+                    core = nm.split(" [vrot:")[0].split(" [rot:")[0]
                     path = ["START"] + core.split(" -> ") + ["END"]
                     old_ex = pd["examples"][0] if pd.get("examples") else {}
                     rot_list = old_ex.get("rotations") or []
@@ -380,6 +381,7 @@ def main():
                             addresses_pool,
                             sender,
                             appealant,
+                            rotation_kind=rotation_kind,
                         )
                     except Exception as e:  # noqa: BLE001
                         errors.append((path, rotation_counts, str(e)[:150]))
