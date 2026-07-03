@@ -178,8 +178,11 @@ def classify_vote_appeal(
 
     # Validator appeal: previous round had a clear majority
     else:
-        # Successful if validators changed the outcome
-        if appeal_majority != prev_majority and appeal_majority != "UNDETERMINED":
+        # On-chain (Rounds.sol) an appeal fails only when the appeal round
+        # CONFIRMS the original outcome with a matching majority. A
+        # NoMajority appeal round confirms nothing — the appeal succeeds and
+        # the transaction goes back for re-execution.
+        if appeal_majority != prev_majority:
             return "APPEAL_VALIDATOR_SUCCESSFUL"
         else:
             return "APPEAL_VALIDATOR_UNSUCCESSFUL"

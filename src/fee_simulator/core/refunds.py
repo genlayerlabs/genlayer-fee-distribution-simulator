@@ -32,6 +32,18 @@ def compute_sender_refund(
     Note: `burned` on VALIDATOR events is a stake-level penalty, not a fee
     pot flow, so it does not participate here. Only APPEALANT burns (bond
     value the simulator destroys on fallback paths) reduce the pot.
+
+    Contrast with the contracts (FeesProcessor): on-chain the refund bucket
+    (feesToReturnToUser) is ACCRUED flow-by-flow — skip-round fees, bond
+    residues, leader-fee halves, and penalties recorded with
+    returnToUser=true are each credited explicitly. The simulator reaches
+    the same economics implicitly: a penalized validator simply never earns
+    its fee allocation, so that money stays in the pot and lands in this
+    residue-based refund. Any constant delta between this refund and the
+    contract's bucket therefore points to an accrual the contract retains
+    or redistributes (returnToUser=false paths, dust) rather than to a
+    penalty flowing to the sender here — validator penalty burns never
+    enter this refund.
     """
     # TODO: when introducing toppers, we need to change this function
 
