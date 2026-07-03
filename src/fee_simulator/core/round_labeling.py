@@ -189,6 +189,7 @@ def classify_appeal_round(
     round_index: int,
     rounds: List[Dict[str, Vote]],
     leader_addresses: List[Optional[str]],
+    prior_labels: Optional[List[RoundLabel]] = None,
 ) -> RoundLabel:
     """Classify an appeal round based on the previous round's outcome."""
     if round_index == 0:  # Safety check
@@ -218,7 +219,17 @@ def classify_appeal_round(
         orig_round, leader_addresses[original_round_index]
     )
 
-    if orig_leader_action == "LEADER_TIMEOUT":
+    # The appeal type follows what was appealed, not the submitted node name
+    # (FeesRecorder MajorityTimeout branch): a round colored LeaderTimeout —
+    # a receipt round with a validators-timeout majority after a successful
+    # leader appeal — is appealed as a leader-timeout appeal.
+    timeout_colored = (
+        prior_labels is not None
+        and original_round_index < len(prior_labels)
+        and prior_labels[original_round_index] == "LEADER_TIMEOUT_50_PERCENT"
+    )
+
+    if orig_leader_action == "LEADER_TIMEOUT" or timeout_colored:
         return classify_leader_timeout_appeal(round_index, rounds, leader_addresses)
     else:
         orig_majority = compute_majority(orig_round)
@@ -234,7 +245,10 @@ SPECIAL_CASE_PATTERNS = [
         "pattern": [
             "NORMAL_ROUND",
             ["APPEAL_LEADER_SUCCESSFUL", "APPEAL_VALIDATOR_SUCCESSFUL"],
-            "NORMAL_ROUND",
+            # The re-execution may itself be colored LeaderTimeout when it
+            # ends in a validators-timeout majority; the original round is
+            # skipped either way.
+            ["NORMAL_ROUND", "LEADER_TIMEOUT_50_PERCENT"],
         ],
         "changes": {0: "SKIP_ROUND"},
     },
@@ -425,7 +439,18 @@ def label_rounds(transaction_results: TransactionRoundResults) -> List[RoundLabe
 
         # Classify based on round type - check vote patterns instead of index
         if is_likely_appeal_round(round_votes, leader_addresses[i]):
-            label = classify_appeal_round(i, rounds, leader_addresses)
+            label = classify_appeal_round(i, rounds, leader_addresses, labels)
+        elif (
+            i > 0
+            and labels[i - 1] == "APPEAL_LEADER_SUCCESSFUL"
+            and leader_action == "LEADER_RECEIPT"
+            and compute_majority(round_votes) == "TIMEOUT"
+        ):
+            # FeesRecorder MajorityTimeout branch: a re-execution after a
+            # successful leader appeal that ends in a validators-timeout
+            # majority is colored LeaderTimeout (halved leader fee), not
+            # Normal. Round 0 with a timeout majority keeps NORMAL semantics.
+            label = "LEADER_TIMEOUT_50_PERCENT"
         else:
             is_only_round = total_rounds == 1
             label = classify_normal_round(leader_action, is_only_round)
