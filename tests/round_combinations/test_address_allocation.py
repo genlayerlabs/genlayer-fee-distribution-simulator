@@ -376,13 +376,21 @@ class TestAddressAllocation:
             # All should create valid rounds
             assert len(result.rounds) == len(path) - 2
 
-            # Appeals should use new addresses
             if len(result.rounds) > 1:
                 round0_indices = set(self.get_round_indices(result.rounds[0]))
                 round1_indices = set(self.get_round_indices(result.rounds[1]))
-                assert (
-                    len(round0_indices & round1_indices) == 0
-                ), f"Appeal reuses addresses for path {path}"
+                if "LEADER_APPEAL_TIMEOUT" in path[2]:
+                    # Leader-timeout appeals have NO voting committee
+                    # on-chain — the appeal round keeps the appealed round's
+                    # committee as NA bookkeeping and draws nothing new
+                    assert (
+                        round1_indices == round0_indices
+                    ), f"LT appeal should not draw new addresses for path {path}"
+                else:
+                    # Vote appeals draw an entirely new committee
+                    assert (
+                        len(round0_indices & round1_indices) == 0
+                    ), f"Appeal reuses addresses for path {path}"
 
     def test_blockchain_index_calculation(self):
         """Test: Verify blockchain index calculation affects round sizes correctly"""
