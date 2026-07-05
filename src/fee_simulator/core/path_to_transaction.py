@@ -469,36 +469,55 @@ def path_to_transaction_results(
             num_idle = idle_config.get(normal_count, 0)
             rotations_list = []
 
+            round_participants = set(normal_addresses)
+
             if num_timeout_rotations > 0:
                 # Create rotation entries before the final outcome. Each entry
-                # uses the next leader from the address pool; "timeout" entries
-                # carry no votes, "vote" entries carry a unanimous rejection.
+                # is led by the committee's current first address; "timeout"
+                # entries carry no votes, "vote" entries carry a unanimous
+                # rejection.
                 make_rotation_votes = (
                     create_vote_rotation_votes
                     if rotation_kind == "vote"
                     else create_leader_timeout_votes
                 )
+                committee = list(normal_addresses)
                 for rot_idx in range(num_timeout_rotations):
-                    # The leader for this rotation is the current first address
-                    rot_leader_idx = rot_idx  # index within normal_addresses
-                    if rot_leader_idx < len(normal_addresses):
-                        # Rotate addresses: put the rot_idx-th leader first
-                        rot_addresses = normal_addresses[rot_idx:] + normal_addresses[:rot_idx]
-                        rotation_votes = make_rotation_votes(
-                            len(rot_addresses), rot_addresses
-                        )
-                        rotations_list.append(Rotation(votes=rotation_votes))
-                        # Track this rotated-out leader
-                        previous_leaders.append(rot_addresses[0])
+                    if not committee:
+                        break
+                    entry_leader = committee[0]
+                    rotation_votes = make_rotation_votes(
+                        len(committee), committee
+                    )
+                    rotations_list.append(Rotation(votes=rotation_votes))
+                    previous_leaders.append(entry_leader)
 
-                # Final rotation: shift addresses so next available leader is first
-                final_addresses = normal_addresses[num_timeout_rotations:] + normal_addresses[:num_timeout_rotations]
-                final_round = create_normal_round(node, final_addresses)
+                    # Committee replacement (on-chain RoundsCreation): the
+                    # rotated-out leader leaves the committee and a fresh
+                    # validator from the pool joins. The rotated-out leader
+                    # keeps only the 50% comp — never a final-round vote,
+                    # reward or penalty.
+                    replacement = None
+                    while next_unused_idx < len(addresses):
+                        cand = addresses[next_unused_idx]
+                        next_unused_idx += 1
+                        if cand not in removed_addresses:
+                            replacement = cand
+                            break
+                    committee = [a for a in committee if a != entry_leader]
+                    if replacement is not None:
+                        committee.append(replacement)
+                        round_participants.add(replacement)
+
+                # Final rotation votes over the replaced committee
+                final_round = create_normal_round(node, committee)
                 rotations_list.append(final_round.rotations[0])
                 round_obj = Round(rotations=rotations_list)
+                final_committee = committee
             else:
                 # No rotations, create a normal single-rotation round
                 round_obj = create_normal_round(node, normal_addresses)
+                final_committee = normal_addresses
 
             # Apply idle config: replace some validator votes with IDLE
             if num_idle > 0 and round_obj.rotations:
@@ -519,13 +538,9 @@ def path_to_transaction_results(
             rounds.append(round_obj)
 
             # Update state
-            cumulative_active.update(normal_addresses)
-            if normal_addresses and num_timeout_rotations == 0:
-                previous_leaders.append(normal_addresses[0])
-            elif normal_addresses and num_timeout_rotations > 0:
-                # The final leader is already not in previous_leaders, track them
-                final_leader = normal_addresses[num_timeout_rotations] if num_timeout_rotations < len(normal_addresses) else normal_addresses[0]
-                previous_leaders.append(final_leader)
+            cumulative_active.update(round_participants)
+            if final_committee:
+                previous_leaders.append(final_committee[0])
             normal_count += 1
 
             # Track majority for appeals (always from last rotation)
