@@ -248,10 +248,11 @@ SPECIAL_CASE_PATTERNS = [
         "pattern": [
             "NORMAL_ROUND",
             ["APPEAL_LEADER_SUCCESSFUL", "APPEAL_VALIDATOR_SUCCESSFUL"],
-            # The re-execution may itself be colored LeaderTimeout when it
-            # ends in a validators-timeout majority; the original round is
-            # skipped either way.
-            ["NORMAL_ROUND", "LEADER_TIMEOUT_50_PERCENT"],
+            # The contract retro-skips the appealed round on a successful
+            # appeal regardless of how the re-execution ends
+            # (FeesRecorder): a normal outcome, a validators-timeout
+            # majority colored LeaderTimeout, or a genuine leader timeout.
+            ["NORMAL_ROUND", "LEADER_TIMEOUT_50_PERCENT", "LEADER_TIMEOUT"],
         ],
         "changes": {0: "SKIP_ROUND"},
     },
