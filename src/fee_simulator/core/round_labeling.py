@@ -178,8 +178,11 @@ def classify_vote_appeal(
 
     # Validator appeal: previous round had a clear majority
     else:
-        # Successful if validators changed the outcome
-        if appeal_majority != prev_majority and appeal_majority != "UNDETERMINED":
+        # On-chain (Rounds.sol) an appeal fails only when the appeal round
+        # CONFIRMS the original outcome with a matching majority. A
+        # NoMajority appeal round confirms nothing — the appeal succeeds and
+        # the transaction goes back for re-execution.
+        if appeal_majority != prev_majority:
             return "APPEAL_VALIDATOR_SUCCESSFUL"
         else:
             return "APPEAL_VALIDATOR_UNSUCCESSFUL"
@@ -245,10 +248,11 @@ SPECIAL_CASE_PATTERNS = [
         "pattern": [
             "NORMAL_ROUND",
             ["APPEAL_LEADER_SUCCESSFUL", "APPEAL_VALIDATOR_SUCCESSFUL"],
-            # The re-execution may itself be colored LeaderTimeout when it
-            # ends in a validators-timeout majority; the original round is
-            # skipped either way.
-            ["NORMAL_ROUND", "LEADER_TIMEOUT_50_PERCENT"],
+            # The contract retro-skips the appealed round on a successful
+            # appeal regardless of how the re-execution ends
+            # (FeesRecorder): a normal outcome, a validators-timeout
+            # majority colored LeaderTimeout, or a genuine leader timeout.
+            ["NORMAL_ROUND", "LEADER_TIMEOUT_50_PERCENT", "LEADER_TIMEOUT"],
         ],
         "changes": {0: "SKIP_ROUND"},
     },

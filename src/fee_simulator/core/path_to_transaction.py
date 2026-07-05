@@ -258,16 +258,15 @@ def create_appeal_votes(
                     votes[addresses[offset + i]] = "DISAGREE"
                 for i in range(majority_count, size):
                     votes[addresses[offset + i]] = "AGREE"
-            else:  # TIMEOUT or UNDETERMINED
-                # For unsuccessful validator appeal after undetermined, maintain undetermined
-                # Create equal split to ensure no clear majority
-                third = size // 3
-                for i in range(third):
-                    votes[addresses[offset + i]] = "AGREE"
-                for i in range(third, 2 * third):
-                    votes[addresses[offset + i]] = "DISAGREE"
-                for i in range(2 * third, size):
+            else:  # TIMEOUT
+                # On-chain (Rounds.sol) an appeal against ValidatorsTimeout
+                # fails only when the appeal round CONFIRMS the outcome with
+                # a timeout majority; a NoMajority composition would make the
+                # appeal succeed. Synthesize a genuine confirming majority.
+                for i in range(majority_count):
                     votes[addresses[offset + i]] = "TIMEOUT"
+                for i in range(majority_count, size):
+                    votes[addresses[offset + i]] = "AGREE"
 
     return votes
 

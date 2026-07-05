@@ -81,7 +81,10 @@ class TestChainedUnsuccessfulAppeals:
                         )
                     ]
                 ),
-                # Round 3: Second appeal (validators still agree - unsuccessful)
+                # Round 3: Second appeal (validators still agree - unsuccessful).
+                # An appeal is unsuccessful only when it CONFIRMS the original
+                # outcome with a matching majority (4/6 AGREE here); a
+                # NoMajority composition would make the appeal succeed.
                 Round(
                     rotations=[
                         Rotation(
@@ -89,9 +92,9 @@ class TestChainedUnsuccessfulAppeals:
                                 addresses_pool[13]: "AGREE",
                                 addresses_pool[14]: "AGREE",
                                 addresses_pool[15]: "AGREE",
-                                addresses_pool[16]: "DISAGREE",
+                                addresses_pool[16]: "AGREE",
                                 addresses_pool[17]: "DISAGREE",
-                                addresses_pool[18]: "TIMEOUT",
+                                addresses_pool[18]: "DISAGREE",
                             }
                         )
                     ]

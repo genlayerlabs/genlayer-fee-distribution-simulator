@@ -26,12 +26,16 @@ def apply_equal_split(
     - Previous round was APPEAL_LEADER_UNSUCCESSFUL
     - Current round has UNDETERMINED majority
 
-    Fee distribution (contract: _distributeFeesToValidators with
-    skipLeader=true, distributeToAll=true, extra=previousAppealBond):
-    - Leader: earns leaderTimeout only (excluded from the validator pool)
-    - ALL non-leader validators: earn validatorsTimeout + an equal share of
-      the previous appeal bond (no penalties)
+    Fee distribution (contract: bond + round budget divided across ALL
+    committee members, leader included, plus the leader fee — measured on
+    the driven flows, CON-611):
+    - Pool = previous appeal bond + committee_size * validatorsTimeout
+    - EVERY committee member (leader included) earns pool // committee_size
+      as its validator share (no penalties) — same as the round-0
+      undetermined treatment, which also pays the leader's validator share
+    - Leader additionally earns leaderTimeout
     - The bond is NOT returned to the sender; the division remainder is
+      (1 wei dust on an 11-member split)
     """
     events = []
     round_obj = transaction_results.rounds[round_index]
@@ -72,11 +76,13 @@ def apply_equal_split(
             appeal_round_index=round_index - 1,
         )
 
-    validator_addresses = [addr for addr in votes if addr != first_addr]
-    bond_share = split_amount(appeal_bond, len(validator_addresses))
+    # Bond + full round budget split equally across ALL committee members,
+    # leader included; the division remainder flows back to the sender.
+    committee = list(votes.keys())
+    pool = appeal_bond + len(committee) * budget.validatorsTimeout
+    share = split_amount(pool, len(committee))
 
-    # ALL non-leader validators get validatorsTimeout + bond share (no penalties)
-    for addr in validator_addresses:
+    for addr in committee:
         events.append(
             FeeEvent(
                 sequence_id=event_sequence.next_id(),
@@ -88,7 +94,7 @@ def apply_equal_split(
                 hash="0xdefault",
                 cost=0,
                 staked=0,
-                earned=budget.validatorsTimeout + bond_share,
+                earned=share,
                 slashed=0,
                 burned=0,
             )
