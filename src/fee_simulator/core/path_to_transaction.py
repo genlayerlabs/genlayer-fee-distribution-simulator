@@ -359,6 +359,10 @@ def path_to_transaction_results(
     previous_leaders = []
     normal_count = 0
     appeal_count = 0
+    # Appeals that actually expand the committee (leader/validator vote
+    # appeals). Leader-timeout appeals draw no committee on-chain and do not
+    # advance the size schedule, so they are excluded from this counter.
+    expanding_appeal_count = 0
 
     # For tracking majorities
     prev_majority = None
@@ -380,23 +384,39 @@ def path_to_transaction_results(
                 and "UNSUCCESSFUL" in previous_node
             )
 
-            # Calculate appeal size
-            base_size = (
-                APPEAL_ROUND_SIZES[appeal_count]
-                if appeal_count < len(APPEAL_ROUND_SIZES)
-                else APPEAL_ROUND_SIZES[-1]
-            )
-            required_size = base_size - 2 if prev_was_unsuccessful else base_size
+            is_timeout_appeal = "LEADER_APPEAL_TIMEOUT" in node
 
-            # Pull new addresses for appeal
-            appeal_addresses = []
-            while len(appeal_addresses) < required_size and next_unused_idx < len(
-                addresses
-            ):
-                addr = addresses[next_unused_idx]
-                next_unused_idx += 1
-                if addr not in removed_addresses:
-                    appeal_addresses.append(addr)
+            if is_timeout_appeal:
+                # On-chain a leader-timeout appeal has NO voting committee —
+                # it just replaces the leader and re-executes
+                # (RoundsCreation.createNewLeaderTimeoutAppealRound). The
+                # appeal round keeps only the appellant bookkeeping: NA
+                # entries over the appealed round's committee, no fresh
+                # draws, nothing new enters the cumulative active set.
+                appeal_addresses = (
+                    list(rounds[-1].rotations[-1].votes.keys())
+                    if rounds and rounds[-1].rotations
+                    else []
+                )
+            else:
+                # Calculate appeal size (leader-timeout appeals do not
+                # consume a slot in the appeal size schedule)
+                base_size = (
+                    APPEAL_ROUND_SIZES[expanding_appeal_count]
+                    if expanding_appeal_count < len(APPEAL_ROUND_SIZES)
+                    else APPEAL_ROUND_SIZES[-1]
+                )
+                required_size = base_size - 2 if prev_was_unsuccessful else base_size
+
+                # Pull new addresses for appeal
+                appeal_addresses = []
+                while len(appeal_addresses) < required_size and next_unused_idx < len(
+                    addresses
+                ):
+                    addr = addresses[next_unused_idx]
+                    next_unused_idx += 1
+                    if addr not in removed_addresses:
+                        appeal_addresses.append(addr)
 
             # For validator appeals, use the last normal round's majority as context
             context_majority = (
@@ -411,6 +431,8 @@ def path_to_transaction_results(
             # Update state
             cumulative_active.update(appeal_addresses)
             appeal_count += 1
+            if not is_timeout_appeal:
+                expanding_appeal_count += 1
 
         else:  # Normal round
             # Calculate required size based on blockchain index
@@ -418,8 +440,11 @@ def path_to_transaction_results(
             if normal_count == 0:
                 blockchain_idx = 0
             else:
-                # Count how many appeals have occurred
-                blockchain_idx = 2 * appeal_count
+                # Count how many committee-expanding appeals have occurred.
+                # Leader-timeout appeals re-execute with the SAME committee
+                # (rotation-style leader replacement), so they must not bump
+                # the size tier.
+                blockchain_idx = 2 * expanding_appeal_count
 
             size_idx = blockchain_idx // 2
             required_size = (
