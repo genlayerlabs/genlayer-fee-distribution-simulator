@@ -139,28 +139,28 @@ def test_appeal_leader_unsuccessful(verbose, debug):
     ), f"First leader should earn leaderTimeout ({leaderTimeout}) + validatorsTimeout ({validatorsTimeout})"
 
     # First Validator Fees Assert (Round 1: NORMAL_ROUND + Round 3: EQUAL_SPLIT)
-    # In EQUAL_SPLIT (contract semantics), all non-leader validators earn
-    # validatorsTimeout + an equal share of the failed appeal bond
-    bond_share = appeal_bond // 10  # 10 non-leader validators in round 3
+    # In EQUAL_SPLIT (contract semantics), bond + round budget are split
+    # equally across ALL 11 committee members, leader included:
+    # (2300 + 11*200) // 11 = 409, 1 wei dust back to the sender.
+    committee_size = 11
+    share = (appeal_bond + committee_size * validatorsTimeout) // committee_size
     assert all(
         compute_total_earnings(fee_events, addresses_pool[i])
-        == validatorsTimeout + validatorsTimeout + bond_share  # round1 + round3
+        == validatorsTimeout + share  # round1 + round3
         for i in [1, 2, 3, 4]
-    ), f"First validators should earn 2*validatorsTimeout + bond share ({2*validatorsTimeout + bond_share})"
+    ), f"First validators should earn validatorsTimeout + committee share ({validatorsTimeout + share})"
 
     # Second Leader Fees Assert (Round 3: EQUAL_SPLIT)
-    # Leader gets leaderTimeout only (excluded from the validator pool,
-    # contract skipLeader=true)
+    # Leader earns the leader fee plus its validator share of the pool
     assert (
-        compute_total_earnings(fee_events, addresses_pool[5]) == leaderTimeout
-    ), f"Second leader should earn leaderTimeout ({leaderTimeout})"
+        compute_total_earnings(fee_events, addresses_pool[5]) == leaderTimeout + share
+    ), f"Second leader should earn leaderTimeout + committee share ({leaderTimeout + share})"
 
     # Second Validator Fees Assert (Round 3: EQUAL_SPLIT only)
     assert all(
-        compute_total_earnings(fee_events, addresses_pool[i])
-        == validatorsTimeout + bond_share
+        compute_total_earnings(fee_events, addresses_pool[i]) == share
         for i in [6, 7, 8, 9, 10, 11]
-    ), f"Second validators should earn validatorsTimeout + bond share ({validatorsTimeout + bond_share})"
+    ), f"Second validators should earn the committee share ({share})"
 
     # Sender Fees Assert
     total_cost = compute_total_cost(transaction_budget)
