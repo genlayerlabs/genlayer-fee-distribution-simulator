@@ -1,3 +1,4 @@
+from src.fee_simulator.protocol.constants import APPEAL_REWARD_MULTIPLE
 """
 Unit tests for individual fee distribution functions.
 
@@ -279,7 +280,7 @@ class TestAppealLeaderSuccessful:
         # Appealant should earn 1.5x appeal bond for 50% return
         # Leader appeal bond covers the full next normal round:
         # 100 + 11 validators * 200 = 2300
-        assert appealant_event.earned == int(2300 * 1.5)  # 3450
+        assert appealant_event.earned == int(2300 * APPEAL_REWARD_MULTIPLE)  # 3450
         assert appealant_event.cost == 0  # Cost is recorded separately
 
 
@@ -352,7 +353,7 @@ class TestAppealValidatorSuccessful:
         # Validator appeal bond covers only the appeal validators (no leader fee)
         appealant_event = next(e for e in events if e.address == addresses_pool[98])
         assert appealant_event.earned == int(
-            (7 * 200) * 1.5
+            (7 * 200) * APPEAL_REWARD_MULTIPLE
         )  # 1.5x appeal_bond = 2100
 
         # In successful appeal

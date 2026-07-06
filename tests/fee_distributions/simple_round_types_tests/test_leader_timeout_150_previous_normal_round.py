@@ -1,3 +1,4 @@
+from src.fee_simulator.protocol.constants import APPEAL_REWARD_MULTIPLE
 import pytest
 from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
@@ -132,8 +133,8 @@ def test_leader_timeout_150_previous_normal_round(verbose, debug):
     )
     assert appeal_bond == leaderTimeout + 5 * validatorsTimeout
     assert compute_total_earnings(fee_events, addresses_pool[23]) == int(
-        appeal_bond * 1.5
-    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * 1.5)}) for 50% return"
+        appeal_bond * APPEAL_REWARD_MULTIPLE
+    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)}) for 50% return"
     assert (
         compute_total_costs(fee_events, addresses_pool[23]) == appeal_bond
     ), f"Appealant should have cost equal to appeal_bond ({appeal_bond})"

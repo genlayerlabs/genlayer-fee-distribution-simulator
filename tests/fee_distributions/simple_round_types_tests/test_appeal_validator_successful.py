@@ -1,3 +1,4 @@
+from src.fee_simulator.protocol.constants import APPEAL_REWARD_MULTIPLE
 import pytest
 from src.fee_simulator.core.transaction_processing import process_transaction
 from src.fee_simulator.core.round_labeling import label_rounds
@@ -93,8 +94,8 @@ def test_appeal_validator_successful(verbose, debug):
     )
     appealant_earnings = compute_total_earnings(fee_events, appealant_address)
     assert appealant_earnings == int(
-        appeal_bond * 1.5
-    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * 1.5)}) for 50% return, got {appealant_earnings}"
+        appeal_bond * APPEAL_REWARD_MULTIPLE
+    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)}) for 50% return, got {appealant_earnings}"
 
     appealant_costs = compute_total_costs(fee_events, appealant_address)
     assert (
@@ -182,5 +183,5 @@ def test_appeal_validator_successful_after_disagree(verbose, debug):
     )
     appealant_earnings = compute_total_earnings(fee_events, appealant_address)
     assert appealant_earnings == int(
-        appeal_bond * 1.5
-    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * 1.5)}) for 50% return, got {appealant_earnings}"
+        appeal_bond * APPEAL_REWARD_MULTIPLE
+    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)}) for 50% return, got {appealant_earnings}"

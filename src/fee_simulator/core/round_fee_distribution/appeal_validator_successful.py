@@ -12,7 +12,7 @@ from src.fee_simulator.core.majority import (
     normalize_vote,
 )
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
-from src.fee_simulator.protocol.constants import PENALTY_REWARD_COEFFICIENT
+from src.fee_simulator.protocol.constants import PENALTY_REWARD_COEFFICIENT, APPEAL_REWARD_MULTIPLE
 from src.fee_simulator.utils import is_appeal_round
 from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 
@@ -64,7 +64,7 @@ def apply_appeal_validator_successful(
             hash="0xdefault",
             cost=0,
             staked=0,
-            earned=int(appeal_bond * 1.5),  # 50% return on investment
+            earned=int(appeal_bond * APPEAL_REWARD_MULTIPLE),  # 50% return on investment
             slashed=0,
             burned=0,
         )
