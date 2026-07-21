@@ -398,6 +398,16 @@ def path_to_transaction_results(
                     if rounds and rounds[-1].rotations
                     else []
                 )
+                # RoundsCreation reverts CanNotAppeal when the timed-out
+                # round has <= 1 member: dropping the leader would leave an
+                # empty committee for the induced round.
+                if len(appeal_addresses) <= 1:
+                    raise ValueError(
+                        f"CanNotAppeal: leader-timeout appeal at path node {i + 1} "
+                        f"targets a round with {len(appeal_addresses)} member(s); "
+                        "on-chain the appeal reverts once the committee cannot "
+                        "shrink further (RoundsCreation.createNewLeaderTimeoutAppealRound)"
+                    )
             else:
                 # Calculate appeal size (leader-timeout appeals do not
                 # consume a slot in the appeal size schedule)
@@ -435,15 +445,20 @@ def path_to_transaction_results(
                 expanding_appeal_count += 1
 
         else:  # Normal round
+            previous_node = path[i] if i > 0 else None
+            induced_by_timeout_appeal = (
+                previous_node is not None and "LEADER_APPEAL_TIMEOUT" in previous_node
+            )
+
             # Calculate required size based on blockchain index
             # After N appeals, the next normal round is at blockchain index 2*N
             if normal_count == 0:
                 blockchain_idx = 0
             else:
                 # Count how many committee-expanding appeals have occurred.
-                # Leader-timeout appeals re-execute with the SAME committee
-                # (rotation-style leader replacement), so they must not bump
-                # the size tier.
+                # Leader-timeout appeals re-execute with the SAME validator
+                # set minus the timed-out leader, so they must not bump the
+                # size tier.
                 blockchain_idx = 2 * expanding_appeal_count
 
             size_idx = blockchain_idx // 2
@@ -453,7 +468,27 @@ def path_to_transaction_results(
                 else NORMAL_ROUND_SIZES[-1]
             )
 
-            if normal_count == 0:
+            if induced_by_timeout_appeal:
+                # Round induced by a leader-timeout appeal (round + 2
+                # on-chain, RoundsCreation.createNewLeaderTimeoutAppealRound):
+                # the SAME validator set is kept, the timed-out leader is
+                # dropped (order preserved) and the validator at index
+                # L % (N-1) of the reduced array becomes the new leader —
+                # NO new validators are selected. Chained timeout appeals
+                # therefore shrink the committee each time (5 -> 4 -> 3 ...).
+                timed_out_committee = list(
+                    rounds[-2].rotations[-1].votes.keys()
+                )
+                leader_idx = 0  # the simulator always seats the leader first
+                reduced = (
+                    timed_out_committee[:leader_idx]
+                    + timed_out_committee[leader_idx + 1 :]
+                )
+                new_leader_idx = leader_idx % len(reduced)
+                # Rotate so the new leader sits at index 0 (the simulator's
+                # leader slot) while preserving the on-chain array order.
+                normal_addresses = reduced[new_leader_idx:] + reduced[:new_leader_idx]
+            elif normal_count == 0:
                 # First normal round: pull addresses from start
                 normal_addresses = []
                 while len(normal_addresses) < required_size and next_unused_idx < len(

@@ -41,7 +41,17 @@ transaction_budget = TransactionBudget(
 
 
 def test_leader_timeout_150_previous_normal_round(verbose, debug):
-    """Test leader_timeout_150_previous_normal_round: leader timeout, appeal successful, normal round."""
+    """Test leader_timeout_150_previous_normal_round: leader timeout, appeal successful, normal round.
+
+    Spec semantics (RoundsCreation.createNewLeaderTimeoutAppealRound): the
+    leader-timeout appeal keeps the SAME validator set, drops the timed-out
+    leader, and elects the validator at index L % (N-1) of the reduced array
+    as the new leader — no new validators are added. The appeal round itself
+    has no voting committee; it keeps NA bookkeeping over the appealed
+    round's committee. The induced re-execution round therefore has N-1
+    members (here: leader + 2 agree + 1 disagree on the 4-member remaining
+    committee).
+    """
     # Setup
     rotation1 = Rotation(
         votes={
@@ -53,21 +63,14 @@ def test_leader_timeout_150_previous_normal_round(verbose, debug):
         }
     )
     rotation2 = Rotation(
-        votes={addresses_pool[i]: "NA" for i in [5, 6, 7, 8, 9, 10, 11]}
+        votes={addresses_pool[i]: "NA" for i in [0, 1, 2, 3, 4]}
     )
     rotation3 = Rotation(
         votes={
-            addresses_pool[5]: ["LEADER_RECEIPT", "AGREE"],
+            addresses_pool[1]: ["LEADER_RECEIPT", "AGREE"],
             addresses_pool[2]: "AGREE",
             addresses_pool[3]: "AGREE",
-            addresses_pool[4]: "AGREE",
-            addresses_pool[1]: "AGREE",
-            addresses_pool[6]: "AGREE",
-            addresses_pool[7]: "DISAGREE",
-            addresses_pool[8]: "DISAGREE",
-            addresses_pool[9]: "DISAGREE",
-            addresses_pool[10]: "TIMEOUT",
-            addresses_pool[11]: "TIMEOUT",
+            addresses_pool[4]: "DISAGREE",
         }
     )
     transaction_results = TransactionRoundResults(
@@ -115,16 +118,19 @@ def test_leader_timeout_150_previous_normal_round(verbose, debug):
     assert all(
         compute_all_zeros(fee_events, addresses_pool[i])
         for i in range(len(addresses_pool))
-        if i not in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 23, 1999]
+        if i not in [0, 1, 2, 3, 4, 23, 1999]
     ), "Everyone else should have no fees"
 
-    # Appealant Fees Assert
+    # Appealant Fees Assert (bond still quoted from the round-size table at
+    # the appealed round's index — 1 x (100 + 5 x 200) = 1100 — even though
+    # the induced round seats one fewer body)
     appeal_bond = compute_appeal_bond(
         normal_round_index=0,
         leader_timeout=leaderTimeout,
         validators_timeout=validatorsTimeout,
         round_labels=round_labels,
     )
+    assert appeal_bond == leaderTimeout + 5 * validatorsTimeout
     assert compute_total_earnings(fee_events, addresses_pool[23]) == int(
         appeal_bond * 1.5
     ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * 1.5)}) for 50% return"
@@ -132,28 +138,30 @@ def test_leader_timeout_150_previous_normal_round(verbose, debug):
         compute_total_costs(fee_events, addresses_pool[23]) == appeal_bond
     ), f"Appealant should have cost equal to appeal_bond ({appeal_bond})"
 
-    # First Leader Fees Assert
+    # First Leader Fees Assert (timed-out leader is dropped from the induced
+    # round and earns nothing)
     assert (
         compute_total_earnings(fee_events, addresses_pool[0]) == 0
     ), f"First leader should earn 0"
 
-    # Second Leader Fees Assert
+    # Second Leader Fees Assert (the validator that followed the timed-out
+    # leader in the original order: 150 leader fee + 200 validator share)
     assert (
-        compute_total_earnings(fee_events, addresses_pool[5])
+        compute_total_earnings(fee_events, addresses_pool[1])
         == leaderTimeout * 1.5 + validatorsTimeout
-    ), f"Second leader should earn 150% of leaderTimeout ({leaderTimeout * 1.5})"
+    ), f"Second leader should earn 150% of leaderTimeout plus validator share ({leaderTimeout * 1.5 + validatorsTimeout})"
 
     # Majority Validator Fees Assert
     assert all(
         compute_total_earnings(fee_events, addresses_pool[i]) == validatorsTimeout
-        for i in [1, 2, 3, 4, 6]
+        for i in [2, 3]
     ), f"Majority validators should earn validatorsTimeout ({validatorsTimeout})"
 
     # Minority Validator Fees Assert
     assert all(
         compute_total_burnt(fee_events, addresses_pool[i])
         == PENALTY_REWARD_COEFFICIENT * validatorsTimeout
-        for i in [7, 8, 9, 10, 11]
+        for i in [4]
     ), f"Minority validators should be burned {PENALTY_REWARD_COEFFICIENT * validatorsTimeout}"
 
     # Sender Fees Assert

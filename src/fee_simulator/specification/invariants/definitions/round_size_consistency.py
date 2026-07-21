@@ -18,7 +18,15 @@ def check_round_size_consistency(
     the expected size from NORMAL_ROUND_SIZES or APPEAL_ROUND_SIZES.
     """
     normal_count = 0
-    appeal_count = 0
+    # Committee-expanding appeals only: leader-timeout appeals draw no
+    # committee on-chain and do not consume a slot in the size schedules.
+    expanding_appeal_count = 0
+
+    def _round_participants(round_obj) -> set:
+        participants = set()
+        for rotation in round_obj.rotations:
+            participants.update(rotation.votes.keys())
+        return participants
 
     for i, (round_obj, label) in enumerate(
         zip(transaction_results.rounds, round_labels)
@@ -27,13 +35,19 @@ def check_round_size_consistency(
             continue
         if round_obj.rotations:
             # Count unique participants in this round
-            participants = set()
-            for rotation in round_obj.rotations:
-                participants.update(rotation.votes.keys())
+            actual_size = len(_round_participants(round_obj))
 
-            actual_size = len(participants)
-
-            if is_appeal_round(label):
+            if label in ("APPEAL_LEADER_TIMEOUT_SUCCESSFUL", "APPEAL_LEADER_TIMEOUT_UNSUCCESSFUL"):
+                # Leader-timeout appeals have NO voting committee on-chain
+                # (RoundsCreation.createNewLeaderTimeoutAppealRound); the
+                # simulator keeps NA bookkeeping over the appealed round's
+                # committee, so the sizes must match exactly.
+                expected_size = (
+                    len(_round_participants(transaction_results.rounds[i - 1]))
+                    if i > 0
+                    else actual_size
+                )
+            elif is_appeal_round(label):
                 # Check if previous round was an unsuccessful appeal
                 prev_was_unsuccessful_appeal = (
                     i > 0
@@ -43,8 +57,8 @@ def check_round_size_consistency(
 
                 # Get base size for this appeal
                 base_size = (
-                    APPEAL_ROUND_SIZES[appeal_count]
-                    if appeal_count < len(APPEAL_ROUND_SIZES)
+                    APPEAL_ROUND_SIZES[expanding_appeal_count]
+                    if expanding_appeal_count < len(APPEAL_ROUND_SIZES)
                     else APPEAL_ROUND_SIZES[-1]
                 )
 
@@ -52,15 +66,29 @@ def check_round_size_consistency(
                 expected_size = (
                     base_size - 2 if prev_was_unsuccessful_appeal else base_size
                 )
-                appeal_count += 1
+                expanding_appeal_count += 1
+            elif i > 0 and round_labels[i - 1] in (
+                "APPEAL_LEADER_TIMEOUT_SUCCESSFUL",
+                "APPEAL_LEADER_TIMEOUT_UNSUCCESSFUL",
+            ):
+                # Round induced by a leader-timeout appeal: the appealed
+                # round's committee minus the timed-out leader, no new
+                # validators (5 -> 4 -> 3 on chained timeout appeals).
+                expected_size = max(
+                    len(_round_participants(transaction_results.rounds[i - 1])) - 1, 1
+                )
+                normal_count += 1
             else:
                 # Normal rounds - calculate blockchain index properly
                 if normal_count == 0:
                     blockchain_index = 0
                 else:
-                    # Count appeals before this normal round
+                    # Count committee-expanding appeals before this round
                     appeals_before = sum(
-                        1 for j in range(i) if is_appeal_round(round_labels[j])
+                        1
+                        for j in range(i)
+                        if is_appeal_round(round_labels[j])
+                        and not round_labels[j].startswith("APPEAL_LEADER_TIMEOUT")
                     )
                     blockchain_index = 2 * appeals_before
 

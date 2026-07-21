@@ -70,6 +70,35 @@ Appeal round sizes are determined by the previous round:
 - Addresses: Pull entirely NEW addresses that haven't been used yet
 - This creates a "shrinking" effect for consecutive unsuccessful appeals
 
+### 3. Leader-Timeout Appeals (Exception: No Committee Draw)
+
+Leader-timeout appeals (`LEADER_APPEAL_TIMEOUT_SUCCESSFUL/UNSUCCESSFUL`) do NOT follow
+the rules above. On-chain (`RoundsCreation.createNewLeaderTimeoutAppealRound`, spec
+03-consensus-stages / 07-appeals-and-rotations):
+
+- The appeal round has **no voting committee**. The simulator keeps NA bookkeeping over
+  the appealed round's committee; nothing new is drawn and nothing enters the cumulative
+  active set. Leader-timeout appeals do not consume a slot in the appeal size schedule
+  and do not bump the normal-round size tier.
+- The **induced re-execution round** (round + 2 on-chain) keeps the SAME validator set
+  with the timed-out leader removed, order preserved — size N-1, **no new validators
+  added**. The new leader is the validator at index `L % (N-1)` of the reduced array
+  (the validator that followed the timed-out leader; wraps to the first element when the
+  timed-out leader held the last index).
+- **Chained timeout appeals shrink the committee each time** (5 → 4 → 3 → 2). Appealing
+  a timed-out round with ≤ 1 member is impossible: the chain reverts `CanNotAppeal`, and
+  `path_to_transaction_results` raises `ValueError` for such paths.
+- The appeal **bond quote is unchanged**: it still prices from the round-size table at
+  the appealed round's index (e.g. `1 × (100 + 5 × 200) = 1100` for a standard round 0),
+  not from the actual N-1 committee. The surplus flows back to the sender through the
+  normal unused-fee remainder.
+
+```
+Round 0 (LEADER_TIMEOUT, size 5):   [0*, 1, 2, 3, 4]     * = timed-out leader
+Round 1 (LT appeal, bookkeeping):   [0, 1, 2, 3, 4]      all NA, nothing drawn
+Round 2 (induced re-execution):     [1*, 2, 3, 4]        * = new leader (L % (N-1))
+```
+
 ### The `-2` Rule: A Mechanical Brake on Escalation
 
 The `-2` rule acts as a **mechanical brake** to prevent security levels from escalating uncontrollably after chains of unsuccessful appeals.

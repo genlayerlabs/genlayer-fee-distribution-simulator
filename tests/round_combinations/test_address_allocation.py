@@ -392,6 +392,90 @@ class TestAddressAllocation:
                         len(round0_indices & round1_indices) == 0
                     ), f"Appeal reuses addresses for path {path}"
 
+    def test_leader_timeout_appeal_induced_round_keeps_reduced_committee(self):
+        """Test: the round induced by a leader-timeout appeal keeps the SAME
+        validator set minus the timed-out leader, order preserved, with the
+        validator at index L % (N-1) of the reduced array as the new leader —
+        no new validators (RoundsCreation.createNewLeaderTimeoutAppealRound).
+        """
+        for terminal in [
+            "LEADER_RECEIPT_MAJORITY_AGREE",
+            "LEADER_RECEIPT_UNDETERMINED",
+        ]:
+            path = [
+                "START",
+                "LEADER_TIMEOUT",
+                "LEADER_APPEAL_TIMEOUT_SUCCESSFUL",
+                terminal,
+                "END",
+            ]
+            result, _ = path_to_transaction_results(
+                path=path,
+                addresses=self.addresses,
+                sender_address=self.sender_address,
+                appealant_address=self.appealant_address,
+            )
+
+            round0 = list(result.rounds[0].rotations[-1].votes.keys())
+            round2 = list(result.rounds[2].rotations[-1].votes.keys())
+
+            # Timed-out leader (index 0) dropped, order preserved, size N-1,
+            # nothing new drawn
+            assert round2 == round0[1:], (
+                f"Induced round must be the timed-out committee minus its "
+                f"leader for terminal {terminal}"
+            )
+            # New leader = reduced[L % (N-1)] = the validator that followed
+            # the timed-out leader
+            assert self.get_leader_index(result.rounds[2]) == (
+                self.address_to_index[round0[1]]
+            )
+
+    def test_chained_leader_timeout_appeals_shrink_committee(self):
+        """Test: chained timeout appeals shrink the committee at EACH appeal
+        (5 -> 4 -> 3), with the majority denominator following."""
+        path = [
+            "START",
+            "LEADER_TIMEOUT",
+            "LEADER_APPEAL_TIMEOUT_UNSUCCESSFUL",
+            "LEADER_TIMEOUT",
+            "LEADER_APPEAL_TIMEOUT_SUCCESSFUL",
+            "LEADER_RECEIPT_MAJORITY_AGREE",
+            "END",
+        ]
+        result, _ = path_to_transaction_results(
+            path=path,
+            addresses=self.addresses,
+            sender_address=self.sender_address,
+            appealant_address=self.appealant_address,
+        )
+
+        committees = [
+            list(r.rotations[-1].votes.keys()) for r in result.rounds
+        ]
+        assert [len(c) for c in committees] == [5, 5, 4, 4, 3]
+
+        # Each induced round drops the previous timed-out leader only
+        assert committees[2] == committees[0][1:]
+        assert committees[4] == committees[0][2:]
+
+    def test_leader_timeout_appeal_reverts_when_committee_cannot_shrink(self):
+        """Test: appealing a timed-out round with <= 1 member raises, mirroring
+        the on-chain CanNotAppeal revert (RoundsCreation)."""
+        # 5 -> 4 -> 3 -> 2 -> 1; the fifth appeal targets a 1-member round
+        path = (
+            ["START"]
+            + ["LEADER_TIMEOUT", "LEADER_APPEAL_TIMEOUT_UNSUCCESSFUL"] * 5
+            + ["LEADER_TIMEOUT", "END"]
+        )
+        with pytest.raises(ValueError, match="CanNotAppeal"):
+            path_to_transaction_results(
+                path=path,
+                addresses=self.addresses,
+                sender_address=self.sender_address,
+                appealant_address=self.appealant_address,
+            )
+
     def test_blockchain_index_calculation(self):
         """Test: Verify blockchain index calculation affects round sizes correctly"""
         # Path with specific appeal pattern to test blockchain indices

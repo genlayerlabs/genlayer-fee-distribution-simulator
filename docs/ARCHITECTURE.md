@@ -495,6 +495,7 @@ The system uses a sophisticated address allocation algorithm that determines whi
 2. **Appeal Rounds**: Always pull entirely new addresses that haven't been used yet
 3. **Leader Rotation**: Previous normal round leaders are excluded from future normal rounds
 4. **Deterministic Selection**: The algorithm is fully deterministic given the same path
+5. **Leader-Timeout Appeals (exception)**: Draw no committee at all; the induced re-execution round keeps the same validator set minus the timed-out leader (size N-1, no new validators), and chained timeout appeals shrink the committee each time — see the dedicated section in [ADDRESS_ALLOCATION_ALGORITHM.md](./ADDRESS_ALLOCATION_ALGORITHM.md)
 
 For full details including edge cases, pseudocode, and examples, see [ADDRESS_ALLOCATION_ALGORITHM.md](./ADDRESS_ALLOCATION_ALGORITHM.md)
 
