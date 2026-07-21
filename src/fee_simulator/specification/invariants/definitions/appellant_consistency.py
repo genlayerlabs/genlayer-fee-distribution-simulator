@@ -48,26 +48,54 @@ def check_appellant_consistency(
             )
 
     # Verify bond amounts match expected values
-    appeal_count = 0
-    for i, event in enumerate(bond_events):
-        # Find which appeal number this is
+    for event in bond_events:
         round_idx = event.round_index
-        appeal_idx = appeal_rounds.index(round_idx)
+        label = round_labels[round_idx]
 
-        # Calculate expected bond using the appeal count
-        expected_size = (
-            APPEAL_ROUND_SIZES[appeal_idx]
-            if appeal_idx < len(APPEAL_ROUND_SIZES)
-            else APPEAL_ROUND_SIZES[-1]
-        )
-        expected_bond = (
-            expected_size * transaction_budget.validatorsTimeout
-            + transaction_budget.leaderTimeout
-        )
+        if label.startswith("APPEAL_LEADER_TIMEOUT"):
+            # Leader-timeout appeal: the bond is quoted from the round-size
+            # table at the appealed round's index, not from the appeal size
+            # schedule (FeeManagerHelpers._leaderTimeoutAppealBond); mirror
+            # the canonical formula.
+            from src.fee_simulator.core.bond_computing import compute_appeal_bond
+            from src.fee_simulator.utils_round_sizes import (
+                find_previous_normal_round,
+            )
+
+            normal_round_index = find_previous_normal_round(round_idx, round_labels)
+            if normal_round_index is None:
+                normal_round_index = round_idx - 1
+            expected_bond = compute_appeal_bond(
+                normal_round_index=normal_round_index,
+                leader_timeout=transaction_budget.leaderTimeout,
+                validators_timeout=transaction_budget.validatorsTimeout,
+                round_labels=round_labels,
+                appeal_round_index=round_idx,
+                rotations=transaction_budget.rotations,
+            )
+            expected_size = None
+        else:
+            # Committee-expanding appeals only: leader-timeout appeals do
+            # not consume a slot in the appeal size schedule.
+            appeal_idx = sum(
+                1
+                for j in appeal_rounds
+                if j < round_idx
+                and not round_labels[j].startswith("APPEAL_LEADER_TIMEOUT")
+            )
+            expected_size = (
+                APPEAL_ROUND_SIZES[appeal_idx]
+                if appeal_idx < len(APPEAL_ROUND_SIZES)
+                else APPEAL_ROUND_SIZES[-1]
+            )
+            expected_bond = (
+                expected_size * transaction_budget.validatorsTimeout
+                + transaction_budget.leaderTimeout
+            )
 
         if event.cost != expected_bond:
             raise InvariantViolation(
                 "appellant_consistency",
-                f"Appeal {appeal_idx} (round {round_idx}): Bond amount {event.cost} "
+                f"Appeal at round {round_idx} ({label}): Bond amount {event.cost} "
                 f"doesn't match expected {expected_bond} (size {expected_size})",
             )
