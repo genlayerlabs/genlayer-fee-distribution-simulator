@@ -5,6 +5,7 @@ from src.fee_simulator.core.round_labeling import label_rounds
 from src.fee_simulator.core.path_to_transaction import path_to_transaction_results
 from src.fee_simulator.utils import compute_total_cost, generate_random_eth_address
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
+from src.fee_simulator.core.majority import compute_majority, normalize_vote
 from src.fee_simulator.protocol.constants import PENALTY_REWARD_COEFFICIENT
 from src.fee_simulator.metrics.address_metrics import (
     compute_total_earnings,
@@ -95,7 +96,7 @@ def test_appeal_validator_successful(verbose, debug):
     appealant_earnings = compute_total_earnings(fee_events, appealant_address)
     assert appealant_earnings == int(
         appeal_bond * APPEAL_REWARD_MULTIPLE
-    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)}) for 50% return, got {appealant_earnings}"
+    ), f"Appealant should earn {APPEAL_REWARD_MULTIPLE}x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)}), got {appealant_earnings}"
 
     appealant_costs = compute_total_costs(fee_events, appealant_address)
     assert (
@@ -115,6 +116,26 @@ def test_appeal_validator_successful(verbose, debug):
     total_earnings = sum(e.earned for e in fee_events if e.earned)
     total_burns = sum(e.burned for e in fee_events if e.burned)
     assert total_earnings > 0, "Should have positive earnings"
+
+    # A clear reversal pays one standard validator reward to each original
+    # voter aligned with the appeal round's new majority.
+    appeal_majority = compute_majority(
+        transaction_results.rounds[1].rotations[-1].votes
+    )
+    assert appeal_majority != "UNDETERMINED"
+    vindicated_addresses = {
+        addr
+        for addr, vote in transaction_results.rounds[0].rotations[-1].votes.items()
+        if normalize_vote(vote) == appeal_majority
+    }
+    vindication_earnings = sum(
+        event.earned
+        for event in fee_events
+        if event.round_index == 1
+        and event.role == "VALIDATOR"
+        and event.address in vindicated_addresses
+    )
+    assert vindication_earnings == len(vindicated_addresses) * validatorsTimeout
 
 
 def test_appeal_validator_successful_after_disagree(verbose, debug):
@@ -184,4 +205,4 @@ def test_appeal_validator_successful_after_disagree(verbose, debug):
     appealant_earnings = compute_total_earnings(fee_events, appealant_address)
     assert appealant_earnings == int(
         appeal_bond * APPEAL_REWARD_MULTIPLE
-    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)}) for 50% return, got {appealant_earnings}"
+    ), f"Appealant should earn {APPEAL_REWARD_MULTIPLE}x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)}), got {appealant_earnings}"

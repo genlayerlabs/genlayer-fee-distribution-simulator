@@ -126,7 +126,7 @@ def test_appeal_leader_successful(verbose):
     )  # Computed as per compute_appeal_bond for round_index=0
     assert compute_total_earnings(fee_events, addresses_pool[23]) == int(
         appeal_bond * APPEAL_REWARD_MULTIPLE
-    ), f"Appealant should earn 1.5x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)}) for 50% return"
+    ), f"Appealant should earn {APPEAL_REWARD_MULTIPLE}x appeal_bond ({int(appeal_bond * APPEAL_REWARD_MULTIPLE)})"
     assert (
         compute_total_costs(fee_events, addresses_pool[23]) == appeal_bond
     ), f"Appealant should have cost equal to appeal_bond ({appeal_bond})"

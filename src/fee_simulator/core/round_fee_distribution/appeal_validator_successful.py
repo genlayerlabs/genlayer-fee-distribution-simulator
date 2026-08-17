@@ -12,7 +12,10 @@ from src.fee_simulator.core.majority import (
     normalize_vote,
 )
 from src.fee_simulator.core.bond_computing import compute_appeal_bond
-from src.fee_simulator.protocol.constants import PENALTY_REWARD_COEFFICIENT, APPEAL_REWARD_MULTIPLE
+from src.fee_simulator.protocol.constants import (
+    PENALTY_REWARD_COEFFICIENT,
+    APPEAL_REWARD_MULTIPLE,
+)
 from src.fee_simulator.utils import is_appeal_round
 from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 
@@ -64,22 +67,17 @@ def apply_appeal_validator_successful(
             hash="0xdefault",
             cost=0,
             staked=0,
-            earned=int(appeal_bond * APPEAL_REWARD_MULTIPLE),  # 50% return on investment
+            earned=int(appeal_bond * APPEAL_REWARD_MULTIPLE),
             slashed=0,
             burned=0,
         )
     )
 
     if round.rotations:
-        votes_this_round = round.rotations[-1].votes
-        # votes_previous_round = (
-        #     transaction_results.rounds[round_index - 1].rotations[-1].votes
-        # )
-        # total_votes = {**votes_this_round, **votes_previous_round}
-        total_votes = votes_this_round
-        majority = compute_majority(total_votes)
+        appeal_votes = round.rotations[-1].votes
+        majority = compute_majority(appeal_votes)
         if majority == "UNDETERMINED":
-            for addr in total_votes:
+            for addr in appeal_votes:
                 events.append(
                     FeeEvent(
                         sequence_id=event_sequence.next_id(),
@@ -87,7 +85,7 @@ def apply_appeal_validator_successful(
                         round_index=round_index,
                         round_label="APPEAL_VALIDATOR_SUCCESSFUL",
                         role="VALIDATOR",
-                        vote=normalize_vote(total_votes[addr]),
+                        vote=normalize_vote(appeal_votes[addr]),
                         hash="0xdefault",
                         cost=0,
                         staked=0,
@@ -99,7 +97,7 @@ def apply_appeal_validator_successful(
 
         else:
             majority_addresses, minority_addresses = who_is_in_vote_majority(
-                total_votes, majority
+                appeal_votes, majority
             )
             for addr in majority_addresses:
                 events.append(
@@ -109,7 +107,7 @@ def apply_appeal_validator_successful(
                         round_index=round_index,
                         round_label="APPEAL_VALIDATOR_SUCCESSFUL",
                         role="VALIDATOR",
-                        vote=normalize_vote(total_votes[addr]),
+                        vote=normalize_vote(appeal_votes[addr]),
                         hash="0xdefault",
                         cost=0,
                         staked=0,
@@ -126,7 +124,7 @@ def apply_appeal_validator_successful(
                         round_index=round_index,
                         round_label="APPEAL_VALIDATOR_SUCCESSFUL",
                         role="VALIDATOR",
-                        vote=normalize_vote(total_votes[addr]),
+                        vote=normalize_vote(appeal_votes[addr]),
                         hash="0xdefault",
                         cost=0,
                         staked=0,
@@ -135,4 +133,33 @@ def apply_appeal_validator_successful(
                         burned=PENALTY_REWARD_COEFFICIENT * budget.validatorsTimeout,
                     )
                 )
+
+            # A clear reversal vindicates the validators in the original
+            # round who voted for the appeal round's new majority. The
+            # original round remains SKIP_ROUND: non-vindicated participants
+            # receive nothing and incur no retroactive penalty. Attribute
+            # these credits to the appeal settlement round, when the
+            # vindication becomes knowable and payable.
+            original_round = transaction_results.rounds[normal_round_index]
+            if original_round.rotations:
+                original_votes = original_round.rotations[-1].votes
+                for addr, vote in original_votes.items():
+                    if normalize_vote(vote) != majority:
+                        continue
+                    events.append(
+                        FeeEvent(
+                            sequence_id=event_sequence.next_id(),
+                            address=addr,
+                            round_index=round_index,
+                            round_label="APPEAL_VALIDATOR_SUCCESSFUL",
+                            role="VALIDATOR",
+                            vote=normalize_vote(vote),
+                            hash="0xdefault",
+                            cost=0,
+                            staked=0,
+                            earned=budget.validatorsTimeout,
+                            slashed=0,
+                            burned=0,
+                        )
+                    )
     return events

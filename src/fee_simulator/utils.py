@@ -72,9 +72,10 @@ def compute_total_cost(transaction_budget: TransactionBudget) -> int:
             + transaction_budget.leaderTimeout
         )
 
-    # Calculate appeal rewards (50% return on appeal bonds). The appeal type
-    # is unknown when budgeting, so reserve for the worst case: a leader
-    # appeal, whose bond covers the full next normal round (incl. rotations).
+    # Calculate successful-appellant profit above returned principal. The
+    # appeal type is unknown when budgeting, so reserve for the worst case: a
+    # leader appeal, whose bond covers the full next normal round (including
+    # rotations).
     # Validator appeal bonds (appeal_size * validatorsTimeout) are always
     # smaller than this.
     total_appeal_rewards = 0
