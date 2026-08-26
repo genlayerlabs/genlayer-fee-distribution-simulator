@@ -13,8 +13,8 @@ from src.fee_simulator.protocol.constants import (
     DEFAULT_STAKE,
     NORMAL_ROUND_SIZES,
     APPEAL_ROUND_SIZES,
-    APPEAL_REWARD_MULTIPLE,
 )
+from src.fee_simulator.protocol.appeal_economics import successful_appeal_profit
 from src.fee_simulator.protocol.types import RoundLabel
 
 
@@ -94,7 +94,7 @@ def compute_total_cost(transaction_budget: TransactionBudget) -> int:
             transaction_budget.leaderTimeout
             + next_normal_size * transaction_budget.validatorsTimeout
         )
-        appeal_reward = int(appeal_bond * (APPEAL_REWARD_MULTIPLE - 1.0))  # profit above principal
+        appeal_reward = successful_appeal_profit(appeal_bond)
         total_appeal_rewards += appeal_reward
 
     total_cost = max_round_price + total_appeal_rewards

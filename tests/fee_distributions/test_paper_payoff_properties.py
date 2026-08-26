@@ -52,8 +52,8 @@ def test_exhaustive_first_rung_paper_payoff_kernel():
     assert report.maximum_vindicated_count_observed == 2
     assert report.maximum_added_sender_cost_observed == 400
     assert report.configured_rung_boundary_cases_checked == 18
-    assert report.largest_configured_vindication_count == 499
-    assert report.largest_configured_added_sender_cost == 99800
+    assert report.largest_configured_vindication_count == 767
+    assert report.largest_configured_added_sender_cost == 153400
     assert report.appeal_reward_multiple == 2.5
     assert report.payoff_kernel == {
         "normal_clear_aligned": 200,

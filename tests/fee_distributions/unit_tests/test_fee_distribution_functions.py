@@ -443,6 +443,67 @@ class TestAppealValidatorSuccessful:
         assert all(e.earned == 200 for e in events if e.role == "VALIDATOR")
         assert not any(e.address in addresses_pool[0:5] for e in events)
 
+    def test_deterministic_violation_success_vindicates_matching_original_voters(self):
+        """A clear deterministic-violation reversal vindicates its original side."""
+        event_sequence = EventSequence()
+        transaction_results = TransactionRoundResults(
+            rounds=[
+                Round(
+                    rotations=[
+                        Rotation(
+                            votes={
+                                addresses_pool[0]: ["LEADER_RECEIPT", "AGREE"],
+                                addresses_pool[1]: "AGREE",
+                                addresses_pool[2]: "AGREE",
+                                addresses_pool[3]: "DETERMINISTIC_VIOLATION",
+                                addresses_pool[4]: "DETERMINISTIC_VIOLATION",
+                            }
+                        )
+                    ]
+                ),
+                Round(
+                    rotations=[
+                        Rotation(
+                            votes={
+                                addresses_pool[5]: "DETERMINISTIC_VIOLATION",
+                                addresses_pool[6]: "DETERMINISTIC_VIOLATION",
+                                addresses_pool[7]: "DETERMINISTIC_VIOLATION",
+                                addresses_pool[8]: "DETERMINISTIC_VIOLATION",
+                                addresses_pool[9]: "AGREE",
+                                addresses_pool[10]: "AGREE",
+                                addresses_pool[11]: "AGREE",
+                            }
+                        )
+                    ]
+                ),
+            ]
+        )
+        budget = TransactionBudget(
+            leaderTimeout=100,
+            validatorsTimeout=200,
+            appealRounds=1,
+            rotations=[0, 0],
+            senderAddress=addresses_pool[99],
+            appeals=[Appeal(appealantAddress=addresses_pool[98])],
+            staking_distribution="constant",
+        )
+
+        events = apply_appeal_validator_successful(
+            transaction_results=transaction_results,
+            round_index=1,
+            budget=budget,
+            event_sequence=event_sequence,
+            round_labels=["SKIP_ROUND", "APPEAL_VALIDATOR_SUCCESSFUL"],
+        )
+
+        for addr in addresses_pool[3:5]:
+            vindication_event = next(e for e in events if e.address == addr)
+            assert vindication_event.vote == "DETERMINISTIC_VIOLATION"
+            assert vindication_event.earned == 200
+            assert vindication_event.burned == 0
+        for addr in addresses_pool[0:3]:
+            assert not any(e.address == addr for e in events)
+
 
 class TestLeaderTimeout50Percent:
     """Unit tests for apply_leader_timeout_50_percent function."""
