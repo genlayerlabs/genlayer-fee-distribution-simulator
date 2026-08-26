@@ -17,6 +17,7 @@ as an independent protocol change.
 from __future__ import annotations
 
 from collections import Counter
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -358,6 +359,110 @@ def compare_case(
         upfront_reserve_delta=upfront_reserve_delta,
         sender_refund_delta=sender_refund_delta,
     )
+
+
+def upgrade_case_to_current_appeal_economics(
+    legacy: dict[str, Any],
+    *,
+    source: str,
+    pattern: str,
+    example_index: int = 0,
+) -> dict[str, Any]:
+    """Upgrade a legacy consensus vector without regenerating its scenario.
+
+    The historical vector generator uses randomized committees, so a full
+    regeneration obscures a small economics change behind a very large diff.
+    This function preserves the scenario and upgrades only the deltas already
+    accepted by :func:`compare_case`: exact 2.5x successful-appeal custody,
+    clear-majority voter vindication, and the conservation-derived sender
+    outcome after reserving the additional appeal profit.
+    """
+
+    future = deepcopy(legacy)
+    rounds = future["initialState"]["rounds"]
+    state = future["expectedState"]
+    legacy_total_rewards = sum(int(entry["amount"]) for entry in state["rewards"])
+
+    for entry in state["rewards"]:
+        if entry.get("role") != "APPEALANT":
+            continue
+        legacy_return = int(entry["amount"])
+        if legacy_return * 2 % 3:
+            _fail(
+                source,
+                pattern,
+                f"round {entry['round_index']} legacy appellant return cannot "
+                "be inverted as an integral 1.5x bond",
+            )
+        bond = legacy_return * 2 // 3
+        entry["amount"] = str(bond * 5 // 2)
+
+    for appeal_position, round_ in enumerate(rounds):
+        if round_["type"] != "VALIDATOR_APPEAL_SUCCESSFUL":
+            continue
+        majority = _majority(round_.get("validators", []))
+        if majority == "UNDETERMINED":
+            continue
+        original = _previous_original_round(rounds, appeal_position)
+        if original is None:
+            _fail(source, pattern, f"round {appeal_position} has no original round")
+
+        round_index = int(round_["round_index"])
+        validator_rewards = [
+            entry
+            for entry in state["rewards"]
+            if int(entry["round_index"]) == round_index
+            and entry.get("role") == "VALIDATOR"
+        ]
+        amounts = {int(entry["amount"]) for entry in validator_rewards}
+        if len(amounts) != 1:
+            _fail(
+                source,
+                pattern,
+                f"round {round_index} validator rewards are not uniform: "
+                f"{sorted(amounts)}",
+            )
+        validator_reward = next(iter(amounts))
+        existing = {
+            entry["address"]
+            for entry in validator_rewards
+        }
+        for validator in original.get("validators", []):
+            address = validator["address"]
+            if _vote(validator["vote"]) != majority or address in existing:
+                continue
+            state["rewards"].append(
+                {
+                    "address": address,
+                    "amount": str(validator_reward),
+                    "round_index": round_index,
+                    "role": "VALIDATOR",
+                }
+            )
+            existing.add(address)
+
+    future_total_rewards = sum(int(entry["amount"]) for entry in state["rewards"])
+    reward_delta = future_total_rewards - legacy_total_rewards
+    appeal_count = sum(round_["type"] in ALL_APPEAL_TYPES for round_ in rounds)
+    reserve_delta = sum(
+        VECTOR_LEADER_TIMEOUT
+        + NORMAL_ROUND_SIZES[min(appeal_ordinal + 1, len(NORMAL_ROUND_SIZES) - 1)]
+        * VECTOR_VALIDATOR_TIMEOUT
+        for appeal_ordinal in range(appeal_count)
+    )
+    legacy_refund = int(legacy["expectedState"]["sender_outcome"]["net_change"])
+    state["sender_outcome"]["net_change"] = str(
+        legacy_refund + reserve_delta - reward_delta
+    )
+
+    compare_case(
+        legacy,
+        future,
+        source=source,
+        pattern=pattern,
+        example_index=example_index,
+    )
+    return future
 
 
 def _load_pattern_files(directory: Path) -> dict[str, dict[str, Any]]:

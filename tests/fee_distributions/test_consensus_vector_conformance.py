@@ -5,6 +5,7 @@ import pytest
 from src.fee_simulator.analysis.consensus_vector_conformance import (
     ConsensusConformanceViolation,
     compare_case,
+    upgrade_case_to_current_appeal_economics,
 )
 
 
@@ -140,6 +141,19 @@ def test_future_economics_reaches_exact_parity_after_consensus_catches_up():
     assert delta.vindicated_count == 0
     assert delta.upfront_reserve_delta == 0
     assert delta.sender_refund_delta == 0
+
+
+def test_upgrades_legacy_case_without_regenerating_its_scenario():
+    legacy = vector_case()
+    future = upgrade_case_to_current_appeal_economics(
+        legacy,
+        source="fixture",
+        pattern="stable-upgrade",
+    )
+
+    assert future["initialState"] == legacy["initialState"]
+    assert future == vector_case(appellant_reward=3500, vindicate=True)
+    assert legacy == vector_case()
 
 
 def test_rejects_a_new_retroactive_penalty():
