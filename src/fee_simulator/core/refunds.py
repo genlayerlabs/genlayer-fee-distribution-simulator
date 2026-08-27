@@ -64,6 +64,7 @@ def compute_sender_refund(
             round_labels=round_labels,
             appeal_round_index=i,
             rotations=transaction_budget.rotations,
+            rotations_used=transaction_budget.rotationsUsed,
         )
 
     earned_total = 0

@@ -101,7 +101,13 @@ class TransactionBudget(BaseModel):
     leaderTimeout: int = Field(ge=0)
     validatorsTimeout: int = Field(ge=0)
     appealRounds: int = Field(ge=0)
+    # Funded rotation allowance for each normal round. Consensus seeds one
+    # common runtime capacity from the minimum entry in this schedule.
     rotations: List[int]
+    # Rotations actually consumed in each normal round. Kept separate from the
+    # funded allowance because LeaderTimeout bonds use the live remainder while
+    # Undetermined bonds use a future configured schedule entry.
+    rotationsUsed: Optional[List[int]] = None
     senderAddress: str
     appeals: Optional[List[Appeal]] = []
     staking_distribution: Literal["constant", "normal"] = Field(default="constant")
@@ -119,6 +125,10 @@ class TransactionBudget(BaseModel):
         # Rotations are indexed by normal round index, so we just need at least one
         if len(self.rotations) == 0:
             raise ValueError("Must have at least one rotation")
+        if self.rotationsUsed is not None and len(self.rotationsUsed) != len(
+            self.rotations
+        ):
+            raise ValueError("rotationsUsed must align with rotations")
         return self
 
     @model_validator(mode="after")

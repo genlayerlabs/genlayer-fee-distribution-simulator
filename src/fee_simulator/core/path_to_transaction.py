@@ -476,9 +476,7 @@ def path_to_transaction_results(
                 # L % (N-1) of the reduced array becomes the new leader —
                 # NO new validators are selected. Chained timeout appeals
                 # therefore shrink the committee each time (5 -> 4 -> 3 ...).
-                timed_out_committee = list(
-                    rounds[-2].rotations[-1].votes.keys()
-                )
+                timed_out_committee = list(rounds[-2].rotations[-1].votes.keys())
                 leader_idx = 0  # the simulator always seats the leader first
                 reduced = (
                     timed_out_committee[:leader_idx]
@@ -545,9 +543,7 @@ def path_to_transaction_results(
                     if not committee:
                         break
                     entry_leader = committee[0]
-                    rotation_votes = make_rotation_votes(
-                        len(committee), committee
-                    )
+                    rotation_votes = make_rotation_votes(len(committee), committee)
                     rotations_list.append(Rotation(votes=rotation_votes))
                     previous_leaders.append(entry_leader)
 
@@ -584,8 +580,12 @@ def path_to_transaction_results(
                 votes = dict(last_rot.votes)
                 # Make the last num_idle validators IDLE
                 validator_addrs = [
-                    addr for addr in votes.keys()
-                    if not (isinstance(votes[addr], list) and votes[addr][0] in ["LEADER_RECEIPT", "LEADER_TIMEOUT"])
+                    addr
+                    for addr in votes.keys()
+                    if not (
+                        isinstance(votes[addr], list)
+                        and votes[addr][0] in ["LEADER_RECEIPT", "LEADER_TIMEOUT"]
+                    )
                 ]
                 for idle_idx in range(min(num_idle, len(validator_addrs))):
                     idle_addr = validator_addrs[-(idle_idx + 1)]
@@ -610,16 +610,24 @@ def path_to_transaction_results(
         if round_obj.rotations and round_obj.rotations[-1].votes:
             prev_majority = compute_majority(round_obj.rotations[-1].votes)
 
-    # Create budget with actual rotation counts
-    budget_rotations = []
+    # The latest Consensus has two distinct rotation concepts:
+    # - feesDistribution.rotations is the funded schedule;
+    # - RoundsStorage.rotationsLeft is live runtime capacity.
+    # Every normal round is seeded from one transaction-wide capacity clamped
+    # to the smallest funded entry. The minimal valid schedule for this path is
+    # therefore uniform at the largest number of rotations actually exercised.
+    rotations_used = []
     for nc in range(normal_count):
-        budget_rotations.append(rotation_counts.get(nc, 0))
+        rotations_used.append(rotation_counts.get(nc, 0))
+    initial_rotation_capacity = max(rotations_used, default=0)
+    funded_rotations = [initial_rotation_capacity] * normal_count
 
     budget = TransactionBudget(
         leaderTimeout=leader_timeout,
         validatorsTimeout=validators_timeout,
         appealRounds=appeal_count,
-        rotations=budget_rotations,
+        rotations=funded_rotations,
+        rotationsUsed=rotations_used,
         senderAddress=sender_address,
         appeals=appeals,
         staking_distribution="constant",

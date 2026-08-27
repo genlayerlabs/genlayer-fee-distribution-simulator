@@ -188,6 +188,7 @@ def build_appeal_quote_checkpoints(transaction_results, round_labels, budget):
             round_labels=round_labels,
             appeal_round_index=appeal_round_index,
             rotations=budget.rotations,
+            rotations_used=budget.rotationsUsed,
         )
         source_round_label = round_labels[source_round_index]
         source_decision, source_status = appeal_source_decision(
@@ -203,6 +204,8 @@ def build_appeal_quote_checkpoints(transaction_results, round_labels, budget):
                 "appeal_label": quote.appeal_label,
                 "committee_basis": quote.committee_basis,
                 "committee_size": quote.committee_size,
+                "attempt_basis": quote.attempt_basis,
+                "rotations_value": quote.rotations_value,
                 "attempts": quote.attempts,
                 "leader_unit": str(quote.leader_unit),
                 "validator_unit": str(quote.validator_unit),
@@ -215,7 +218,13 @@ def build_appeal_quote_checkpoints(transaction_results, round_labels, budget):
 
 
 def build_example(
-    path, rotation_counts, addresses_pool, sender, appealant, rotation_kind="timeout"
+    path,
+    rotation_counts,
+    addresses_pool,
+    sender,
+    appealant,
+    rotation_kind="timeout",
+    funded_rotations=None,
 ):
     transaction_results, budget = path_to_transaction_results(
         path=path,
@@ -227,6 +236,18 @@ def build_example(
         rotation_counts=rotation_counts or {},
         rotation_kind=rotation_kind,
     )
+    if funded_rotations is not None:
+        funded_rotations = list(funded_rotations)
+        if len(funded_rotations) != len(budget.rotations):
+            raise ValueError(
+                "funded rotation override must align with normal rounds: "
+                f"{len(funded_rotations)} != {len(budget.rotations)}"
+            )
+        # Keep actual rotations from the generated path, but let quote-only
+        # diagnostics exercise a non-uniform funded schedule. This is valid on
+        # Consensus: runtime capacity is clamped to the smallest entry, while
+        # an Undetermined bond still reads the configured future-round entry.
+        budget = budget.model_copy(update={"rotations": funded_rotations})
     fee_events, round_labels = process_transaction(
         addresses=addresses_pool,
         transaction_results=transaction_results,
@@ -299,6 +320,9 @@ def build_example(
 
     total_rotations = sum((rotation_counts or {}).values())
     name = pattern_name(path, total_rotations, rotation_kind)
+    if funded_rotations is not None:
+        schedule = ",".join(str(value) for value in funded_rotations)
+        name = f"{name} [funded:{schedule}]"
     appeal_quotes = build_appeal_quote_checkpoints(
         transaction_results, round_labels, budget
     )
@@ -317,6 +341,7 @@ def build_example(
     }
     if appeal_quotes:
         example["checkpoints"] = {"appeal_quotes": appeal_quotes}
+    example["funded_rotations"] = budget.rotations
     if total_rotations:
         rot_list = [
             (rotation_counts or {}).get(k, 0)
@@ -429,6 +454,8 @@ def main():
                     quote["source_status"],
                     quote["committee_basis"],
                     quote["committee_size"],
+                    quote["attempt_basis"],
+                    quote["rotations_value"],
                     quote["attempts"],
                 )
                 candidate = {
@@ -444,6 +471,45 @@ def main():
                 current = quote_candidates.get(signature)
                 if current is None or rank < current[0]:
                     quote_candidates[signature] = (rank, candidate)
+
+    # A uniform funded schedule cannot distinguish raw consensus-round indexes
+    # from normal-round ordinals. Include one valid non-uniform schedule with
+    # no rotations actually consumed: runtime capacity clamps to zero, but the
+    # later Undetermined quote must still read rotations[2] and price three
+    # attempts for raw round 4. This would have caught the former round-1 bug
+    # in both Consensus and Studio.
+    ordinal_probe_path = [
+        "START",
+        "LEADER_RECEIPT_MAJORITY_AGREE",
+        "VALIDATOR_APPEAL_SUCCESSFUL",
+        "LEADER_RECEIPT_UNDETERMINED",
+        "LEADER_APPEAL_SUCCESSFUL",
+        "LEADER_RECEIPT_MAJORITY_AGREE",
+        "END",
+    ]
+    name, example = build_example(
+        ordinal_probe_path,
+        {},
+        addresses_pool,
+        sender,
+        appealant,
+        funded_rotations=[0, 1, 2],
+    )
+    category = categorize(ordinal_probe_path)
+    for quote in example.get("checkpoints", {}).get("appeal_quotes", []):
+        signature = (
+            quote["source_status"],
+            quote["committee_basis"],
+            quote["committee_size"],
+            quote["attempt_basis"],
+            quote["rotations_value"],
+            quote["attempts"],
+        )
+        candidate = {"category": category, "pattern": name, "example": example}
+        rank = (len(example["initialState"]["rounds"]), 0, name)
+        current = quote_candidates.get(signature)
+        if current is None or rank < current[0]:
+            quote_candidates[signature] = (rank, candidate)
 
     def write_category(category, patterns, suffix):
         data = {
@@ -502,19 +568,25 @@ def main():
     with open(quote_output, "w") as f:
         json.dump(
             {
-                "schema_version": 1,
+                "schema_version": 2,
                 "description": (
                     "Simulator appeal-price checkpoints selected to cover every "
-                    "status, committee basis, committee size, and attempt count."
+                    "status, committee basis, committee size, and attempt count. "
+                    "Funded rotation schedules and actual usage are separate so "
+                    "admission quotes use the same provenance as Consensus."
                 ),
                 "covered_signatures": [
                     {
                         "source_status": status,
                         "committee_basis": basis,
                         "committee_size": size,
+                        "attempt_basis": attempt_basis,
+                        "rotations_value": rotations_value,
                         "attempts": attempts,
                     }
-                    for status, basis, size, attempts in sorted(quote_signatures)
+                    for status, basis, size, attempt_basis, rotations_value, attempts in sorted(
+                        quote_signatures
+                    )
                 ],
                 "cases": quote_campaign,
             },

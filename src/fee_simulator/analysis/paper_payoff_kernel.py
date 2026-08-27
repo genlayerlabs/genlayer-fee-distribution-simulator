@@ -291,6 +291,7 @@ def certify_successful_validator_appeal(
         round_labels=round_labels,
         appeal_round_index=round_index,
         rotations=budget.rotations,
+        rotations_used=budget.rotationsUsed,
     )
     appellant_address = budget.appeals[
         sum(1 for label in round_labels[: round_index + 1] if is_appeal_round(label))
