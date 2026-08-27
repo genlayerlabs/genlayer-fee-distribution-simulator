@@ -174,6 +174,11 @@ def build_appeal_quote_checkpoints(transaction_results, round_labels, budget):
     """Export every appeal-boundary quote, including its pricing provenance."""
 
     checkpoints = []
+    # Track the live raw Consensus round pointer. Simulator round-label indexes
+    # are settlement positions: consecutive failed validator appeals advance
+    # the raw pointer 0 -> 1 -> 3, while leader appeals replace the source with
+    # a new normal round two raw slots later.
+    quote_round_index = 0
     for appeal_round_index, label in enumerate(round_labels):
         if not is_appeal_round(label):
             continue
@@ -200,10 +205,7 @@ def build_appeal_quote_checkpoints(transaction_results, round_labels, budget):
         checkpoints.append(
             {
                 "appeal_round_index": quote.appeal_round_index,
-                # Simulator settlement-round positions and raw protocol round
-                # indexes diverge after chained appeals. Admission happens
-                # against the live raw round immediately before this appeal.
-                "quote_round_index": quote.appeal_round_index - 1,
+                "quote_round_index": quote_round_index,
                 "source_round_index": quote.source_round_index,
                 "source_decision": source_decision,
                 "source_round_label": source_round_label,
@@ -221,6 +223,10 @@ def build_appeal_quote_checkpoints(transaction_results, round_labels, budget):
                 "expected_bond": str(quote.total),
             }
         )
+        if label.startswith("APPEAL_LEADER"):
+            quote_round_index += 2
+        else:
+            quote_round_index += 1 if quote_round_index % 2 == 0 else 2
     return checkpoints
 
 
@@ -576,7 +582,7 @@ def main():
     with open(quote_output, "w") as f:
         json.dump(
             {
-                "schema_version": 3,
+                "schema_version": 4,
                 "description": (
                     "Simulator appeal-price checkpoints selected to cover every "
                     "status, committee basis, committee size, and attempt count. "
