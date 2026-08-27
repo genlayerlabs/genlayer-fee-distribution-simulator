@@ -1,3 +1,4 @@
+from src.fee_simulator.protocol.constants import APPEAL_REWARD_MULTIPLE
 """
 Unit tests for individual fee distribution functions.
 
@@ -276,15 +277,19 @@ class TestAppealLeaderSuccessful:
         appealant_event = events[0]
         assert appealant_event.address == addresses_pool[98]
         assert appealant_event.role == "APPEALANT"
-        # Appealant should earn 1.5x appeal bond for 50% return
+        # Successful appellant receives the configured bond multiple.
         # Leader appeal bond covers the full next normal round:
         # 100 + 11 validators * 200 = 2300
-        assert appealant_event.earned == int(2300 * 1.5)  # 3450
+        assert appealant_event.earned == int(2300 * APPEAL_REWARD_MULTIPLE)
         assert appealant_event.cost == 0  # Cost is recorded separately
 
 
 class TestAppealValidatorSuccessful:
     """Unit tests for apply_appeal_validator_successful function."""
+
+    def test_successful_appeal_reward_multiple_is_2_5(self):
+        """The simulator stays locked to the approved 2.5x bond return."""
+        assert APPEAL_REWARD_MULTIPLE == 2.5
 
     def test_basic_appeal_validator_successful(self):
         """Test successful validator appeal."""
@@ -345,21 +350,98 @@ class TestAppealValidatorSuccessful:
         )
 
         # Verify
-        # Should have events for appealant and validators from both rounds
-        assert len(events) == 8  # appealant + 7 from appeal round
+        # Appellant + 7 appeal-round validators + 2 vindicated original
+        # dissenters. The original majority receives no event or penalty.
+        assert len(events) == 10
 
-        # Appealant should earn 1.5x appeal bond for 50% return
+        # Successful appellant receives the configured bond multiple.
         # Validator appeal bond covers only the appeal validators (no leader fee)
         appealant_event = next(e for e in events if e.address == addresses_pool[98])
         assert appealant_event.earned == int(
-            (7 * 200) * 1.5
-        )  # 1.5x appeal_bond = 2100
+            (7 * 200) * APPEAL_REWARD_MULTIPLE
+        )
 
-        # In successful appeal
-        # Appeal round: 4 DISAGREE, 3 AGREE
+        # The appeal committee is settled by its own 4-3 DISAGREE majority.
+        for addr in addresses_pool[5:9]:
+            event = next(e for e in events if e.address == addr)
+            assert event.earned == 200
+            assert event.burned == 0
+        for addr in addresses_pool[9:12]:
+            event = next(e for e in events if e.address == addr)
+            assert event.earned == 0
+            assert event.burned == PENALTY_REWARD_COEFFICIENT * 200
 
         validator_events = [e for e in events if e.role == "VALIDATOR"]
-        assert len(validator_events) == 7  # All validators from both rounds
+        assert len(validator_events) == 9
+
+        # Only the two original DISAGREE voters are vindicated at one standard
+        # validator reward each. Original AGREE voters remain at zero and are
+        # not retroactively penalized.
+        for addr in addresses_pool[3:5]:
+            vindication_event = next(e for e in events if e.address == addr)
+            assert vindication_event.earned == 200
+            assert vindication_event.burned == 0
+            assert vindication_event.round_index == 1
+        for addr in addresses_pool[0:3]:
+            assert not any(e.address == addr for e in events)
+
+    def test_no_majority_success_has_no_vindication_payment(self):
+        """A successful NoMajority appeal does not vindicate a prior side."""
+        event_sequence = EventSequence()
+        transaction_results = TransactionRoundResults(
+            rounds=[
+                Round(
+                    rotations=[
+                        Rotation(
+                            votes={
+                                addresses_pool[0]: ["LEADER_RECEIPT", "AGREE"],
+                                addresses_pool[1]: "AGREE",
+                                addresses_pool[2]: "AGREE",
+                                addresses_pool[3]: "DISAGREE",
+                                addresses_pool[4]: "DISAGREE",
+                            }
+                        )
+                    ]
+                ),
+                Round(
+                    rotations=[
+                        Rotation(
+                            votes={
+                                addresses_pool[5]: "AGREE",
+                                addresses_pool[6]: "AGREE",
+                                addresses_pool[7]: "AGREE",
+                                addresses_pool[8]: "DISAGREE",
+                                addresses_pool[9]: "DISAGREE",
+                                addresses_pool[10]: "DISAGREE",
+                                addresses_pool[11]: "TIMEOUT",
+                            }
+                        )
+                    ]
+                ),
+            ]
+        )
+        budget = TransactionBudget(
+            leaderTimeout=100,
+            validatorsTimeout=200,
+            appealRounds=1,
+            rotations=[0, 0],
+            senderAddress=addresses_pool[99],
+            appeals=[Appeal(appealantAddress=addresses_pool[98])],
+            staking_distribution="constant",
+        )
+
+        events = apply_appeal_validator_successful(
+            transaction_results=transaction_results,
+            round_index=1,
+            budget=budget,
+            event_sequence=event_sequence,
+            round_labels=["SKIP_ROUND", "APPEAL_VALIDATOR_SUCCESSFUL"],
+        )
+
+        assert len(events) == 8  # appellant + the 7 appeal validators only
+        assert len([e for e in events if e.role == "VALIDATOR"]) == 7
+        assert all(e.earned == 200 for e in events if e.role == "VALIDATOR")
+        assert not any(e.address in addresses_pool[0:5] for e in events)
 
 
 class TestLeaderTimeout50Percent:

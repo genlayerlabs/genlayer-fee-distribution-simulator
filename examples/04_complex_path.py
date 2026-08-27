@@ -107,7 +107,7 @@ def main():
     print("   - Round 2 becomes APPEAL_VALIDATOR_SUCCESSFUL")
     print("   - Round 3 becomes NORMAL_ROUND")
     print("6. Fee distribution:")
-    print("   - Round 2 appellant earns 1.5x their appeal bond (50% ROI)")
+    print("   - Round 2 appellant earns the configured appeal-bond reward multiple")
     print("   - Round 1's unsuccessful appeal bond gets burned")
     print("   - Round 3 operates as a normal round with standard fee distribution")
     print("7. This demonstrates how consecutive appeals work and their economic consequences")

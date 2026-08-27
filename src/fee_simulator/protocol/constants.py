@@ -28,6 +28,11 @@ APPEAL_ROUND_SIZES = [
 
 PENALTY_REWARD_COEFFICIENT = 1
 
+# Multiple of the appeal bond returned to a successful appellant:
+# principal (1.0) plus profit (APPEAL_REWARD_MULTIPLE - 1.0). Keep this value
+# in lockstep with the corresponding FeesProcessor constant.
+APPEAL_REWARD_MULTIPLE = 2.5
+
 DEFAULT_HASH = "0xdefault"
 DEFAULT_STAKE = 2000000
 

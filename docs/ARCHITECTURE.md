@@ -151,6 +151,9 @@ APPEAL_ROUND_SIZES = [7, 13, 25, 49, 97, 193, 385, 769, 1000]
 PENALTY_REWARD_COEFFICIENT = 1  # Multiplier for minority validator penalties
 IDLE_PENALTY_COEFFICIENT = 0.01  # 1% of stake for idleness
 DETERMINISTIC_VIOLATION_PENALTY_COEFFICIENT = 0.1  # 10% of stake for hash mismatches
+
+# Successful-appellant bond return
+APPEAL_REWARD_MULTIPLE = 2.5
 ```
 
 ### Vote Types
@@ -259,8 +262,10 @@ FeeEvent(
 - Minority validators: Burned `PENALTY_REWARD_COEFFICIENT * validator_timeout`
 
 #### Successful Appeal
-- Appealant: Earns `1.5 * appeal_bond` (50% return on investment)
-- Validators: Distribution depends on appeal type
+- Appealant: Earns `2.5 * appeal_bond` (returned principal plus 150% profit)
+- Appeal committee: Settled from that committee's own majority under the existing rules
+- Original committee: On a clear successful validator appeal, voters matching the new majority each earn one `validator_timeout`; all other original voters remain at zero with no retroactive penalty
+- No-majority success: No original validator is vindicated
 
 #### Split Bond (Undetermined after unsuccessful appeal)
 - Leader: Earns `leader_timeout`
@@ -495,6 +500,7 @@ The system uses a sophisticated address allocation algorithm that determines whi
 2. **Appeal Rounds**: Always pull entirely new addresses that haven't been used yet
 3. **Leader Rotation**: Previous normal round leaders are excluded from future normal rounds
 4. **Deterministic Selection**: The algorithm is fully deterministic given the same path
+5. **Leader-Timeout Appeals (exception)**: Draw no committee at all; the induced re-execution round keeps the same validator set minus the timed-out leader (size N-1, no new validators), and chained timeout appeals shrink the committee each time — see the dedicated section in [ADDRESS_ALLOCATION_ALGORITHM.md](./ADDRESS_ALLOCATION_ALGORITHM.md)
 
 For full details including edge cases, pseudocode, and examples, see [ADDRESS_ALLOCATION_ALGORITHM.md](./ADDRESS_ALLOCATION_ALGORITHM.md)
 

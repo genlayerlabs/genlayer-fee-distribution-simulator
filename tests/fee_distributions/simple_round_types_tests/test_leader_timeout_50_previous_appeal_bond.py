@@ -39,7 +39,15 @@ transaction_budget = TransactionBudget(
 
 
 def test_leader_timeout_50_previous_appeal_bond(verbose, debug):
-    """Test leader_timeout_50_previous_appeal_bond: leader timeout, appeal unsuccessful, leader timeout."""
+    """Test leader_timeout_50_previous_appeal_bond: leader timeout, appeal unsuccessful, leader timeout.
+
+    Spec semantics (RoundsCreation.createNewLeaderTimeoutAppealRound): the
+    leader-timeout appeal keeps the SAME validator set, drops the timed-out
+    leader, and seats the next validator in order as the new leader — no new
+    validators are added. The induced round here times out again (the appeal
+    is unsuccessful), so it is the 4-member remaining committee led by the
+    validator that followed the original leader.
+    """
     # Setup
     rotation1 = Rotation(
         votes={
@@ -51,17 +59,14 @@ def test_leader_timeout_50_previous_appeal_bond(verbose, debug):
         }
     )
     rotation2 = Rotation(
-        votes={addresses_pool[i]: "NA" for i in [5, 6, 7, 8, 9, 10, 11]}
+        votes={addresses_pool[i]: "NA" for i in [0, 1, 2, 3, 4]}
     )
     rotation3 = Rotation(
         votes={
-            addresses_pool[5]: ["LEADER_TIMEOUT", "NA"],
-            addresses_pool[6]: "NA",
-            addresses_pool[7]: "NA",
-            addresses_pool[8]: "NA",
-            addresses_pool[9]: "NA",
-            addresses_pool[10]: "NA",
-            addresses_pool[11]: "NA",
+            addresses_pool[1]: ["LEADER_TIMEOUT", "NA"],
+            addresses_pool[2]: "NA",
+            addresses_pool[3]: "NA",
+            addresses_pool[4]: "NA",
         }
     )
     transaction_results = TransactionRoundResults(
@@ -109,7 +114,7 @@ def test_leader_timeout_50_previous_appeal_bond(verbose, debug):
     assert all(
         compute_all_zeros(fee_events, addresses_pool[i])
         for i in range(len(addresses_pool))
-        if i not in [0, 5, 23, 1999]
+        if i not in [0, 1, 23, 1999]
     ), "Everyone else should have no fees"
 
     # Appealant Fees Assert
@@ -132,9 +137,10 @@ def test_leader_timeout_50_previous_appeal_bond(verbose, debug):
     ), f"First leader should earn 50% of leaderTimeout ({leaderTimeout * 0.5})"
 
     # Second Leader Fees Assert (contract semantics: the failed timeout
-    # appeal bond is split 50/50 between the new leader and the sender)
+    # appeal bond is split 50/50 between the new leader — the validator that
+    # followed the timed-out leader — and the sender)
     assert (
-        compute_total_earnings(fee_events, addresses_pool[5]) == appeal_bond // 2
+        compute_total_earnings(fee_events, addresses_pool[1]) == appeal_bond // 2
     ), f"Second leader should earn half the appeal bond ({appeal_bond // 2})"
 
     # Sender receives the other half of the bond as an explicit credit

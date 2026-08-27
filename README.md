@@ -86,7 +86,15 @@ scripts/                     # Utility scripts
 ├── 01_generate_test_vectors.py  # Generate compressed JSON files for all paths
 ├── 02_decode_test_vector.py     # Decode and visualize JSON path files
 ├── 03_analyze_incentives.py     # Analyze incentive structures
-└── 04_interactive_simulator.py  # Interactive path builder and simulator
+├── 04_interactive_simulator.py  # Interactive path builder and simulator
+├── 05_convert_to_solidity_json.py
+├── 06_categorize_appeal_tests.py
+├── 07_generate_consensus_vectors.py
+├── 08_appeal_reward_impact.py   # Quantify 2.5x and vindication impact
+├── 09_verify_paper_payoff_kernel.py  # Certify paper-facing payoff properties
+├── 10_generate_paper_fee_kernel_tla.py  # Bind FeeEvents to TLA+ constants
+├── 11_check_paper_attraction_tla.py  # Run green and expected-red TLC checks
+└── 12_check_consensus_vector_conformance.py  # Classify the pending Solidity delta
 
 examples/                    # Example scenarios
 ├── 01_basic_transaction.py      # Simple majority agreement
@@ -340,6 +348,24 @@ These examples are perfect for:
 - Testing different scenarios
 - Learning the impact of appeals and timeouts
 - Demonstrating the system to others
+
+### Paper Payoff Certificate
+
+The bounded-attraction paper's protocol-side payoff premises are checked
+directly against executable `FeeEvent` output. The verifier exhausts every
+first-rung vote-count equivalence class, checks extremal profiles at every
+configured committee-size rung, and has expected-red controls for the key
+reward and penalty rules.
+
+```bash
+PYTHONPATH=. python scripts/09_verify_paper_payoff_kernel.py
+PYTHONPATH=. python scripts/09_verify_paper_payoff_kernel.py --json
+```
+
+See [`docs/PAPER_PAYOFF_ASSURANCE.md`](docs/PAPER_PAYOFF_ASSURANCE.md) for the
+exact claim boundary and remaining empirical and TLA+ composition obligations.
+The bounded population model and its expected-red controls are documented in
+[`formal/tla/README.md`](formal/tla/README.md).
 
 ### Creating Custom Scenarios
 
