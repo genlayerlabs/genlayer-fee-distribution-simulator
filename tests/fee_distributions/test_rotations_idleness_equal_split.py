@@ -180,8 +180,8 @@ class TestRotations:
         # Should process without errors and pass invariants
         check_all_invariants(fee_events, budget, transaction_results, round_labels)
 
-    def test_budget_separates_funded_capacity_from_actual_rotation_counts(self):
-        """The generated path is executable under Consensus's global clamp."""
+    def test_budget_tracks_exact_per_round_rotation_requirements(self):
+        """Generated paths use the minimal executable Consensus schedule."""
         path = [
             "START",
             "LEADER_RECEIPT_MAJORITY_AGREE",
@@ -199,8 +199,9 @@ class TestRotations:
             rotation_counts={0: 2, 1: 0},  # First normal round has 2 rotations
         )
 
-        assert budget.rotations == [2, 2]
+        assert budget.rotations == [2, 0]
         assert budget.rotationsUsed == [2, 0]
+        assert max(budget.rotations) == 2  # transaction-wide runtime ceiling
 
     def test_total_cost_formula_with_rotations(self):
         """

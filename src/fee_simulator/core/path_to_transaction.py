@@ -610,17 +610,17 @@ def path_to_transaction_results(
         if round_obj.rotations and round_obj.rotations[-1].votes:
             prev_majority = compute_majority(round_obj.rotations[-1].votes)
 
-    # The latest Consensus has two distinct rotation concepts:
-    # - feesDistribution.rotations is the funded schedule;
-    # - RoundsStorage.rotationsLeft is live runtime capacity.
-    # Every normal round is seeded from one transaction-wide capacity clamped
-    # to the smallest funded entry. The minimal valid schedule for this path is
-    # therefore uniform at the largest number of rotations actually exercised.
+    # The latest Consensus has three related rotation values:
+    # - feesDistribution.rotations is the exact per-normal-round funded schedule;
+    # - Transaction.initialRotations is a transaction-wide ceiling; and
+    # - RoundsStorage.rotationsLeft is the live remainder for one normal round.
+    # The minimal funded schedule for a generated path is therefore the exact
+    # number of rotations exercised at each normal-round ordinal. Consensus
+    # derives the transaction-wide ceiling from the largest entry.
     rotations_used = []
     for nc in range(normal_count):
         rotations_used.append(rotation_counts.get(nc, 0))
-    initial_rotation_capacity = max(rotations_used, default=0)
-    funded_rotations = [initial_rotation_capacity] * normal_count
+    funded_rotations = list(rotations_used)
 
     budget = TransactionBudget(
         leaderTimeout=leader_timeout,

@@ -101,12 +101,12 @@ class TransactionBudget(BaseModel):
     leaderTimeout: int = Field(ge=0)
     validatorsTimeout: int = Field(ge=0)
     appealRounds: int = Field(ge=0)
-    # Funded rotation allowance for each normal round. Consensus seeds one
-    # common runtime capacity from the minimum entry in this schedule.
+    # Funded rotation allowance for each normal-round ordinal. Consensus keeps
+    # a transaction-wide ceiling, then seeds each normal round with the lesser
+    # of that ceiling and this round's exact funded entry.
     rotations: List[int]
-    # Rotations actually consumed in each normal round. Kept separate from the
-    # funded allowance because LeaderTimeout bonds use the live remainder while
-    # Undetermined bonds use a future configured schedule entry.
+    # Rotations actually consumed in each normal round. Kept as provenance;
+    # appeal admission prices configured future work, not the live remainder.
     rotationsUsed: Optional[List[int]] = None
     senderAddress: str
     appeals: Optional[List[Appeal]] = []
