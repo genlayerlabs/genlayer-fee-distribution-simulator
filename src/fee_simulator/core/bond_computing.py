@@ -4,7 +4,6 @@ from src.fee_simulator.utils_round_sizes import (
     get_round_size,
     get_round_size_for_bond,
     get_appeal_index,
-    get_normal_round_index,
     get_normal_round_size,
 )
 from src.fee_simulator.protocol.types import RoundLabel
@@ -76,16 +75,16 @@ def compute_appeal_bond(
       leader rotations.
 
     - Leader timeout appeal (LeaderTimeout):
-        bond = (live_source_rotations_left + 1) * (leader_timeout + configured_source_round_size * validators_timeout)
+        bond = (rotations_next + 1) * (leader_timeout + configured_source_round_size * validators_timeout)
       The induced round later drops the timed-out leader, but participant
       removal does not rewrite the configured round-cost basis quoted at
       appeal admission.
 
     `rotations` is the funded per-normal-round schedule. `rotations_used` is
     the corresponding actual usage. When usage is omitted, no rotations are
-    assumed consumed. This distinction mirrors the contract: Undetermined
-    quotes read the configured future schedule, while LeaderTimeout quotes
-    read the live source-round remainder.
+    assumed consumed. Usage is exported as separate provenance, but appeal
+    admission prices the configured round the appeal buys rather than prior
+    attempts already consumed.
     """
 
     return compute_appeal_bond_quote(
@@ -153,33 +152,10 @@ def compute_appeal_bond_quote(
             # does not rewrite the configured round-cost basis.
             committee_size = get_round_size(normal_round_index, round_labels)
             committee_basis = "configured_source_round"
-            attempt_basis = "live_source_round"
-
-            # Creation clamps tx.initialRotations to the smallest funded
-            # schedule entry. Leader-timeout replays inherit the remaining
-            # capacity, so chained timeout appeals must subtract usage from
-            # every normal round in the inherited replay chain.
-            initial_rotations = min(rotations) if rotations else 0
-            used_total = 0
-            cursor = normal_round_index
-            while True:
-                normal_ordinal = get_normal_round_index(cursor, round_labels)
-                if rotations_used is not None and normal_ordinal < len(rotations_used):
-                    used_total += rotations_used[normal_ordinal]
-                if (
-                    cursor == 0
-                    or round_labels[cursor - 1] not in LEADER_TIMEOUT_APPEAL_LABELS
-                ):
-                    break
-                previous_normal = cursor - 2
-                while previous_normal >= 0 and is_appeal_round(
-                    round_labels[previous_normal]
-                ):
-                    previous_normal -= 1
-                if previous_normal < 0:
-                    break
-                cursor = previous_normal
-            rotations_for_quote = max(initial_rotations - used_total, 0)
+            attempt_basis = "configured_next_normal_round"
+            rotations_for_quote = 0
+            if rotations is not None and (appeal_index + 1) < len(rotations):
+                rotations_for_quote = rotations[appeal_index + 1]
         else:
             # Undetermined appeal: full next normal round (round + 2 schedule)
             committee_size = get_normal_round_size(appeal_index + 1)

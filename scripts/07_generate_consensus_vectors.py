@@ -39,7 +39,10 @@ from src.fee_simulator.core.path_to_transaction import path_to_transaction_resul
 from src.fee_simulator.core.bond_computing import compute_appeal_bond_quote
 from src.fee_simulator.core.transaction_processing import process_transaction
 from src.fee_simulator.core.majority import compute_majority, normalize_vote
-from src.fee_simulator.specification.state_machine.graph import TRANSACTION_GRAPH
+from src.fee_simulator.specification.state_machine.graph import (
+    TRANSACTION_GRAPH,
+    is_protocol_valid_path,
+)
 from src.fee_simulator.specification.state_machine.path_analysis.path_generator import (
     generate_all_paths,
 )
@@ -197,6 +200,10 @@ def build_appeal_quote_checkpoints(transaction_results, round_labels, budget):
         checkpoints.append(
             {
                 "appeal_round_index": quote.appeal_round_index,
+                # Simulator settlement-round positions and raw protocol round
+                # indexes diverge after chained appeals. Admission happens
+                # against the live raw round immediately before this appeal.
+                "quote_round_index": quote.appeal_round_index - 1,
                 "source_round_index": quote.source_round_index,
                 "source_decision": source_decision,
                 "source_round_label": source_round_label,
@@ -399,8 +406,9 @@ def main():
     sender = addresses_pool[-1]
     appealant = addresses_pool[-2]
 
-    paths = list(
-        generate_all_paths(
+    paths = [
+        path
+        for path in generate_all_paths(
             TRANSACTION_GRAPH,
             PathConstraints(
                 # min_length=2 keeps the single-round (no appeal) paths
@@ -410,7 +418,8 @@ def main():
                 target_node="END",
             ),
         )
-    )
+        if is_protocol_valid_path(path)
+    ]
     print(f"paths: {len(paths)}")
 
     # category -> pattern -> examples (base and rotations kept separate)
@@ -474,14 +483,13 @@ def main():
 
     # A uniform funded schedule cannot distinguish raw consensus-round indexes
     # from normal-round ordinals. Include one valid non-uniform schedule with
-    # no rotations actually consumed: runtime capacity clamps to zero, but the
-    # later Undetermined quote must still read rotations[2] and price three
-    # attempts for raw round 4. This would have caught the former round-1 bug
-    # in both Consensus and Studio.
+    # no rotations actually consumed. Two successive leader replays exercise
+    # rotations[1] and rotations[2] without attempting to appeal a terminal
+    # normal decision after a successful validator review.
     ordinal_probe_path = [
         "START",
-        "LEADER_RECEIPT_MAJORITY_AGREE",
-        "VALIDATOR_APPEAL_SUCCESSFUL",
+        "LEADER_RECEIPT_UNDETERMINED",
+        "LEADER_APPEAL_UNSUCCESSFUL",
         "LEADER_RECEIPT_UNDETERMINED",
         "LEADER_APPEAL_SUCCESSFUL",
         "LEADER_RECEIPT_MAJORITY_AGREE",
@@ -568,7 +576,7 @@ def main():
     with open(quote_output, "w") as f:
         json.dump(
             {
-                "schema_version": 2,
+                "schema_version": 3,
                 "description": (
                     "Simulator appeal-price checkpoints selected to cover every "
                     "status, committee basis, committee size, and attempt count. "

@@ -44,7 +44,7 @@ def test_undetermined_appeal_quote_exposes_next_round_and_rotation_components():
 def test_later_undetermined_quote_uses_normal_round_ordinal():
     labels = [
         "NORMAL_ROUND",
-        "APPEAL_VALIDATOR_SUCCESSFUL",
+        "APPEAL_LEADER_UNSUCCESSFUL",
         "NORMAL_ROUND",
         "APPEAL_LEADER_SUCCESSFUL",
     ]
@@ -75,7 +75,7 @@ def test_leader_timeout_quote_keeps_the_configured_source_round_basis():
 
     assert quote.committee_basis == "configured_source_round"
     assert quote.committee_size == 5
-    assert quote.attempt_basis == "live_source_round"
+    assert quote.attempt_basis == "configured_next_normal_round"
     assert quote.rotations_value == 0
     assert quote.attempts == 1
     assert quote.leader_component == 100
@@ -83,7 +83,7 @@ def test_leader_timeout_quote_keeps_the_configured_source_round_basis():
     assert quote.total == 1_100
 
 
-def test_leader_timeout_quote_subtracts_rotations_used_from_funded_capacity():
+def test_leader_timeout_quote_uses_next_funded_round_independently_of_prior_usage():
     labels = ["NORMAL_ROUND", "APPEAL_LEADER_TIMEOUT_SUCCESSFUL"]
 
     quote = compute_appeal_bond_quote(
@@ -95,12 +95,12 @@ def test_leader_timeout_quote_subtracts_rotations_used_from_funded_capacity():
         rotations_used=[1, 0],
     )
 
-    assert quote.rotations_value == 1
-    assert quote.attempts == 2
-    assert quote.total == 2_200
+    assert quote.rotations_value == 2
+    assert quote.attempts == 3
+    assert quote.total == 3_300
 
 
-def test_chained_timeout_quote_inherits_the_prior_rounds_live_remainder():
+def test_chained_timeout_quote_uses_each_next_normal_round_schedule_entry():
     labels = [
         "NORMAL_ROUND",
         "APPEAL_LEADER_TIMEOUT_SUCCESSFUL",
@@ -114,7 +114,7 @@ def test_chained_timeout_quote_inherits_the_prior_rounds_live_remainder():
         200,
         labels,
         appeal_round_index=3,
-        rotations=[3, 3],
+        rotations=[3, 2, 1],
         rotations_used=[1, 1],
     )
 
