@@ -19,6 +19,7 @@ To understand the consensus concepts (voting, appeals, rounds), see [docs/BASIC_
 ## What it does NOT do
 
 - **It does not verify the contracts — it models them.** Parity holds only as long as both sides move together (see *Parity discipline* below). The enforcement point is the vector-driven test suites in `genlayer-consensus`, not this repo.
+- **Settlement vectors start after admission.** They do not run live validator selection, capacity-limited appeal admission, or the public `bond + funding` quote. Those surfaces require quote-equals-submission contract tests and shared Studio/Consensus E2E coverage in addition to vector parity.
 - **It only models the time-unit fee layer.** Out of scope: the unified execution budget (gas/receipt/storage fees), the developer-fee gross-up, the GEN-per-time-unit price multiplier, message fees, and top-ups. Amounts here are raw time-unit fees (e.g. `leaderTimeout=100`, `validatorsTimeout=200`).
 - **It abstracts validator identity.** Committee sizes, roles and vote alignment match the contracts; the concrete address selection (VRF, consumed-validator tracking) does not — compare quantities and roles, never addresses.
 - **Round sizes cap at 1000** for simulation purposes; the on-chain `VALIDATORS_PER_ROUND` continues to 1535/1537.

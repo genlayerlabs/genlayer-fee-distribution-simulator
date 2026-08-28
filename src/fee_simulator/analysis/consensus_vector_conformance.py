@@ -12,6 +12,13 @@ accepts only the two pending economic changes:
 The sender-refund difference is checked as the conservation consequence of
 the larger upfront reserve and the two payout changes.  It is not classified
 as an independent protocol change.
+
+Scope boundary: these vectors begin with an already-admitted sequence of
+rounds. They certify bond/reward/penalty settlement for that sequence, but do
+not execute live validator selection, appeal-capacity admission, or the public
+``bond + funding`` quote. A Solidity quote can therefore select the wrong jury
+size while every vector here remains green. Quote parity needs the separate
+cross-stack admission scenarios and the Solidity quote-equals-submission tests.
 """
 
 from __future__ import annotations
