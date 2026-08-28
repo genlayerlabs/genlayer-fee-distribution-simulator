@@ -72,6 +72,7 @@ def check_appellant_consistency(
                 round_labels=round_labels,
                 appeal_round_index=round_idx,
                 rotations=transaction_budget.rotations,
+                rotations_used=transaction_budget.rotationsUsed,
             )
             expected_size = None
         else:

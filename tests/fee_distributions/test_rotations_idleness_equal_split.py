@@ -16,7 +16,10 @@ from src.fee_simulator.core.transaction_processing import process_transaction
 from src.fee_simulator.core.round_labeling import label_rounds
 from src.fee_simulator.core.path_to_transaction import path_to_transaction_results
 from src.fee_simulator.core.majority import compute_majority
-from src.fee_simulator.core.idleness import replace_idle_participants, resolve_partial_votes
+from src.fee_simulator.core.idleness import (
+    replace_idle_participants,
+    resolve_partial_votes,
+)
 from src.fee_simulator.utils import compute_total_cost, generate_random_eth_address
 from src.fee_simulator.metrics.address_metrics import (
     compute_all_zeros,
@@ -175,12 +178,10 @@ class TestRotations:
         )
 
         # Should process without errors and pass invariants
-        check_all_invariants(
-            fee_events, budget, transaction_results, round_labels
-        )
+        check_all_invariants(fee_events, budget, transaction_results, round_labels)
 
-    def test_budget_rotation_counts_correct(self):
-        """Verify that budget.rotations correctly reflects rotation_counts."""
+    def test_budget_tracks_exact_per_round_rotation_requirements(self):
+        """Generated paths use the minimal executable Consensus schedule."""
         path = [
             "START",
             "LEADER_RECEIPT_MAJORITY_AGREE",
@@ -199,6 +200,8 @@ class TestRotations:
         )
 
         assert budget.rotations == [2, 0]
+        assert budget.rotationsUsed == [2, 0]
+        assert max(budget.rotations) == 2  # transaction-wide runtime ceiling
 
     def test_total_cost_formula_with_rotations(self):
         """
@@ -329,7 +332,9 @@ class TestIdleness:
         reserve_votes = {addresses_pool[5]: "AGREE"}
 
         transaction_results = TransactionRoundResults(
-            rounds=[Round(rotations=[Rotation(votes=votes, reserve_votes=reserve_votes)])]
+            rounds=[
+                Round(rotations=[Rotation(votes=votes, reserve_votes=reserve_votes)])
+            ]
         )
 
         event_sequence = EventSequence()
@@ -353,7 +358,10 @@ class TestIdleness:
 
         # Idle validator should be replaced
         final_votes = new_results.rounds[0].rotations[-1].votes
-        assert addresses_pool[4] not in final_votes or final_votes.get(addresses_pool[4]) != "IDLE"
+        assert (
+            addresses_pool[4] not in final_votes
+            or final_votes.get(addresses_pool[4]) != "IDLE"
+        )
 
         # Should have a slashing event for the idle validator
         slash_events = [e for e in new_events if e.slashed > 0]
@@ -469,10 +477,7 @@ class TestEqualSplit:
         assert round_labels[2] == "EQUAL_SPLIT"
 
         # Get EQUAL_SPLIT round events
-        equal_split_events = [
-            e for e in fee_events
-            if e.round_label == "EQUAL_SPLIT"
-        ]
+        equal_split_events = [e for e in fee_events if e.round_label == "EQUAL_SPLIT"]
 
         # Leader should earn leaderTimeout
         leader_events = [e for e in equal_split_events if e.role == "LEADER"]
@@ -520,9 +525,7 @@ class TestEqualSplit:
         )
 
         # This should pass all 24 invariants
-        check_all_invariants(
-            fee_events, budget, transaction_results, round_labels
-        )
+        check_all_invariants(fee_events, budget, transaction_results, round_labels)
 
     def test_equal_split_vs_split_bond_differentiation(self, verbose, debug):
         """
@@ -657,6 +660,4 @@ class TestIntegration:
                 transaction_results=transaction_results,
                 transaction_budget=budget,
             )
-            check_all_invariants(
-                fee_events, budget, transaction_results, round_labels
-            )
+            check_all_invariants(fee_events, budget, transaction_results, round_labels)

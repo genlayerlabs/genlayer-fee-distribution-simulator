@@ -61,9 +61,7 @@ def apply_appeal_validator_unsuccessful(
         aligned_addresses = list(votes.keys())
         minority_addresses = []
     else:
-        aligned_addresses, minority_addresses = who_is_in_vote_majority(
-            votes, majority
-        )
+        aligned_addresses, minority_addresses = who_is_in_vote_majority(votes, majority)
 
     normal_round_index = find_previous_normal_round(round_index, round_labels)
     if normal_round_index is None:
@@ -76,6 +74,7 @@ def apply_appeal_validator_unsuccessful(
         round_labels=round_labels,
         appeal_round_index=round_index,
         rotations=budget.rotations,
+        rotations_used=budget.rotationsUsed,
     )
 
     pool = budget.validatorsTimeout * len(votes) + appeal_bond

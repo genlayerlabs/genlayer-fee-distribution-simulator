@@ -153,7 +153,10 @@ def who_is_in_vote_majority(
         if normalize_vote(vote) == majority_vote:
             majority_addresses.append(addr)
 
-    minority_addresses = list(set(rotation.keys()) - set(majority_addresses))
+    majority_address_set = set(majority_addresses)
+    minority_addresses = [
+        addr for addr in rotation.keys() if addr not in majority_address_set
+    ]
     return majority_addresses, minority_addresses
 
 

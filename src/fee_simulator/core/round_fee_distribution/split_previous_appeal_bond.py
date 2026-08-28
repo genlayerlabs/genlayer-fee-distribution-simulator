@@ -55,6 +55,7 @@ def apply_split_previous_appeal_bond(
         validators_timeout=budget.validatorsTimeout,
         round_labels=round_labels,
         rotations=budget.rotations,
+        rotations_used=budget.rotationsUsed,
         appeal_round_index=round_index - 1,
     )
 
@@ -63,9 +64,7 @@ def apply_split_previous_appeal_bond(
         aligned_addresses = list(votes.keys())
         minority_addresses = []
     else:
-        aligned_addresses, minority_addresses = who_is_in_vote_majority(
-            votes, majority
-        )
+        aligned_addresses, minority_addresses = who_is_in_vote_majority(votes, majority)
 
     bond_share = split_amount(appeal_bond, len(aligned_addresses))
     for addr in aligned_addresses:

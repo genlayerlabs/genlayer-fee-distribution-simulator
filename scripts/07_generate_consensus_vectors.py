@@ -14,7 +14,11 @@ whenever the fee model changes:
 Outputs, per category (first appeal node in the path, or no_appeal):
   <category>_compressed.json            (variants without rotations)
   <category>_rotations_compressed.json  (variants with rotations)
+  appeal_quote_checkpoints.json         (compact transition-quote campaign)
   summary.json
+
+Use --appeal-quote-output to place the compact campaign directly in a
+consensus checkout while leaving the larger category vectors in --output-dir.
 
 If --existing-dir is given, the complex-scenario directories found there
 (*_complex_scenarios/, leader_timeout_complex_scenarios/) are rebuilt
@@ -24,6 +28,7 @@ re-running each pattern through the current simulator.
 
 import argparse
 import json
+import random
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -31,9 +36,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.fee_simulator.core.path_to_transaction import path_to_transaction_results
+from src.fee_simulator.core.bond_computing import compute_appeal_bond_quote
 from src.fee_simulator.core.transaction_processing import process_transaction
-from src.fee_simulator.core.majority import normalize_vote
-from src.fee_simulator.specification.state_machine.graph import TRANSACTION_GRAPH
+from src.fee_simulator.core.majority import compute_majority, normalize_vote
+from src.fee_simulator.specification.state_machine.graph import (
+    TRANSACTION_GRAPH,
+    is_protocol_valid_path,
+)
 from src.fee_simulator.specification.state_machine.path_analysis.path_generator import (
     generate_all_paths,
 )
@@ -43,7 +52,8 @@ from src.fee_simulator.specification.state_machine.path_analysis.path_types impo
 from src.fee_simulator.specification.state_machine.path_analysis.variant_generator import (
     generate_all_path_variants,
 )
-from src.fee_simulator.utils import generate_random_eth_address
+from src.fee_simulator.utils import generate_random_eth_address, is_appeal_round
+from src.fee_simulator.utils_round_sizes import find_previous_normal_round
 
 LEADER_TIMEOUT = 100
 VALIDATORS_TIMEOUT = 200
@@ -119,15 +129,116 @@ class AddressBook:
 
 
 def leader_vote_string(vote):
-    if isinstance(vote, list) and vote and vote[0] in (
-        "LEADER_RECEIPT",
-        "LEADER_TIMEOUT",
+    if (
+        isinstance(vote, list)
+        and vote
+        and vote[0]
+        in (
+            "LEADER_RECEIPT",
+            "LEADER_TIMEOUT",
+        )
     ):
         return vote[0]
     return normalize_vote(vote)
 
 
-def build_example(path, rotation_counts, addresses_pool, sender, appealant, rotation_kind="timeout"):
+def appeal_source_decision(source_round, source_round_label, appeal_label):
+    """Return the source decision and contract status from processed rounds.
+
+    The appeal label is the simulator's contextual classification of the
+    admission state: leader-timeout and undetermined appeals can originate from
+    rounds later recolored as SKIP for settlement.  Validator appeals still need
+    their processed majority to distinguish Accepted from ValidatorsTimeout.
+    This deliberately avoids indexing back into the graph path because graph
+    nodes and processed round indices diverge in chained scenarios.
+    """
+
+    if appeal_label.startswith("APPEAL_LEADER_TIMEOUT"):
+        return "LEADER_TIMEOUT", "LeaderTimeout"
+
+    votes = source_round.rotations[-1].votes if source_round.rotations else {}
+    majority = compute_majority(votes)
+    if appeal_label.startswith("APPEAL_LEADER"):
+        return f"LEADER_RECEIPT_{majority}", "Undetermined"
+    if majority == "TIMEOUT":
+        return "LEADER_RECEIPT_MAJORITY_TIMEOUT", "ValidatorsTimeout"
+    if majority == "AGREE":
+        return "LEADER_RECEIPT_MAJORITY_AGREE", "Accepted"
+    raise ValueError(
+        f"Unsupported validator-appeal source majority {majority} "
+        f"from {source_round_label}"
+    )
+
+
+def build_appeal_quote_checkpoints(transaction_results, round_labels, budget):
+    """Export every appeal-boundary quote, including its pricing provenance."""
+
+    checkpoints = []
+    # Track the live raw Consensus round pointer. Simulator round-label indexes
+    # are settlement positions: consecutive failed validator appeals advance
+    # the raw pointer 0 -> 1 -> 3, while leader appeals replace the source with
+    # a new normal round two raw slots later.
+    quote_round_index = 0
+    for appeal_round_index, label in enumerate(round_labels):
+        if not is_appeal_round(label):
+            continue
+        source_round_index = find_previous_normal_round(
+            appeal_round_index, round_labels
+        )
+        if source_round_index is None:
+            raise ValueError(
+                f"Appeal round {appeal_round_index} has no source normal round"
+            )
+        quote = compute_appeal_bond_quote(
+            normal_round_index=source_round_index,
+            leader_timeout=budget.leaderTimeout,
+            validators_timeout=budget.validatorsTimeout,
+            round_labels=round_labels,
+            appeal_round_index=appeal_round_index,
+            rotations=budget.rotations,
+            rotations_used=budget.rotationsUsed,
+        )
+        source_round_label = round_labels[source_round_index]
+        source_decision, source_status = appeal_source_decision(
+            transaction_results.rounds[source_round_index], source_round_label, label
+        )
+        checkpoints.append(
+            {
+                "appeal_round_index": quote.appeal_round_index,
+                "quote_round_index": quote_round_index,
+                "source_round_index": quote.source_round_index,
+                "source_decision": source_decision,
+                "source_round_label": source_round_label,
+                "source_status": source_status,
+                "appeal_label": quote.appeal_label,
+                "committee_basis": quote.committee_basis,
+                "committee_size": quote.committee_size,
+                "attempt_basis": quote.attempt_basis,
+                "rotations_value": quote.rotations_value,
+                "attempts": quote.attempts,
+                "leader_unit": str(quote.leader_unit),
+                "validator_unit": str(quote.validator_unit),
+                "leader_component": str(quote.leader_component),
+                "validator_component": str(quote.validator_component),
+                "expected_bond": str(quote.total),
+            }
+        )
+        if label.startswith("APPEAL_LEADER"):
+            quote_round_index += 2
+        else:
+            quote_round_index += 1 if quote_round_index % 2 == 0 else 2
+    return checkpoints
+
+
+def build_example(
+    path,
+    rotation_counts,
+    addresses_pool,
+    sender,
+    appealant,
+    rotation_kind="timeout",
+    funded_rotations=None,
+):
     transaction_results, budget = path_to_transaction_results(
         path=path,
         addresses=addresses_pool,
@@ -138,6 +249,18 @@ def build_example(path, rotation_counts, addresses_pool, sender, appealant, rota
         rotation_counts=rotation_counts or {},
         rotation_kind=rotation_kind,
     )
+    if funded_rotations is not None:
+        funded_rotations = list(funded_rotations)
+        if len(funded_rotations) != len(budget.rotations):
+            raise ValueError(
+                "funded rotation override must align with normal rounds: "
+                f"{len(funded_rotations)} != {len(budget.rotations)}"
+            )
+        # Keep actual rotations from the generated path, but let quote-only
+        # diagnostics exercise a non-uniform funded schedule. This is valid on
+        # Consensus: runtime capacity is clamped to the smallest entry, while
+        # an Undetermined bond still reads the configured future-round entry.
+        budget = budget.model_copy(update={"rotations": funded_rotations})
     fee_events, round_labels = process_transaction(
         addresses=addresses_pool,
         transaction_results=transaction_results,
@@ -155,16 +278,14 @@ def build_example(path, rotation_counts, addresses_pool, sender, appealant, rota
         first_addr = next(iter(votes.keys()), None)
         validators_out = []
         for addr, vote in votes.items():
-            is_leader = addr == first_addr and not round_labels[i].startswith(
-                "APPEAL_"
-            )
+            is_leader = addr == first_addr and not round_labels[i].startswith("APPEAL_")
             validators_out.append(
                 {
                     "address": book.name(addr),
                     "stake": DEFAULT_STAKE,
-                    "vote": leader_vote_string(vote)
-                    if is_leader
-                    else normalize_vote(vote),
+                    "vote": (
+                        leader_vote_string(vote) if is_leader else normalize_vote(vote)
+                    ),
                     "is_leader": is_leader,
                 }
             )
@@ -212,6 +333,12 @@ def build_example(path, rotation_counts, addresses_pool, sender, appealant, rota
 
     total_rotations = sum((rotation_counts or {}).values())
     name = pattern_name(path, total_rotations, rotation_kind)
+    if funded_rotations is not None:
+        schedule = ",".join(str(value) for value in funded_rotations)
+        name = f"{name} [funded:{schedule}]"
+    appeal_quotes = build_appeal_quote_checkpoints(
+        transaction_results, round_labels, budget
+    )
     example = {
         "description": f"Test Case: {name}",
         "initialState": {"rounds": rounds_out, "sender": "sender"},
@@ -225,6 +352,9 @@ def build_example(path, rotation_counts, addresses_pool, sender, appealant, rota
             },
         },
     }
+    if appeal_quotes:
+        example["checkpoints"] = {"appeal_quotes": appeal_quotes}
+    example["funded_rotations"] = budget.rotations
     if total_rotations:
         rot_list = [
             (rotation_counts or {}).get(k, 0)
@@ -253,6 +383,20 @@ def main():
     parser.add_argument("--max-length", type=int, default=7)
     parser.add_argument("--max-rotations", type=int, default=2)
     parser.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Seed for deterministic validator-address generation (default: 0).",
+    )
+    parser.add_argument(
+        "--appeal-quote-output",
+        default=None,
+        help=(
+            "Optional standalone path for the compact appeal-quote campaign. "
+            "The full category vectors still go to --output-dir."
+        ),
+    )
+    parser.add_argument(
         "--existing-dir",
         default=None,
         help="Existing simulator_results dir; complex-scenario dirs are rebuilt "
@@ -263,12 +407,14 @@ def main():
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
+    random.seed(args.seed)
     addresses_pool = [generate_random_eth_address() for _ in range(5000)]
     sender = addresses_pool[-1]
     appealant = addresses_pool[-2]
 
-    paths = list(
-        generate_all_paths(
+    paths = [
+        path
+        for path in generate_all_paths(
             TRANSACTION_GRAPH,
             PathConstraints(
                 # min_length=2 keeps the single-round (no appeal) paths
@@ -278,7 +424,8 @@ def main():
                 target_node="END",
             ),
         )
-    )
+        if is_protocol_valid_path(path)
+    ]
     print(f"paths: {len(paths)}")
 
     # category -> pattern -> examples (base and rotations kept separate)
@@ -286,6 +433,7 @@ def main():
     rot = defaultdict(lambda: defaultdict(list))
     counts = defaultdict(int)
     errors = []
+    quote_candidates = {}
 
     for variant in generate_all_path_variants(
         paths, max_rotations=args.max_rotations, max_idle=0
@@ -314,6 +462,68 @@ def main():
             if len(bucket[category][name]) < max_examples:
                 bucket[category][name].append(example)
             counts[category] += 1
+
+            quotes = example.get("checkpoints", {}).get("appeal_quotes", [])
+            for quote in quotes:
+                signature = (
+                    quote["source_status"],
+                    quote["committee_basis"],
+                    quote["committee_size"],
+                    quote["attempt_basis"],
+                    quote["rotations_value"],
+                    quote["attempts"],
+                )
+                candidate = {
+                    "category": category,
+                    "pattern": name,
+                    "example": example,
+                }
+                rank = (
+                    len(example["initialState"]["rounds"]),
+                    total_rotations,
+                    name,
+                )
+                current = quote_candidates.get(signature)
+                if current is None or rank < current[0]:
+                    quote_candidates[signature] = (rank, candidate)
+
+    # A uniform funded schedule cannot distinguish raw consensus-round indexes
+    # from normal-round ordinals. Include one valid non-uniform schedule with
+    # no rotations actually consumed. Two successive leader replays exercise
+    # rotations[1] and rotations[2] without attempting to appeal a terminal
+    # normal decision after a successful validator review.
+    ordinal_probe_path = [
+        "START",
+        "LEADER_RECEIPT_UNDETERMINED",
+        "LEADER_APPEAL_UNSUCCESSFUL",
+        "LEADER_RECEIPT_UNDETERMINED",
+        "LEADER_APPEAL_SUCCESSFUL",
+        "LEADER_RECEIPT_MAJORITY_AGREE",
+        "END",
+    ]
+    name, example = build_example(
+        ordinal_probe_path,
+        {},
+        addresses_pool,
+        sender,
+        appealant,
+        funded_rotations=[0, 1, 2],
+    )
+    category = categorize(ordinal_probe_path)
+    for quote in example.get("checkpoints", {}).get("appeal_quotes", []):
+        signature = (
+            quote["source_status"],
+            quote["committee_basis"],
+            quote["committee_size"],
+            quote["attempt_basis"],
+            quote["rotations_value"],
+            quote["attempts"],
+        )
+        candidate = {"category": category, "pattern": name, "example": example}
+        rank = (len(example["initialState"]["rounds"]), 0, name)
+        current = quote_candidates.get(signature)
+        if current is None or rank < current[0]:
+            quote_candidates[signature] = (rank, candidate)
 
     def write_category(category, patterns, suffix):
         data = {
@@ -354,6 +564,54 @@ def main():
             indent="\t",
         )
 
+    quote_signatures = set(quote_candidates)
+    quote_campaign_by_pattern = {}
+    for _, candidate in quote_candidates.values():
+        key = (candidate["category"], candidate["pattern"])
+        quote_campaign_by_pattern[key] = candidate
+    quote_campaign = [
+        quote_campaign_by_pattern[key] for key in sorted(quote_campaign_by_pattern)
+    ]
+
+    quote_output = (
+        Path(args.appeal_quote_output)
+        if args.appeal_quote_output
+        else out / "appeal_quote_checkpoints.json"
+    )
+    quote_output.parent.mkdir(parents=True, exist_ok=True)
+    with open(quote_output, "w") as f:
+        json.dump(
+            {
+                "schema_version": 4,
+                "description": (
+                    "Simulator appeal-price checkpoints selected to cover every "
+                    "status, committee basis, committee size, and attempt count. "
+                    "Funded rotation schedules and actual usage are separate so "
+                    "admission quotes use the same provenance as Consensus."
+                ),
+                "covered_signatures": [
+                    {
+                        "source_status": status,
+                        "committee_basis": basis,
+                        "committee_size": size,
+                        "attempt_basis": attempt_basis,
+                        "rotations_value": rotations_value,
+                        "attempts": attempts,
+                    }
+                    for status, basis, size, attempt_basis, rotations_value, attempts in sorted(
+                        quote_signatures
+                    )
+                ],
+                "cases": quote_campaign,
+            },
+            f,
+            indent="\t",
+        )
+    print(
+        f"wrote {quote_output} "
+        f"({len(quote_campaign)} cases, {len(quote_signatures)} signatures)"
+    )
+
     # Rebuild complex-scenario files keeping existing pattern keys
     if args.existing_dir:
         existing = Path(args.existing_dir)
@@ -371,9 +629,7 @@ def main():
                     path = ["START"] + core.split(" -> ") + ["END"]
                     old_ex = pd["examples"][0] if pd.get("examples") else {}
                     rot_list = old_ex.get("rotations") or []
-                    rotation_counts = {
-                        i: r for i, r in enumerate(rot_list) if r
-                    }
+                    rotation_counts = {i: r for i, r in enumerate(rot_list) if r}
                     try:
                         gen_name, example = build_example(
                             path,
