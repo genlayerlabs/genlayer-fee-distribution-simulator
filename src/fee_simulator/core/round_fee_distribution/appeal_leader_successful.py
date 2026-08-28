@@ -1,4 +1,4 @@
-from src.fee_simulator.protocol.constants import APPEAL_REWARD_MULTIPLE
+from src.fee_simulator.protocol.appeal_economics import successful_appeal_reward
 from typing import List
 from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
@@ -58,7 +58,7 @@ def apply_appeal_leader_successful(
             hash="0xdefault",
             cost=0,
             staked=0,
-            earned=int(appeal_bond * APPEAL_REWARD_MULTIPLE),
+            earned=successful_appeal_reward(appeal_bond),
             slashed=0,
             burned=0,
         )

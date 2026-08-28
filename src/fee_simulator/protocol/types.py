@@ -1,6 +1,13 @@
 from typing import List, Literal, Union
 
-ValVote = Literal["AGREE", "DISAGREE", "TIMEOUT", "IDLE", "NA"]
+ValVote = Literal[
+    "AGREE",
+    "DISAGREE",
+    "TIMEOUT",
+    "DETERMINISTIC_VIOLATION",
+    "IDLE",
+    "NA",
+]
 LeaderAction = Literal["LEADER_RECEIPT", "LEADER_TIMEOUT"]
 Vote = Union[
     ValVote,
@@ -10,7 +17,13 @@ Vote = Union[
 ]
 Role = Literal["LEADER", "VALIDATOR", "SENDER", "APPEALANT", "TOPPER"]
 
-MajorityOutcome = Literal["AGREE", "DISAGREE", "TIMEOUT", "UNDETERMINED"]
+MajorityOutcome = Literal[
+    "AGREE",
+    "DISAGREE",
+    "TIMEOUT",
+    "DETERMINISTIC_VIOLATION",
+    "UNDETERMINED",
+]
 RoundLabel = Literal[
     "NORMAL_ROUND",
     "EMPTY_ROUND",

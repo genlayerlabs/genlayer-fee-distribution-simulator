@@ -244,6 +244,14 @@ def classify_appeal_round(
 # Special case patterns
 SPECIAL_CASE_PATTERNS = [
     {
+        "name": "Skip round before terminal successful appeal",
+        "pattern": [
+            "NORMAL_ROUND",
+            ["APPEAL_LEADER_SUCCESSFUL", "APPEAL_VALIDATOR_SUCCESSFUL"],
+        ],
+        "changes": {0: "SKIP_ROUND"},
+    },
+    {
         "name": "Skip round before successful appeal",
         "pattern": [
             "NORMAL_ROUND",
