@@ -56,6 +56,7 @@ def apply_split_previous_appeal_bond(
         round_labels=round_labels,
         rotations=budget.rotations,
         rotations_used=budget.rotationsUsed,
+        invalidated_generation=budget.recomputeInvalidated,
         appeal_round_index=round_index - 1,
     )
 

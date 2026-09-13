@@ -55,6 +55,7 @@ def apply_skip_round(
                 appeal_round_index=round_index - 1,  # The unsuccessful appeal round
                 rotations=budget.rotations,
                 rotations_used=budget.rotationsUsed,
+                invalidated_generation=budget.recomputeInvalidated,
             )
 
             # Use the burn computation method to calculate how much to burn

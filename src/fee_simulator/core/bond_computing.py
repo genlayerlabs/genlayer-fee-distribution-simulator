@@ -58,6 +58,7 @@ def compute_appeal_bond(
     appeal_round_index: int = None,
     rotations: Optional[List[int]] = None,
     rotations_used: Optional[List[int]] = None,
+    invalidated_generation: bool = False,
 ) -> int:
     """
     Compute the minimum appeal bond, mirroring the on-chain formulas
@@ -86,6 +87,9 @@ def compute_appeal_bond(
     admission prices the configured round the appeal buys rather than prior
     attempts already consumed.
     """
+    if invalidated_generation:
+        return 0
+
 
     return compute_appeal_bond_quote(
         normal_round_index=normal_round_index,

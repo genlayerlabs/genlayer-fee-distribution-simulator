@@ -108,6 +108,8 @@ class TransactionBudget(BaseModel):
     # Rotations actually consumed in each normal round. Kept as provenance;
     # appeal admission prices configured future work, not the live remainder.
     rotationsUsed: Optional[List[int]] = None
+    # Internal settlement mode for discarded-generation work; bonds were refunded.
+    recomputeInvalidated: bool = False
     senderAddress: str
     appeals: Optional[List[Appeal]] = []
     staking_distribution: Literal["constant", "normal"] = Field(default="constant")

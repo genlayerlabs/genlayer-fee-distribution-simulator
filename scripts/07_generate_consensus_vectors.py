@@ -380,6 +380,7 @@ def summarize(examples):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", default="consensus_vectors")
+    parser.add_argument("--recompute-only", action="store_true", help="Regenerate only the independent recomputation work vectors")
     parser.add_argument("--max-length", type=int, default=7)
     parser.add_argument("--max-rotations", type=int, default=2)
     parser.add_argument(
@@ -406,6 +407,10 @@ def main():
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
+    from src.fee_simulator.core.recompute_vectors import recompute_vectors
+    (out / "recompute_work.json").write_text(json.dumps(recompute_vectors(), indent="\t") + "\n")
+    if args.recompute_only:
+        return
 
     random.seed(args.seed)
     addresses_pool = [generate_random_eth_address() for _ in range(5000)]
