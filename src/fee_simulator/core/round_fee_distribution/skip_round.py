@@ -40,7 +40,9 @@ def apply_skip_round(
             appealant_address = budget.appeals[appeal_index].appealantAddress
 
             # Find the most recent normal round before the appeal
-            normal_round_index = find_previous_normal_round(round_index - 1, round_labels)
+            normal_round_index = find_previous_normal_round(
+                round_index - 1, round_labels
+            )
             if normal_round_index is None:
                 normal_round_index = round_index - 2  # Default
 
@@ -52,6 +54,7 @@ def apply_skip_round(
                 round_labels=round_labels,
                 appeal_round_index=round_index - 1,  # The unsuccessful appeal round
                 rotations=budget.rotations,
+                rotations_used=budget.rotationsUsed,
             )
 
             # Use the burn computation method to calculate how much to burn

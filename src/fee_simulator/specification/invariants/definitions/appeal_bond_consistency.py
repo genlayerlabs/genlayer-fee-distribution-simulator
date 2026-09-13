@@ -57,6 +57,7 @@ def check_appeal_bond_consistency(
                         round_labels=round_labels,
                         appeal_round_index=i,
                         rotations=transaction_budget.rotations,
+                        rotations_used=transaction_budget.rotationsUsed,
                     )
                     expected_size = None
                 else:

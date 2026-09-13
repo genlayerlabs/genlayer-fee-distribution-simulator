@@ -44,6 +44,7 @@ def check_appeal_bond_coverage(
                 round_labels=round_labels,
                 appeal_round_index=i,
                 rotations=transaction_budget.rotations,
+                rotations_used=transaction_budget.rotationsUsed,
             )
 
             # Find actual bond paid

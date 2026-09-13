@@ -53,6 +53,7 @@ def apply_appeal_validator_successful(
         validators_timeout=budget.validatorsTimeout,
         round_labels=round_labels,
         rotations=budget.rotations,
+        rotations_used=budget.rotationsUsed,
     )
     events.append(
         FeeEvent(

@@ -100,6 +100,7 @@ def process_transaction(
                         round_labels=labels,  # Pass labels
                         appeal_round_index=i,  # Pass the current appeal round index
                         rotations=transaction_budget.rotations,
+                        rotations_used=transaction_budget.rotationsUsed,
                     )
                     fee_events.append(
                         FeeEvent(
