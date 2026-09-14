@@ -47,6 +47,7 @@ def apply_appeal_leader_successful(
         round_labels=round_labels,
         rotations=budget.rotations,
         rotations_used=budget.rotationsUsed,
+        invalidated_generation=budget.recomputeInvalidated,
     )
     events.append(
         FeeEvent(
