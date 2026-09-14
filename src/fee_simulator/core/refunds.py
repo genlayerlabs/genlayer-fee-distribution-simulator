@@ -65,6 +65,7 @@ def compute_sender_refund(
             appeal_round_index=i,
             rotations=transaction_budget.rotations,
             rotations_used=transaction_budget.rotationsUsed,
+            invalidated_generation=transaction_budget.recomputeInvalidated,
         )
 
     earned_total = 0

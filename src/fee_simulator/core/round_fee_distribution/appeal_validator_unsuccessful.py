@@ -75,6 +75,7 @@ def apply_appeal_validator_unsuccessful(
         appeal_round_index=round_index,
         rotations=budget.rotations,
         rotations_used=budget.rotationsUsed,
+        invalidated_generation=budget.recomputeInvalidated,
     )
 
     pool = budget.validatorsTimeout * len(votes) + appeal_bond
