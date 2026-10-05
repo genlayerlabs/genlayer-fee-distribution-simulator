@@ -16,6 +16,7 @@ Outputs, per category (first appeal node in the path, or no_appeal):
   <category>_rotations_compressed.json  (variants with rotations)
   appeal_quote_checkpoints.json         (compact transition-quote campaign)
   appeal_attribution_ownership.json      (typed N-B02 funding ownership)
+  f_b01_replay_origin_jury.json           (mixed replay-origin jury parity)
   summary.json
 
 Use --appeal-quote-output to place the compact campaign directly in a
@@ -383,6 +384,11 @@ def main():
     parser.add_argument("--output-dir", default="consensus_vectors")
     parser.add_argument("--recompute-only", action="store_true", help="Regenerate only the independent recomputation work vectors")
     parser.add_argument("--attribution-only", action="store_true", help="Generate only the independent N-B02 ownership vectors")
+    parser.add_argument(
+        "--f-b01-only",
+        action="store_true",
+        help="Generate only replay-origin jury F-B01 parity vectors",
+    )
     parser.add_argument("--max-length", type=int, default=7)
     parser.add_argument("--max-rotations", type=int, default=2)
     parser.add_argument(
@@ -409,6 +415,14 @@ def main():
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
+    if args.f_b01_only:
+        from src.fee_simulator.core.replay_origin_jury_vectors import (
+            replay_origin_jury_vectors,
+        )
+        path = out / "f_b01_replay_origin_jury.json"
+        path.write_text(json.dumps(replay_origin_jury_vectors(), indent="\t") + "\n")
+        print(f"wrote {path}")
+        return
     if args.attribution_only:
         from src.fee_simulator.core.attribution_vectors import attribution_vectors
         path = out / "appeal_attribution_ownership.json"
@@ -422,6 +436,11 @@ def main():
     from src.fee_simulator.core.attribution_vectors import attribution_vectors
     ownership = out / "appeal_attribution_ownership.json"
     ownership.write_text(json.dumps(attribution_vectors(decimal_strings=True), indent="\t") + "\n")
+    from src.fee_simulator.core.replay_origin_jury_vectors import (
+        replay_origin_jury_vectors,
+    )
+    jury = out / "f_b01_replay_origin_jury.json"
+    jury.write_text(json.dumps(replay_origin_jury_vectors(), indent="\t") + "\n")
 
     random.seed(args.seed)
     addresses_pool = [generate_random_eth_address() for _ in range(5000)]

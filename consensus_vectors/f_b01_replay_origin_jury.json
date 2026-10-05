@@ -1,0 +1,2086 @@
+{
+	"schemaVersion": 1,
+	"finding": "F-B01",
+	"units": {
+		"leader": "100",
+		"validator": "200",
+		"price": "1"
+	},
+	"validatorFixtureCount": 40,
+	"cases": [
+		{
+			"caseId": "replay-origin-jury-failed",
+			"provenance": "round-engine-generated",
+			"sourcePath": [
+				"START",
+				"LEADER_RECEIPT_UNDETERMINED",
+				"LEADER_APPEAL_SUCCESSFUL",
+				"LEADER_RECEIPT_MAJORITY_TIMEOUT",
+				"VALIDATOR_APPEAL_UNSUCCESSFUL",
+				"END"
+			],
+			"route": "validator-jury",
+			"sourceDecision": "ValidatorsTimeout",
+			"sourceFeeColorAtAdmission": "LEADER_TIMEOUT_50_PERCENT",
+			"payers": {
+				"sender": "0x0000000000000000000000000000000000000028",
+				"admissionAppellant": "0x0000000000000000000000000000000000000026",
+				"earlierAppellant": "0x0000000000000000000000000000000000000027"
+			},
+			"admittedAppeal": {
+				"roundIndex": 3,
+				"kind": "validator-jury",
+				"bond": "2600"
+			},
+			"roundInputs": [
+				{
+					"roundIndex": 0,
+					"sourceNode": "LEADER_RECEIPT_UNDETERMINED",
+					"sourceClassification": "LEADER_RECEIPT_UNDETERMINED",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000001",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000001",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						}
+					]
+				},
+				{
+					"roundIndex": 1,
+					"sourceNode": "LEADER_APPEAL_SUCCESSFUL",
+					"sourceClassification": "LEADER_APPEAL_SUCCESSFUL",
+					"admittedRoute": "leader-replay",
+					"bookkeepingOnly": true,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 4,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 5,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 6,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						}
+					]
+				},
+				{
+					"roundIndex": 2,
+					"sourceNode": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
+					"sourceClassification": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000002",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "TIMEOUT",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 7,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 8,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 9,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 10,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						}
+					]
+				},
+				{
+					"roundIndex": 3,
+					"sourceNode": "VALIDATOR_APPEAL_UNSUCCESSFUL",
+					"sourceClassification": "VALIDATOR_APPEAL_UNSUCCESSFUL",
+					"admittedRoute": "validator-jury",
+					"bookkeepingOnly": false,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "TIMEOUT",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x000000000000000000000000000000000000000d",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 1,
+							"address": "0x000000000000000000000000000000000000000e",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 2,
+							"address": "0x000000000000000000000000000000000000000f",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000010",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000011",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000012",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000013",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 7,
+							"address": "0x0000000000000000000000000000000000000014",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 8,
+							"address": "0x0000000000000000000000000000000000000015",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 9,
+							"address": "0x0000000000000000000000000000000000000016",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 10,
+							"address": "0x0000000000000000000000000000000000000017",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 11,
+							"address": "0x0000000000000000000000000000000000000018",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 12,
+							"address": "0x0000000000000000000000000000000000000019",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						}
+					]
+				}
+			],
+			"roundLabels": [
+				"SKIP_ROUND",
+				"APPEAL_LEADER_SUCCESSFUL",
+				"LEADER_TIMEOUT_50_PERCENT",
+				"APPEAL_VALIDATOR_UNSUCCESSFUL"
+			],
+			"jurorAwards": [
+				{
+					"seat": 0,
+					"address": "0x000000000000000000000000000000000000000d",
+					"vote": "TIMEOUT",
+					"earned": "742"
+				},
+				{
+					"seat": 1,
+					"address": "0x000000000000000000000000000000000000000e",
+					"vote": "TIMEOUT",
+					"earned": "742"
+				},
+				{
+					"seat": 2,
+					"address": "0x000000000000000000000000000000000000000f",
+					"vote": "TIMEOUT",
+					"earned": "742"
+				},
+				{
+					"seat": 3,
+					"address": "0x0000000000000000000000000000000000000010",
+					"vote": "TIMEOUT",
+					"earned": "742"
+				},
+				{
+					"seat": 4,
+					"address": "0x0000000000000000000000000000000000000011",
+					"vote": "TIMEOUT",
+					"earned": "742"
+				},
+				{
+					"seat": 5,
+					"address": "0x0000000000000000000000000000000000000012",
+					"vote": "TIMEOUT",
+					"earned": "742"
+				},
+				{
+					"seat": 6,
+					"address": "0x0000000000000000000000000000000000000013",
+					"vote": "TIMEOUT",
+					"earned": "742"
+				},
+				{
+					"seat": 7,
+					"address": "0x0000000000000000000000000000000000000014",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 8,
+					"address": "0x0000000000000000000000000000000000000015",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 9,
+					"address": "0x0000000000000000000000000000000000000016",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 10,
+					"address": "0x0000000000000000000000000000000000000017",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 11,
+					"address": "0x0000000000000000000000000000000000000018",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 12,
+					"address": "0x0000000000000000000000000000000000000019",
+					"vote": "AGREE",
+					"earned": "0"
+				}
+			],
+			"vindicationAwards": [],
+			"appellant": {
+				"principalDeposited": "2600",
+				"principalReturned": "0",
+				"profit": "0",
+				"principalRefund": "0",
+				"totalPayout": "0"
+			},
+			"divisionDust": "6",
+			"remedyLabel": null,
+			"senderRefund": "16706"
+		},
+		{
+			"caseId": "replay-origin-jury-success-normal-remedy",
+			"provenance": "round-engine-generated",
+			"sourcePath": [
+				"START",
+				"LEADER_RECEIPT_UNDETERMINED",
+				"LEADER_APPEAL_SUCCESSFUL",
+				"LEADER_RECEIPT_MAJORITY_TIMEOUT",
+				"VALIDATOR_APPEAL_SUCCESSFUL",
+				"LEADER_RECEIPT_MAJORITY_AGREE",
+				"END"
+			],
+			"route": "validator-jury",
+			"sourceDecision": "ValidatorsTimeout",
+			"sourceFeeColorAtAdmission": "LEADER_TIMEOUT_50_PERCENT",
+			"payers": {
+				"sender": "0x0000000000000000000000000000000000000028",
+				"admissionAppellant": "0x0000000000000000000000000000000000000026",
+				"earlierAppellant": "0x0000000000000000000000000000000000000027"
+			},
+			"admittedAppeal": {
+				"roundIndex": 3,
+				"kind": "validator-jury",
+				"bond": "2600"
+			},
+			"roundInputs": [
+				{
+					"roundIndex": 0,
+					"sourceNode": "LEADER_RECEIPT_UNDETERMINED",
+					"sourceClassification": "LEADER_RECEIPT_UNDETERMINED",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000001",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000001",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						}
+					]
+				},
+				{
+					"roundIndex": 1,
+					"sourceNode": "LEADER_APPEAL_SUCCESSFUL",
+					"sourceClassification": "LEADER_APPEAL_SUCCESSFUL",
+					"admittedRoute": "leader-replay",
+					"bookkeepingOnly": true,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 4,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 5,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 6,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						}
+					]
+				},
+				{
+					"roundIndex": 2,
+					"sourceNode": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
+					"sourceClassification": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000002",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "TIMEOUT",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 7,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 8,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 9,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 10,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						}
+					]
+				},
+				{
+					"roundIndex": 3,
+					"sourceNode": "VALIDATOR_APPEAL_SUCCESSFUL",
+					"sourceClassification": "VALIDATOR_APPEAL_SUCCESSFUL",
+					"admittedRoute": "validator-jury",
+					"bookkeepingOnly": false,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "DISAGREE",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x000000000000000000000000000000000000000d",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x000000000000000000000000000000000000000e",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 2,
+							"address": "0x000000000000000000000000000000000000000f",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000010",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000011",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000012",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000013",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 7,
+							"address": "0x0000000000000000000000000000000000000014",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 8,
+							"address": "0x0000000000000000000000000000000000000015",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 9,
+							"address": "0x0000000000000000000000000000000000000016",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 10,
+							"address": "0x0000000000000000000000000000000000000017",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 11,
+							"address": "0x0000000000000000000000000000000000000018",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 12,
+							"address": "0x0000000000000000000000000000000000000019",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						}
+					]
+				},
+				{
+					"roundIndex": 4,
+					"sourceNode": "LEADER_RECEIPT_MAJORITY_AGREE",
+					"sourceClassification": "LEADER_RECEIPT_MAJORITY_AGREE",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000003",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "AGREE",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 7,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 8,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 9,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 10,
+							"address": "0x000000000000000000000000000000000000000d",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 11,
+							"address": "0x000000000000000000000000000000000000000e",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 12,
+							"address": "0x000000000000000000000000000000000000000f",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 13,
+							"address": "0x0000000000000000000000000000000000000010",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 14,
+							"address": "0x0000000000000000000000000000000000000011",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 15,
+							"address": "0x0000000000000000000000000000000000000012",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 16,
+							"address": "0x0000000000000000000000000000000000000013",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 17,
+							"address": "0x0000000000000000000000000000000000000014",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 18,
+							"address": "0x0000000000000000000000000000000000000015",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 19,
+							"address": "0x0000000000000000000000000000000000000016",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 20,
+							"address": "0x0000000000000000000000000000000000000017",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 21,
+							"address": "0x0000000000000000000000000000000000000018",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 22,
+							"address": "0x0000000000000000000000000000000000000019",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						}
+					]
+				}
+			],
+			"roundLabels": [
+				"SKIP_ROUND",
+				"APPEAL_LEADER_SUCCESSFUL",
+				"SKIP_ROUND",
+				"APPEAL_VALIDATOR_SUCCESSFUL",
+				"NORMAL_ROUND"
+			],
+			"jurorAwards": [
+				{
+					"seat": 0,
+					"address": "0x000000000000000000000000000000000000000d",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 1,
+					"address": "0x000000000000000000000000000000000000000e",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 2,
+					"address": "0x000000000000000000000000000000000000000f",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 3,
+					"address": "0x0000000000000000000000000000000000000010",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 4,
+					"address": "0x0000000000000000000000000000000000000011",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 5,
+					"address": "0x0000000000000000000000000000000000000012",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 6,
+					"address": "0x0000000000000000000000000000000000000013",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 7,
+					"address": "0x0000000000000000000000000000000000000014",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 8,
+					"address": "0x0000000000000000000000000000000000000015",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 9,
+					"address": "0x0000000000000000000000000000000000000016",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 10,
+					"address": "0x0000000000000000000000000000000000000017",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 11,
+					"address": "0x0000000000000000000000000000000000000018",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 12,
+					"address": "0x0000000000000000000000000000000000000019",
+					"vote": "AGREE",
+					"earned": "0"
+				}
+			],
+			"vindicationAwards": [
+				{
+					"address": "0x000000000000000000000000000000000000000a",
+					"earned": "200"
+				},
+				{
+					"address": "0x000000000000000000000000000000000000000c",
+					"earned": "200"
+				}
+			],
+			"appellant": {
+				"principalDeposited": "2600",
+				"principalReturned": "2600",
+				"profit": "3900",
+				"principalRefund": "0",
+				"totalPayout": "6500"
+			},
+			"divisionDust": "0",
+			"remedyLabel": "NORMAL_ROUND",
+			"senderRefund": "11150"
+		},
+		{
+			"caseId": "replay-origin-jury-success-timeout-remedy",
+			"provenance": "round-engine-generated",
+			"sourcePath": [
+				"START",
+				"LEADER_RECEIPT_UNDETERMINED",
+				"LEADER_APPEAL_SUCCESSFUL",
+				"LEADER_RECEIPT_MAJORITY_TIMEOUT",
+				"VALIDATOR_APPEAL_SUCCESSFUL",
+				"LEADER_TIMEOUT",
+				"END"
+			],
+			"route": "validator-jury",
+			"sourceDecision": "ValidatorsTimeout",
+			"sourceFeeColorAtAdmission": "LEADER_TIMEOUT_50_PERCENT",
+			"payers": {
+				"sender": "0x0000000000000000000000000000000000000028",
+				"admissionAppellant": "0x0000000000000000000000000000000000000026",
+				"earlierAppellant": "0x0000000000000000000000000000000000000027"
+			},
+			"admittedAppeal": {
+				"roundIndex": 3,
+				"kind": "validator-jury",
+				"bond": "2600"
+			},
+			"roundInputs": [
+				{
+					"roundIndex": 0,
+					"sourceNode": "LEADER_RECEIPT_UNDETERMINED",
+					"sourceClassification": "LEADER_RECEIPT_UNDETERMINED",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000001",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000001",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						}
+					]
+				},
+				{
+					"roundIndex": 1,
+					"sourceNode": "LEADER_APPEAL_SUCCESSFUL",
+					"sourceClassification": "LEADER_APPEAL_SUCCESSFUL",
+					"admittedRoute": "leader-replay",
+					"bookkeepingOnly": true,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 4,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 5,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 6,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						}
+					]
+				},
+				{
+					"roundIndex": 2,
+					"sourceNode": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
+					"sourceClassification": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000002",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "TIMEOUT",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 7,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 8,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 9,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 10,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						}
+					]
+				},
+				{
+					"roundIndex": 3,
+					"sourceNode": "VALIDATOR_APPEAL_SUCCESSFUL",
+					"sourceClassification": "VALIDATOR_APPEAL_SUCCESSFUL",
+					"admittedRoute": "validator-jury",
+					"bookkeepingOnly": false,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "DISAGREE",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x000000000000000000000000000000000000000d",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x000000000000000000000000000000000000000e",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 2,
+							"address": "0x000000000000000000000000000000000000000f",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000010",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000011",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000012",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000013",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 7,
+							"address": "0x0000000000000000000000000000000000000014",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 8,
+							"address": "0x0000000000000000000000000000000000000015",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 9,
+							"address": "0x0000000000000000000000000000000000000016",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 10,
+							"address": "0x0000000000000000000000000000000000000017",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 11,
+							"address": "0x0000000000000000000000000000000000000018",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 12,
+							"address": "0x0000000000000000000000000000000000000019",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						}
+					]
+				},
+				{
+					"roundIndex": 4,
+					"sourceNode": "LEADER_TIMEOUT",
+					"sourceClassification": "LEADER_TIMEOUT",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000003",
+					"leaderAction": "LEADER_TIMEOUT",
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": [
+								"LEADER_TIMEOUT",
+								"NA"
+							],
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 7,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 8,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 9,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 10,
+							"address": "0x000000000000000000000000000000000000000d",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 11,
+							"address": "0x000000000000000000000000000000000000000e",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 12,
+							"address": "0x000000000000000000000000000000000000000f",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 13,
+							"address": "0x0000000000000000000000000000000000000010",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 14,
+							"address": "0x0000000000000000000000000000000000000011",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 15,
+							"address": "0x0000000000000000000000000000000000000012",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 16,
+							"address": "0x0000000000000000000000000000000000000013",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 17,
+							"address": "0x0000000000000000000000000000000000000014",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 18,
+							"address": "0x0000000000000000000000000000000000000015",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 19,
+							"address": "0x0000000000000000000000000000000000000016",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 20,
+							"address": "0x0000000000000000000000000000000000000017",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 21,
+							"address": "0x0000000000000000000000000000000000000018",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 22,
+							"address": "0x0000000000000000000000000000000000000019",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						}
+					]
+				}
+			],
+			"roundLabels": [
+				"SKIP_ROUND",
+				"APPEAL_LEADER_SUCCESSFUL",
+				"SKIP_ROUND",
+				"APPEAL_VALIDATOR_SUCCESSFUL",
+				"LEADER_TIMEOUT_50_PERCENT"
+			],
+			"jurorAwards": [
+				{
+					"seat": 0,
+					"address": "0x000000000000000000000000000000000000000d",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 1,
+					"address": "0x000000000000000000000000000000000000000e",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 2,
+					"address": "0x000000000000000000000000000000000000000f",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 3,
+					"address": "0x0000000000000000000000000000000000000010",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 4,
+					"address": "0x0000000000000000000000000000000000000011",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 5,
+					"address": "0x0000000000000000000000000000000000000012",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 6,
+					"address": "0x0000000000000000000000000000000000000013",
+					"vote": "DISAGREE",
+					"earned": "200"
+				},
+				{
+					"seat": 7,
+					"address": "0x0000000000000000000000000000000000000014",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 8,
+					"address": "0x0000000000000000000000000000000000000015",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 9,
+					"address": "0x0000000000000000000000000000000000000016",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 10,
+					"address": "0x0000000000000000000000000000000000000017",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 11,
+					"address": "0x0000000000000000000000000000000000000018",
+					"vote": "AGREE",
+					"earned": "0"
+				},
+				{
+					"seat": 12,
+					"address": "0x0000000000000000000000000000000000000019",
+					"vote": "AGREE",
+					"earned": "0"
+				}
+			],
+			"vindicationAwards": [
+				{
+					"address": "0x000000000000000000000000000000000000000a",
+					"earned": "200"
+				},
+				{
+					"address": "0x000000000000000000000000000000000000000c",
+					"earned": "200"
+				}
+			],
+			"appellant": {
+				"principalDeposited": "2600",
+				"principalReturned": "2600",
+				"profit": "3900",
+				"principalRefund": "0",
+				"totalPayout": "6500"
+			},
+			"divisionDust": "0",
+			"remedyLabel": "LEADER_TIMEOUT_50_PERCENT",
+			"senderRefund": "13600"
+		},
+		{
+			"caseId": "replay-origin-jury-all-idle-refund",
+			"provenance": "manual-admission-refund-fixture",
+			"sourcePath": [
+				"START",
+				"LEADER_RECEIPT_UNDETERMINED",
+				"LEADER_APPEAL_SUCCESSFUL",
+				"LEADER_RECEIPT_MAJORITY_TIMEOUT",
+				"VALIDATOR_APPEAL_ALL_IDLE_NO_REVEAL",
+				"END"
+			],
+			"route": "validator-jury",
+			"sourceDecision": "ValidatorsTimeout",
+			"sourceFeeColorAtAdmission": "LEADER_TIMEOUT_50_PERCENT",
+			"payers": {
+				"sender": "0x0000000000000000000000000000000000000028",
+				"admissionAppellant": "0x0000000000000000000000000000000000000026",
+				"earlierAppellant": "0x0000000000000000000000000000000000000027"
+			},
+			"admittedAppeal": {
+				"roundIndex": 3,
+				"kind": "validator-jury",
+				"bond": "2600"
+			},
+			"roundInputs": [
+				{
+					"roundIndex": 0,
+					"sourceNode": "LEADER_RECEIPT_UNDETERMINED",
+					"sourceClassification": "LEADER_RECEIPT_UNDETERMINED",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000001",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000001",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						}
+					]
+				},
+				{
+					"roundIndex": 1,
+					"sourceNode": "LEADER_APPEAL_SUCCESSFUL",
+					"sourceClassification": "LEADER_APPEAL_SUCCESSFUL",
+					"admittedRoute": "leader-replay",
+					"bookkeepingOnly": true,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 4,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 5,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 6,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						}
+					]
+				},
+				{
+					"roundIndex": 2,
+					"sourceNode": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
+					"sourceClassification": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000002",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "TIMEOUT",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000006",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000007",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000008",
+							"rawVote": "TIMEOUT",
+							"normalizedVote": "TIMEOUT"
+						},
+						{
+							"seat": 7,
+							"address": "0x0000000000000000000000000000000000000009",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 8,
+							"address": "0x000000000000000000000000000000000000000a",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						},
+						{
+							"seat": 9,
+							"address": "0x000000000000000000000000000000000000000b",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 10,
+							"address": "0x000000000000000000000000000000000000000c",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						}
+					]
+				},
+				{
+					"roundIndex": 3,
+					"sourceNode": "VALIDATOR_APPEAL_ALL_IDLE_NO_REVEAL",
+					"sourceClassification": "VALIDATOR_APPEAL_ALL_IDLE_NO_REVEAL",
+					"admittedRoute": "validator-jury",
+					"bookkeepingOnly": false,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x000000000000000000000000000000000000000d",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 1,
+							"address": "0x000000000000000000000000000000000000000e",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 2,
+							"address": "0x000000000000000000000000000000000000000f",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000010",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000011",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 5,
+							"address": "0x0000000000000000000000000000000000000012",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 6,
+							"address": "0x0000000000000000000000000000000000000013",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 7,
+							"address": "0x0000000000000000000000000000000000000014",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 8,
+							"address": "0x0000000000000000000000000000000000000015",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 9,
+							"address": "0x0000000000000000000000000000000000000016",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 10,
+							"address": "0x0000000000000000000000000000000000000017",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 11,
+							"address": "0x0000000000000000000000000000000000000018",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						},
+						{
+							"seat": 12,
+							"address": "0x0000000000000000000000000000000000000019",
+							"rawVote": "IDLE",
+							"normalizedVote": "IDLE"
+						}
+					]
+				}
+			],
+			"roundLabels": [
+				"SKIP_ROUND",
+				"APPEAL_LEADER_SUCCESSFUL",
+				"LEADER_TIMEOUT_50_PERCENT",
+				"JURY_ALL_IDLE_NO_REVEAL"
+			],
+			"jurorAwards": [
+				{
+					"seat": 0,
+					"address": "0x000000000000000000000000000000000000000d",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 1,
+					"address": "0x000000000000000000000000000000000000000e",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 2,
+					"address": "0x000000000000000000000000000000000000000f",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 3,
+					"address": "0x0000000000000000000000000000000000000010",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 4,
+					"address": "0x0000000000000000000000000000000000000011",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 5,
+					"address": "0x0000000000000000000000000000000000000012",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 6,
+					"address": "0x0000000000000000000000000000000000000013",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 7,
+					"address": "0x0000000000000000000000000000000000000014",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 8,
+					"address": "0x0000000000000000000000000000000000000015",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 9,
+					"address": "0x0000000000000000000000000000000000000016",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 10,
+					"address": "0x0000000000000000000000000000000000000017",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 11,
+					"address": "0x0000000000000000000000000000000000000018",
+					"vote": "IDLE",
+					"earned": "0"
+				},
+				{
+					"seat": 12,
+					"address": "0x0000000000000000000000000000000000000019",
+					"vote": "IDLE",
+					"earned": "0"
+				}
+			],
+			"vindicationAwards": [],
+			"appellant": {
+				"principalDeposited": "2600",
+				"principalReturned": "2600",
+				"profit": "0",
+				"principalRefund": "2600",
+				"totalPayout": "2600"
+			},
+			"divisionDust": "0",
+			"remedyLabel": null,
+			"senderRefund": null,
+			"scope": "Admission and E-B03 principal refund only; generic IDLE prepass cannot settle this path"
+		},
+		{
+			"caseId": "actual-leader-timeout-control",
+			"provenance": "round-engine-generated",
+			"sourcePath": [
+				"START",
+				"LEADER_TIMEOUT",
+				"LEADER_APPEAL_TIMEOUT_SUCCESSFUL",
+				"LEADER_RECEIPT_MAJORITY_AGREE",
+				"END"
+			],
+			"route": "leader-timeout-appeal",
+			"sourceDecision": "LeaderTimeout",
+			"sourceFeeColorAtAdmission": "LEADER_TIMEOUT_50_PERCENT",
+			"payers": {
+				"sender": "0x0000000000000000000000000000000000000028",
+				"admissionAppellant": "0x0000000000000000000000000000000000000027",
+				"earlierAppellant": "0x0000000000000000000000000000000000000027"
+			},
+			"admittedAppeal": {
+				"roundIndex": 1,
+				"kind": "leader-timeout-appeal",
+				"bond": "1100"
+			},
+			"roundInputs": [
+				{
+					"roundIndex": 0,
+					"sourceNode": "LEADER_TIMEOUT",
+					"sourceClassification": "LEADER_TIMEOUT",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000001",
+					"leaderAction": "LEADER_TIMEOUT",
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000001",
+							"rawVote": [
+								"LEADER_TIMEOUT",
+								"NA"
+							],
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						}
+					]
+				},
+				{
+					"roundIndex": 1,
+					"sourceNode": "LEADER_APPEAL_TIMEOUT_SUCCESSFUL",
+					"sourceClassification": "LEADER_APPEAL_TIMEOUT_SUCCESSFUL",
+					"admittedRoute": "leader-timeout-appeal",
+					"bookkeepingOnly": true,
+					"leaderAddress": null,
+					"leaderAction": null,
+					"majorityVote": "UNDETERMINED",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000001",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						},
+						{
+							"seat": 4,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "NA",
+							"normalizedVote": "NA"
+						}
+					]
+				},
+				{
+					"roundIndex": 2,
+					"sourceNode": "LEADER_RECEIPT_MAJORITY_AGREE",
+					"sourceClassification": "LEADER_RECEIPT_MAJORITY_AGREE",
+					"admittedRoute": null,
+					"bookkeepingOnly": false,
+					"leaderAddress": "0x0000000000000000000000000000000000000002",
+					"leaderAction": "LEADER_RECEIPT",
+					"majorityVote": "AGREE",
+					"seats": [
+						{
+							"seat": 0,
+							"address": "0x0000000000000000000000000000000000000002",
+							"rawVote": [
+								"LEADER_RECEIPT",
+								"AGREE"
+							],
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 1,
+							"address": "0x0000000000000000000000000000000000000003",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 2,
+							"address": "0x0000000000000000000000000000000000000004",
+							"rawVote": "AGREE",
+							"normalizedVote": "AGREE"
+						},
+						{
+							"seat": 3,
+							"address": "0x0000000000000000000000000000000000000005",
+							"rawVote": "DISAGREE",
+							"normalizedVote": "DISAGREE"
+						}
+					]
+				}
+			],
+			"roundLabels": [
+				"SKIP_ROUND",
+				"APPEAL_LEADER_TIMEOUT_SUCCESSFUL",
+				"LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND"
+			],
+			"jurorAwards": [],
+			"vindicationAwards": [],
+			"appellant": {
+				"principalDeposited": "1100",
+				"principalReturned": "1100",
+				"profit": "1650",
+				"principalRefund": "0",
+				"totalPayout": "2750"
+			},
+			"divisionDust": "0",
+			"remedyLabel": "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
+			"senderRefund": "5950"
+		}
+	]
+}
