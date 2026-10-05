@@ -35,13 +35,25 @@ def test_generated_jury_vectors_have_exact_route_and_seat_credits():
     ]
     assert failed["roundInputs"][2]["seats"][1]["rawVote"] == "TIMEOUT"
     assert failed["roundInputs"][1]["bookkeepingOnly"] is True
+    assert failed["roundInputs"][1]["appealBond"] == "2300"
+    assert failed["roundInputs"][1]["appealPayout"] == "5750"
+    assert failed["roundInputs"][1]["appealPayer"] == failed["payers"][
+        "earlierAppellant"
+    ]
+    assert failed["roundInputs"][2]["appealBond"] is None
     assert failed["roundInputs"][3]["bookkeepingOnly"] is False
     assert failed["roundInputs"][3]["admittedRoute"] == "validator-jury"
+    assert failed["roundInputs"][3]["appealBond"] == "2600"
+    assert failed["roundInputs"][3]["appealPayout"] == "0"
+    assert failed["roundInputs"][3]["appealPayer"] == failed["payers"][
+        "admissionAppellant"
+    ]
     assert len(failed["roundInputs"][3]["seats"]) == 13
     assert failed["admittedAppeal"]["bond"] == "2600"
     assert [seat["earned"] for seat in failed["jurorAwards"]] == ["742"] * 7 + ["0"] * 6
     assert failed["divisionDust"] == "6"
     assert failed["appellant"]["totalPayout"] == "0"
+    assert failed["remedyAwards"] is None
     assert (
         failed["payers"]["earlierAppellant"]
         != failed["payers"]["admissionAppellant"]
@@ -54,6 +66,8 @@ def test_generated_jury_vectors_have_exact_route_and_seat_credits():
         assert case["roundLabels"][2:4] == ["SKIP_ROUND", "APPEAL_VALIDATOR_SUCCESSFUL"]
         assert case["remedyLabel"] == remedy
         assert case["admittedAppeal"]["bond"] == "2600"
+        assert case["roundInputs"][1]["appealPayout"] == "5750"
+        assert case["roundInputs"][3]["appealPayout"] == "6500"
         assert [seat["earned"] for seat in case["jurorAwards"]] == [
             "200"
         ] * 7 + ["0"] * 6
@@ -70,9 +84,28 @@ def test_generated_jury_vectors_have_exact_route_and_seat_credits():
         }
         assert case["divisionDust"] == "0"
 
+    assert normal["remedyAwards"]["roundIndex"] == 4
+    assert normal["remedyAwards"]["leaderAward"]["earned"] == "100"
+    assert normal["remedyAwards"]["senderAward"] == "0"
+    assert [seat["earned"] for seat in normal["remedyAwards"]["validatorAwards"]] == [
+        "200"
+    ] * 12 + ["0"] * 11
+    assert timeout["remedyAwards"]["roundIndex"] == 4
+    assert timeout["remedyAwards"]["leaderAward"]["earned"] == "50"
+    assert all(
+        seat["earned"] == "0" for seat in timeout["remedyAwards"]["validatorAwards"]
+    )
+
     assert true_timeout["sourceDecision"] == "LeaderTimeout"
     assert true_timeout["route"] == "leader-timeout-appeal"
     assert true_timeout["admittedAppeal"]["bond"] == "1100"
+    assert true_timeout["roundInputs"][1]["appealBond"] == "1100"
+    assert true_timeout["roundInputs"][1]["appealPayout"] == "2750"
+    assert true_timeout["remedyAwards"]["leaderAward"]["earned"] == "150"
+    assert [
+        seat["earned"] for seat in true_timeout["remedyAwards"]["validatorAwards"]
+    ] == ["200", "200", "200", "0"]
+    assert true_timeout["remedyAwards"]["senderAward"] == "50"
     assert true_timeout["remedyLabel"] == "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND"
 
 
@@ -102,6 +135,10 @@ def test_all_idle_is_explicit_admission_refund_fixture():
     )
     assert idle["appellant"]["principalRefund"] == "2600"
     assert idle["appellant"]["profit"] == "0"
+    assert idle["roundInputs"][1]["appealBond"] == "2300"
+    assert idle["roundInputs"][3]["appealBond"] == "2600"
+    assert idle["roundInputs"][3]["appealPayout"] == "2600"
+    assert idle["remedyAwards"] is None
     assert idle["senderRefund"] is None
     assert "generic IDLE prepass cannot settle" in idle["scope"]
 

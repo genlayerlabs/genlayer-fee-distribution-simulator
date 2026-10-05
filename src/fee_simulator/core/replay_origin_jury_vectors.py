@@ -53,7 +53,7 @@ def _admission_route(node):
     return None
 
 
-def _round_inputs(transaction, path):
+def _round_inputs(transaction, path, events):
     """Preserve the final rotation's ordered raw ballots for independent replay."""
     if len(transaction.rounds) != len(path) - 2:
         raise ValueError("path and transaction rounds differ")
@@ -68,12 +68,36 @@ def _round_inputs(transaction, path):
             else None
         )
         node = path[index + 1]
+        appeal_costs = [
+            event
+            for event in events
+            if event.round_index == index
+            and event.role == "APPEALANT"
+            and event.cost
+        ]
+        if _admission_route(node) and len(appeal_costs) != 1:
+            raise ValueError("appeal admission has no unique bond event")
         inputs.append(
             {
                 "roundIndex": index,
                 "sourceNode": node,
                 "sourceClassification": node,
                 "admittedRoute": _admission_route(node),
+                "appealBond": str(appeal_costs[0].cost) if appeal_costs else None,
+                "appealPayer": appeal_costs[0].address if appeal_costs else None,
+                "appealPayout": (
+                    str(
+                        sum(
+                            event.earned
+                            for event in events
+                            if event.round_index == index
+                            and event.role == "APPEALANT"
+                            and event.address == appeal_costs[0].address
+                        )
+                    )
+                    if appeal_costs
+                    else None
+                ),
                 "bookkeepingOnly": not bool(votes)
                 or _admission_route(node) in (
                     "leader-replay",
@@ -94,6 +118,49 @@ def _round_inputs(transaction, path):
             }
         )
     return inputs
+
+
+def _remedy_awards(transaction, events, index):
+    """Record actual final-round FeeEvent credits, including unpaid seats."""
+    if index >= len(transaction.rounds):
+        return None
+    votes = transaction.rounds[index].rotations[-1].votes
+    seats = list(votes.items())
+    first_address, first_vote = seats[0] if seats else (None, None)
+    leader_action = (
+        first_vote[0]
+        if isinstance(first_vote, list)
+        and first_vote[0] in ("LEADER_RECEIPT", "LEADER_TIMEOUT")
+        else None
+    )
+
+    def earned(role, address=None):
+        return sum(
+            event.earned
+            for event in events
+            if event.round_index == index
+            and event.role == role
+            and (address is None or event.address == address)
+        )
+
+    return {
+        "roundIndex": index,
+        "leaderAward": (
+            {"address": first_address, "earned": str(earned("LEADER", first_address))}
+            if leader_action
+            else None
+        ),
+        "validatorAwards": [
+            {
+                "seat": seat,
+                "address": address,
+                "vote": normalize_vote(raw_vote),
+                "earned": str(earned("VALIDATOR", address)),
+            }
+            for seat, (address, raw_vote) in enumerate(seats)
+        ],
+        "senderAward": str(earned("SENDER")),
+    }
 
 
 def _generated_case(case_id, path, appeal_round, route, source_decision):
@@ -169,7 +236,7 @@ def _generated_case(case_id, path, appeal_round, route, source_decision):
             "kind": route,
             "bond": str(bond),
         },
-        "roundInputs": _round_inputs(transaction, path),
+        "roundInputs": _round_inputs(transaction, path, events),
         "roundLabels": labels,
         "jurorAwards": jury,
         "vindicationAwards": vindicated,
@@ -184,6 +251,7 @@ def _generated_case(case_id, path, appeal_round, route, source_decision):
         "remedyLabel": labels[appeal_round + 1]
         if appeal_round + 1 < len(labels)
         else None,
+        "remedyAwards": _remedy_awards(transaction, events, appeal_round + 1),
         "senderRefund": str(
             sum(event.earned for event in events if event.role == "SENDER")
         ),
@@ -243,6 +311,7 @@ def replay_origin_jury_vectors():
                 "sourceNode": "VALIDATOR_APPEAL_ALL_IDLE_NO_REVEAL",
                 "sourceClassification": "VALIDATOR_APPEAL_ALL_IDLE_NO_REVEAL",
                 "majorityVote": "UNDETERMINED",
+                "appealPayout": failed["admittedAppeal"]["bond"],
                 "seats": [
                     {**seat, "rawVote": "IDLE", "normalizedVote": "IDLE"}
                     for seat in failed["roundInputs"][-1]["seats"]
@@ -263,6 +332,7 @@ def replay_origin_jury_vectors():
             "totalPayout": failed["admittedAppeal"]["bond"],
         },
         divisionDust="0",
+        remedyAwards=None,
         senderRefund=None,
         scope=(
             "Admission and E-B03 principal refund only; "
@@ -270,7 +340,7 @@ def replay_origin_jury_vectors():
         ),
     )
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "finding": "F-B01",
         "units": UNITS,
         "validatorFixtureCount": 40,

@@ -1,5 +1,5 @@
 {
-	"schemaVersion": 1,
+	"schemaVersion": 2,
 	"finding": "F-B01",
 	"units": {
 		"leader": "100",
@@ -38,6 +38,9 @@
 					"sourceNode": "LEADER_RECEIPT_UNDETERMINED",
 					"sourceClassification": "LEADER_RECEIPT_UNDETERMINED",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000001",
 					"leaderAction": "LEADER_RECEIPT",
@@ -83,6 +86,9 @@
 					"sourceNode": "LEADER_APPEAL_SUCCESSFUL",
 					"sourceClassification": "LEADER_APPEAL_SUCCESSFUL",
 					"admittedRoute": "leader-replay",
+					"appealBond": "2300",
+					"appealPayer": "0x0000000000000000000000000000000000000027",
+					"appealPayout": "5750",
 					"bookkeepingOnly": true,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -137,6 +143,9 @@
 					"sourceNode": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
 					"sourceClassification": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000002",
 					"leaderAction": "LEADER_RECEIPT",
@@ -218,6 +227,9 @@
 					"sourceNode": "VALIDATOR_APPEAL_UNSUCCESSFUL",
 					"sourceClassification": "VALIDATOR_APPEAL_UNSUCCESSFUL",
 					"admittedRoute": "validator-jury",
+					"appealBond": "2600",
+					"appealPayer": "0x0000000000000000000000000000000000000026",
+					"appealPayout": "0",
 					"bookkeepingOnly": false,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -400,6 +412,7 @@
 			},
 			"divisionDust": "6",
 			"remedyLabel": null,
+			"remedyAwards": null,
 			"senderRefund": "16706"
 		},
 		{
@@ -433,6 +446,9 @@
 					"sourceNode": "LEADER_RECEIPT_UNDETERMINED",
 					"sourceClassification": "LEADER_RECEIPT_UNDETERMINED",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000001",
 					"leaderAction": "LEADER_RECEIPT",
@@ -478,6 +494,9 @@
 					"sourceNode": "LEADER_APPEAL_SUCCESSFUL",
 					"sourceClassification": "LEADER_APPEAL_SUCCESSFUL",
 					"admittedRoute": "leader-replay",
+					"appealBond": "2300",
+					"appealPayer": "0x0000000000000000000000000000000000000027",
+					"appealPayout": "5750",
 					"bookkeepingOnly": true,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -532,6 +551,9 @@
 					"sourceNode": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
 					"sourceClassification": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000002",
 					"leaderAction": "LEADER_RECEIPT",
@@ -613,6 +635,9 @@
 					"sourceNode": "VALIDATOR_APPEAL_SUCCESSFUL",
 					"sourceClassification": "VALIDATOR_APPEAL_SUCCESSFUL",
 					"admittedRoute": "validator-jury",
+					"appealBond": "2600",
+					"appealPayer": "0x0000000000000000000000000000000000000026",
+					"appealPayout": "6500",
 					"bookkeepingOnly": false,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -703,6 +728,9 @@
 					"sourceNode": "LEADER_RECEIPT_MAJORITY_AGREE",
 					"sourceClassification": "LEADER_RECEIPT_MAJORITY_AGREE",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000003",
 					"leaderAction": "LEADER_RECEIPT",
@@ -958,6 +986,154 @@
 			},
 			"divisionDust": "0",
 			"remedyLabel": "NORMAL_ROUND",
+			"remedyAwards": {
+				"roundIndex": 4,
+				"leaderAward": {
+					"address": "0x0000000000000000000000000000000000000003",
+					"earned": "100"
+				},
+				"validatorAwards": [
+					{
+						"seat": 0,
+						"address": "0x0000000000000000000000000000000000000003",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 1,
+						"address": "0x0000000000000000000000000000000000000004",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 2,
+						"address": "0x0000000000000000000000000000000000000005",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 3,
+						"address": "0x0000000000000000000000000000000000000006",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 4,
+						"address": "0x0000000000000000000000000000000000000007",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 5,
+						"address": "0x0000000000000000000000000000000000000008",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 6,
+						"address": "0x0000000000000000000000000000000000000009",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 7,
+						"address": "0x000000000000000000000000000000000000000a",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 8,
+						"address": "0x000000000000000000000000000000000000000b",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 9,
+						"address": "0x000000000000000000000000000000000000000c",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 10,
+						"address": "0x000000000000000000000000000000000000000d",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 11,
+						"address": "0x000000000000000000000000000000000000000e",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 12,
+						"address": "0x000000000000000000000000000000000000000f",
+						"vote": "DISAGREE",
+						"earned": "0"
+					},
+					{
+						"seat": 13,
+						"address": "0x0000000000000000000000000000000000000010",
+						"vote": "TIMEOUT",
+						"earned": "0"
+					},
+					{
+						"seat": 14,
+						"address": "0x0000000000000000000000000000000000000011",
+						"vote": "DISAGREE",
+						"earned": "0"
+					},
+					{
+						"seat": 15,
+						"address": "0x0000000000000000000000000000000000000012",
+						"vote": "TIMEOUT",
+						"earned": "0"
+					},
+					{
+						"seat": 16,
+						"address": "0x0000000000000000000000000000000000000013",
+						"vote": "DISAGREE",
+						"earned": "0"
+					},
+					{
+						"seat": 17,
+						"address": "0x0000000000000000000000000000000000000014",
+						"vote": "TIMEOUT",
+						"earned": "0"
+					},
+					{
+						"seat": 18,
+						"address": "0x0000000000000000000000000000000000000015",
+						"vote": "DISAGREE",
+						"earned": "0"
+					},
+					{
+						"seat": 19,
+						"address": "0x0000000000000000000000000000000000000016",
+						"vote": "TIMEOUT",
+						"earned": "0"
+					},
+					{
+						"seat": 20,
+						"address": "0x0000000000000000000000000000000000000017",
+						"vote": "DISAGREE",
+						"earned": "0"
+					},
+					{
+						"seat": 21,
+						"address": "0x0000000000000000000000000000000000000018",
+						"vote": "TIMEOUT",
+						"earned": "0"
+					},
+					{
+						"seat": 22,
+						"address": "0x0000000000000000000000000000000000000019",
+						"vote": "DISAGREE",
+						"earned": "0"
+					}
+				],
+				"senderAward": "0"
+			},
 			"senderRefund": "11150"
 		},
 		{
@@ -991,6 +1167,9 @@
 					"sourceNode": "LEADER_RECEIPT_UNDETERMINED",
 					"sourceClassification": "LEADER_RECEIPT_UNDETERMINED",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000001",
 					"leaderAction": "LEADER_RECEIPT",
@@ -1036,6 +1215,9 @@
 					"sourceNode": "LEADER_APPEAL_SUCCESSFUL",
 					"sourceClassification": "LEADER_APPEAL_SUCCESSFUL",
 					"admittedRoute": "leader-replay",
+					"appealBond": "2300",
+					"appealPayer": "0x0000000000000000000000000000000000000027",
+					"appealPayout": "5750",
 					"bookkeepingOnly": true,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -1090,6 +1272,9 @@
 					"sourceNode": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
 					"sourceClassification": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000002",
 					"leaderAction": "LEADER_RECEIPT",
@@ -1171,6 +1356,9 @@
 					"sourceNode": "VALIDATOR_APPEAL_SUCCESSFUL",
 					"sourceClassification": "VALIDATOR_APPEAL_SUCCESSFUL",
 					"admittedRoute": "validator-jury",
+					"appealBond": "2600",
+					"appealPayer": "0x0000000000000000000000000000000000000026",
+					"appealPayout": "6500",
 					"bookkeepingOnly": false,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -1261,6 +1449,9 @@
 					"sourceNode": "LEADER_TIMEOUT",
 					"sourceClassification": "LEADER_TIMEOUT",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000003",
 					"leaderAction": "LEADER_TIMEOUT",
@@ -1516,6 +1707,154 @@
 			},
 			"divisionDust": "0",
 			"remedyLabel": "LEADER_TIMEOUT_50_PERCENT",
+			"remedyAwards": {
+				"roundIndex": 4,
+				"leaderAward": {
+					"address": "0x0000000000000000000000000000000000000003",
+					"earned": "50"
+				},
+				"validatorAwards": [
+					{
+						"seat": 0,
+						"address": "0x0000000000000000000000000000000000000003",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 1,
+						"address": "0x0000000000000000000000000000000000000004",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 2,
+						"address": "0x0000000000000000000000000000000000000005",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 3,
+						"address": "0x0000000000000000000000000000000000000006",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 4,
+						"address": "0x0000000000000000000000000000000000000007",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 5,
+						"address": "0x0000000000000000000000000000000000000008",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 6,
+						"address": "0x0000000000000000000000000000000000000009",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 7,
+						"address": "0x000000000000000000000000000000000000000a",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 8,
+						"address": "0x000000000000000000000000000000000000000b",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 9,
+						"address": "0x000000000000000000000000000000000000000c",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 10,
+						"address": "0x000000000000000000000000000000000000000d",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 11,
+						"address": "0x000000000000000000000000000000000000000e",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 12,
+						"address": "0x000000000000000000000000000000000000000f",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 13,
+						"address": "0x0000000000000000000000000000000000000010",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 14,
+						"address": "0x0000000000000000000000000000000000000011",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 15,
+						"address": "0x0000000000000000000000000000000000000012",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 16,
+						"address": "0x0000000000000000000000000000000000000013",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 17,
+						"address": "0x0000000000000000000000000000000000000014",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 18,
+						"address": "0x0000000000000000000000000000000000000015",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 19,
+						"address": "0x0000000000000000000000000000000000000016",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 20,
+						"address": "0x0000000000000000000000000000000000000017",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 21,
+						"address": "0x0000000000000000000000000000000000000018",
+						"vote": "NA",
+						"earned": "0"
+					},
+					{
+						"seat": 22,
+						"address": "0x0000000000000000000000000000000000000019",
+						"vote": "NA",
+						"earned": "0"
+					}
+				],
+				"senderAward": "0"
+			},
 			"senderRefund": "13600"
 		},
 		{
@@ -1548,6 +1887,9 @@
 					"sourceNode": "LEADER_RECEIPT_UNDETERMINED",
 					"sourceClassification": "LEADER_RECEIPT_UNDETERMINED",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000001",
 					"leaderAction": "LEADER_RECEIPT",
@@ -1593,6 +1935,9 @@
 					"sourceNode": "LEADER_APPEAL_SUCCESSFUL",
 					"sourceClassification": "LEADER_APPEAL_SUCCESSFUL",
 					"admittedRoute": "leader-replay",
+					"appealBond": "2300",
+					"appealPayer": "0x0000000000000000000000000000000000000027",
+					"appealPayout": "5750",
 					"bookkeepingOnly": true,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -1647,6 +1992,9 @@
 					"sourceNode": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
 					"sourceClassification": "LEADER_RECEIPT_MAJORITY_TIMEOUT",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000002",
 					"leaderAction": "LEADER_RECEIPT",
@@ -1728,6 +2076,9 @@
 					"sourceNode": "VALIDATOR_APPEAL_ALL_IDLE_NO_REVEAL",
 					"sourceClassification": "VALIDATOR_APPEAL_ALL_IDLE_NO_REVEAL",
 					"admittedRoute": "validator-jury",
+					"appealBond": "2600",
+					"appealPayer": "0x0000000000000000000000000000000000000026",
+					"appealPayout": "2600",
 					"bookkeepingOnly": false,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -1910,6 +2261,7 @@
 			},
 			"divisionDust": "0",
 			"remedyLabel": null,
+			"remedyAwards": null,
 			"senderRefund": null,
 			"scope": "Admission and E-B03 principal refund only; generic IDLE prepass cannot settle this path"
 		},
@@ -1942,6 +2294,9 @@
 					"sourceNode": "LEADER_TIMEOUT",
 					"sourceClassification": "LEADER_TIMEOUT",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000001",
 					"leaderAction": "LEADER_TIMEOUT",
@@ -1987,6 +2342,9 @@
 					"sourceNode": "LEADER_APPEAL_TIMEOUT_SUCCESSFUL",
 					"sourceClassification": "LEADER_APPEAL_TIMEOUT_SUCCESSFUL",
 					"admittedRoute": "leader-timeout-appeal",
+					"appealBond": "1100",
+					"appealPayer": "0x0000000000000000000000000000000000000027",
+					"appealPayout": "2750",
 					"bookkeepingOnly": true,
 					"leaderAddress": null,
 					"leaderAction": null,
@@ -2029,6 +2387,9 @@
 					"sourceNode": "LEADER_RECEIPT_MAJORITY_AGREE",
 					"sourceClassification": "LEADER_RECEIPT_MAJORITY_AGREE",
 					"admittedRoute": null,
+					"appealBond": null,
+					"appealPayer": null,
+					"appealPayout": null,
 					"bookkeepingOnly": false,
 					"leaderAddress": "0x0000000000000000000000000000000000000002",
 					"leaderAction": "LEADER_RECEIPT",
@@ -2080,6 +2441,40 @@
 			},
 			"divisionDust": "0",
 			"remedyLabel": "LEADER_TIMEOUT_150_PREVIOUS_NORMAL_ROUND",
+			"remedyAwards": {
+				"roundIndex": 2,
+				"leaderAward": {
+					"address": "0x0000000000000000000000000000000000000002",
+					"earned": "150"
+				},
+				"validatorAwards": [
+					{
+						"seat": 0,
+						"address": "0x0000000000000000000000000000000000000002",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 1,
+						"address": "0x0000000000000000000000000000000000000003",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 2,
+						"address": "0x0000000000000000000000000000000000000004",
+						"vote": "AGREE",
+						"earned": "200"
+					},
+					{
+						"seat": 3,
+						"address": "0x0000000000000000000000000000000000000005",
+						"vote": "DISAGREE",
+						"earned": "0"
+					}
+				],
+				"senderAward": "50"
+			},
 			"senderRefund": "5950"
 		}
 	]
