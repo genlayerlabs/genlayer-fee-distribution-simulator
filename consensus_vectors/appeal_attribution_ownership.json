@@ -1,0 +1,2302 @@
+{
+	"schemaVersion": 2,
+	"model": "N-B02 fee-deposit attribution",
+	"unitBoundary": "time-unit work plus explicitly supplied execution costs; no inferred receipt/storage/custody costs",
+	"cases": [
+		{
+			"name": "beyond_quota_success_complete_work",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "111",
+				"dao": "111"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "500",
+						"overlay": "50"
+					}
+				},
+				{
+					"id": "ordinary1",
+					"payer": "topper",
+					"reserve": {
+						"primary": "1000",
+						"overlay": "100"
+					}
+				}
+			],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "a0",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "successful",
+					"bondPrincipal": "1400",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "1100",
+						"appellantProfit": "2200",
+						"executionBacking": "300",
+						"overlay": "100"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "700",
+					"sourceFundingId": "ordinary",
+					"origin": "original-generation-work",
+					"feeEventIds": [
+						202,
+						203,
+						204,
+						207
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "200",
+					"sourceFundingId": "ordinary",
+					"origin": "original-round-vindication",
+					"feeEventIds": [
+						211
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "800",
+					"sourceFundingId": "a0",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "300",
+					"sourceFundingId": "a0",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "replacement",
+					"feeEventIds": [
+						9001,
+						9002
+					]
+				},
+				{
+					"kind": "appellantProfit",
+					"amount": "2100",
+					"sourceFundingId": "a0",
+					"generation": 0,
+					"bookRound": 1,
+					"feeEventIds": [
+						203
+					]
+				},
+				{
+					"kind": "executionBacking",
+					"amount": "40",
+					"sourceFundingId": "a0",
+					"generation": 0,
+					"bookRound": 1,
+					"origin": "supplied-execution-cost"
+				}
+			],
+			"observedRoundFees": {
+				"original": {
+					"source": "round-engine-generated",
+					"bond": "1400",
+					"juryWork": "1400",
+					"juryGrossPayout": "2800",
+					"juryEvidence": [
+						209,
+						210,
+						211,
+						212,
+						213,
+						214,
+						215
+					],
+					"vindication": "0",
+					"vindicationEvidence": [],
+					"normalWork": "700",
+					"normalEvidence": [
+						202,
+						203,
+						204,
+						207
+					],
+					"profit": "0",
+					"appellantEvidence": []
+				},
+				"appeal": {
+					"source": "round-engine-generated",
+					"bond": "1400",
+					"juryWork": "800",
+					"juryGrossPayout": "800",
+					"juryEvidence": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					],
+					"vindication": "200",
+					"vindicationEvidence": [
+						211
+					],
+					"normalWork": "0",
+					"normalEvidence": [],
+					"profit": "2100",
+					"appellantEvidence": [
+						203
+					]
+				},
+				"replacementFixture": [
+					{
+						"sequenceId": 9001,
+						"role": "LEADER",
+						"earned": "100"
+					},
+					{
+						"sequenceId": 9002,
+						"role": "VALIDATOR",
+						"earned": "200"
+					}
+				]
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "1100",
+							"appellantProfit": "2200",
+							"executionBacking": "300",
+							"overlay": "100"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "1100",
+							"appellantProfit": "2100",
+							"executionBacking": "40",
+							"overlay": "100"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "100",
+							"executionBacking": "260",
+							"overlay": "0"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "500",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "50"
+						},
+						"consumed": {
+							"primary": "500",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "50"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"payer": "topper",
+						"deposited": {
+							"primary": "1000",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "100"
+						},
+						"consumed": {
+							"primary": "400",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "72"
+						},
+						"refunded": {
+							"primary": "600",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "28"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "500",
+							"overlay": "50"
+						},
+						"refunded": {
+							"primary": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"id": "ordinary1",
+						"payer": "topper",
+						"consumed": {
+							"primary": "400",
+							"overlay": "72"
+						},
+						"refunded": {
+							"primary": "600",
+							"overlay": "28"
+						}
+					},
+					{
+						"id": "a0",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "1100",
+							"appellantProfit": "2100",
+							"executionBacking": "40",
+							"overlay": "100"
+						},
+						"refunded": {
+							"taxableWork": "0",
+							"appellantProfit": "100",
+							"executionBacking": "260",
+							"overlay": "0"
+						}
+					}
+				],
+				"totalDeposited": "5350",
+				"totalConsumed": "4362",
+				"totalRefunded": "988",
+				"overlayRouted": "222",
+				"taxableWork": "2000"
+			}
+		},
+		{
+			"name": "beyond_quota_failure_overlay_route_failed",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "0",
+				"dao": "0"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "400",
+						"overlay": "80"
+					}
+				},
+				{
+					"id": "ordinary1",
+					"payer": "topper",
+					"reserve": {
+						"primary": "1000",
+						"overlay": "80"
+					}
+				}
+			],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "a1",
+					"payer": "appellantB",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "unsuccessful",
+					"bondPrincipal": "1400",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "1600",
+						"appellantProfit": "2100",
+						"executionBacking": "100",
+						"overlay": "200"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "700",
+					"sourceFundingId": "ordinary",
+					"origin": "original-normal-work",
+					"feeEventIds": [
+						202,
+						203,
+						204,
+						207
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "1400",
+					"sourceFundingId": "a1",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						209,
+						210,
+						211,
+						212,
+						213,
+						214,
+						215
+					]
+				}
+			],
+			"observedRoundFees": {
+				"source": "round-engine-generated",
+				"bond": "1400",
+				"juryWork": "1400",
+				"juryGrossPayout": "2800",
+				"juryEvidence": [
+					209,
+					210,
+					211,
+					212,
+					213,
+					214,
+					215
+				],
+				"vindication": "0",
+				"vindicationEvidence": [],
+				"normalWork": "700",
+				"normalEvidence": [
+					202,
+					203,
+					204,
+					207
+				],
+				"profit": "0",
+				"appellantEvidence": []
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantB",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "1600",
+							"appellantProfit": "2100",
+							"executionBacking": "100",
+							"overlay": "200"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "200",
+							"appellantProfit": "2100",
+							"executionBacking": "100",
+							"overlay": "200"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "400",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "80"
+						},
+						"consumed": {
+							"primary": "400",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "80"
+						}
+					},
+					{
+						"payer": "topper",
+						"deposited": {
+							"primary": "1000",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "80"
+						},
+						"consumed": {
+							"primary": "300",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "700",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "80"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "400",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"overlay": "80"
+						}
+					},
+					{
+						"id": "ordinary1",
+						"payer": "topper",
+						"consumed": {
+							"primary": "300",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "700",
+							"overlay": "80"
+						}
+					},
+					{
+						"id": "a1",
+						"payer": "appellantB",
+						"consumed": {
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "200",
+							"appellantProfit": "2100",
+							"executionBacking": "100",
+							"overlay": "200"
+						}
+					}
+				],
+				"totalDeposited": "5560",
+				"totalConsumed": "2100",
+				"totalRefunded": "3460",
+				"overlayRouted": "0",
+				"taxableWork": "2100"
+			}
+		},
+		{
+			"name": "in_quota_below_prepaid_base",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "60",
+				"dao": "60"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "1800",
+						"overlay": "250"
+					}
+				}
+			],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "iq100",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "inQuota",
+					"result": "successful",
+					"bondPrincipal": "1400",
+					"voided": false,
+					"prepaidScheduledBase": "150",
+					"reserve": {
+						"taxableWork": "300",
+						"appellantProfit": "0",
+						"executionBacking": "50",
+						"overlay": "60"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "800",
+					"sourceFundingId": "ordinary",
+					"origin": "prepaid-appeal-jury",
+					"feeEventIds": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "200",
+					"sourceFundingId": "ordinary",
+					"origin": "original-round-vindication",
+					"feeEventIds": [
+						211
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "100",
+					"sourceFundingId": "iq100",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "replacement",
+					"feeEventIds": [
+						9001
+					]
+				}
+			],
+			"observedRoundFees": {
+				"appeal": {
+					"source": "round-engine-generated",
+					"bond": "1400",
+					"juryWork": "800",
+					"juryGrossPayout": "800",
+					"juryEvidence": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					],
+					"vindication": "200",
+					"vindicationEvidence": [
+						211
+					],
+					"normalWork": "0",
+					"normalEvidence": [],
+					"profit": "2100",
+					"appellantEvidence": [
+						203
+					]
+				},
+				"replacementFixture": [
+					{
+						"sequence_id": 9001,
+						"address": "0x000000000000000000000000000000000000005b",
+						"round_index": 1,
+						"round_label": null,
+						"role": "LEADER",
+						"vote": null,
+						"hash": null,
+						"cost": "0",
+						"staked": "0",
+						"earned": "100",
+						"slashed": "0",
+						"burned": "0"
+					}
+				]
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "300",
+							"appellantProfit": "0",
+							"executionBacking": "50",
+							"overlay": "60"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "300",
+							"appellantProfit": "0",
+							"executionBacking": "50",
+							"overlay": "60"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "1800",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "250"
+						},
+						"consumed": {
+							"primary": "1100",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "120"
+						},
+						"refunded": {
+							"primary": "700",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "130"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "1100",
+							"overlay": "120"
+						},
+						"refunded": {
+							"primary": "700",
+							"overlay": "130"
+						}
+					},
+					{
+						"id": "iq100",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "300",
+							"appellantProfit": "0",
+							"executionBacking": "50",
+							"overlay": "60"
+						}
+					}
+				],
+				"totalDeposited": "2460",
+				"totalConsumed": "1220",
+				"totalRefunded": "1240",
+				"overlayRouted": "120",
+				"taxableWork": "1100"
+			}
+		},
+		{
+			"name": "in_quota_above_prepaid_base",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "70",
+				"dao": "70"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "1800",
+						"overlay": "250"
+					}
+				}
+			],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "iq300",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "inQuota",
+					"result": "successful",
+					"bondPrincipal": "1400",
+					"voided": false,
+					"prepaidScheduledBase": "150",
+					"reserve": {
+						"taxableWork": "300",
+						"appellantProfit": "0",
+						"executionBacking": "50",
+						"overlay": "60"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "800",
+					"sourceFundingId": "ordinary",
+					"origin": "prepaid-appeal-jury",
+					"feeEventIds": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "200",
+					"sourceFundingId": "ordinary",
+					"origin": "original-round-vindication",
+					"feeEventIds": [
+						211
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "300",
+					"sourceFundingId": "iq300",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "replacement",
+					"feeEventIds": [
+						9001,
+						9002
+					]
+				}
+			],
+			"observedRoundFees": {
+				"appeal": {
+					"source": "round-engine-generated",
+					"bond": "1400",
+					"juryWork": "800",
+					"juryGrossPayout": "800",
+					"juryEvidence": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					],
+					"vindication": "200",
+					"vindicationEvidence": [
+						211
+					],
+					"normalWork": "0",
+					"normalEvidence": [],
+					"profit": "2100",
+					"appellantEvidence": [
+						203
+					]
+				},
+				"replacementFixture": [
+					{
+						"sequence_id": 9001,
+						"address": "0x000000000000000000000000000000000000005b",
+						"round_index": 1,
+						"round_label": null,
+						"role": "LEADER",
+						"vote": null,
+						"hash": null,
+						"cost": "0",
+						"staked": "0",
+						"earned": "100",
+						"slashed": "0",
+						"burned": "0"
+					},
+					{
+						"sequence_id": 9002,
+						"address": "0x000000000000000000000000000000000000005c",
+						"round_index": 1,
+						"round_label": null,
+						"role": "VALIDATOR",
+						"vote": null,
+						"hash": null,
+						"cost": "0",
+						"staked": "0",
+						"earned": "200",
+						"slashed": "0",
+						"burned": "0"
+					}
+				]
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "300",
+							"appellantProfit": "0",
+							"executionBacking": "50",
+							"overlay": "60"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "150",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "16"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "150",
+							"appellantProfit": "0",
+							"executionBacking": "50",
+							"overlay": "44"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "1800",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "250"
+						},
+						"consumed": {
+							"primary": "1150",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "124"
+						},
+						"refunded": {
+							"primary": "650",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "126"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "1150",
+							"overlay": "124"
+						},
+						"refunded": {
+							"primary": "650",
+							"overlay": "126"
+						}
+					},
+					{
+						"id": "iq300",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "150",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "16"
+						},
+						"refunded": {
+							"taxableWork": "150",
+							"appellantProfit": "0",
+							"executionBacking": "50",
+							"overlay": "44"
+						}
+					}
+				],
+				"totalDeposited": "2460",
+				"totalConsumed": "1440",
+				"totalRefunded": "1020",
+				"overlayRouted": "140",
+				"taxableWork": "1300"
+			}
+		},
+		{
+			"name": "void_reuse_recompute_keeps_old_earned_cost",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "120",
+				"dao": "120"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "100",
+						"overlay": "100"
+					}
+				}
+			],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "g0-a0",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "unsuccessful",
+					"bondPrincipal": "1400",
+					"voided": true,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "1600",
+						"appellantProfit": "2200",
+						"executionBacking": "0",
+						"overlay": "160"
+					}
+				},
+				{
+					"id": "g1-a0",
+					"payer": "appellantB",
+					"generation": 1,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "successful",
+					"bondPrincipal": "1400",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "1000",
+						"appellantProfit": "2200",
+						"executionBacking": "0",
+						"overlay": "160"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "1400",
+					"sourceFundingId": "g0-a0",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						209,
+						210,
+						211,
+						212,
+						213,
+						214,
+						215
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "800",
+					"sourceFundingId": "g1-a0",
+					"generation": 1,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					]
+				},
+				{
+					"kind": "appellantProfit",
+					"amount": "2100",
+					"sourceFundingId": "g1-a0",
+					"generation": 1,
+					"bookRound": 1,
+					"feeEventIds": [
+						203
+					]
+				}
+			],
+			"observedRoundFees": {
+				"generation0": {
+					"source": "round-engine-generated",
+					"bond": "1400",
+					"juryWork": "1400",
+					"juryGrossPayout": "2800",
+					"juryEvidence": [
+						209,
+						210,
+						211,
+						212,
+						213,
+						214,
+						215
+					],
+					"vindication": "0",
+					"vindicationEvidence": [],
+					"normalWork": "700",
+					"normalEvidence": [
+						202,
+						203,
+						204,
+						207
+					],
+					"profit": "0",
+					"appellantEvidence": []
+				},
+				"generation1": {
+					"source": "round-engine-generated",
+					"bond": "1400",
+					"juryWork": "800",
+					"juryGrossPayout": "800",
+					"juryEvidence": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					],
+					"vindication": "200",
+					"vindicationEvidence": [
+						211
+					],
+					"normalWork": "0",
+					"normalEvidence": [],
+					"profit": "2100",
+					"appellantEvidence": [
+						203
+					]
+				}
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "1600",
+							"appellantProfit": "2200",
+							"executionBacking": "0",
+							"overlay": "160"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "152"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "200",
+							"appellantProfit": "2200",
+							"executionBacking": "0",
+							"overlay": "8"
+						}
+					},
+					{
+						"payer": "appellantB",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "1000",
+							"appellantProfit": "2200",
+							"executionBacking": "0",
+							"overlay": "160"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "800",
+							"appellantProfit": "2100",
+							"executionBacking": "0",
+							"overlay": "88"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "200",
+							"appellantProfit": "100",
+							"executionBacking": "0",
+							"overlay": "72"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "100",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "100"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "100",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "100"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "100",
+							"overlay": "100"
+						}
+					},
+					{
+						"id": "g0-a0",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "152"
+						},
+						"refunded": {
+							"taxableWork": "200",
+							"appellantProfit": "2200",
+							"executionBacking": "0",
+							"overlay": "8"
+						}
+					},
+					{
+						"id": "g1-a0",
+						"payer": "appellantB",
+						"consumed": {
+							"taxableWork": "800",
+							"appellantProfit": "2100",
+							"executionBacking": "0",
+							"overlay": "88"
+						},
+						"refunded": {
+							"taxableWork": "200",
+							"appellantProfit": "100",
+							"executionBacking": "0",
+							"overlay": "72"
+						}
+					}
+				],
+				"totalDeposited": "7520",
+				"totalConsumed": "4540",
+				"totalRefunded": "2980",
+				"overlayRouted": "240",
+				"taxableWork": "2200"
+			}
+		},
+		{
+			"name": "typed_work_overrun_uses_ordinary_then_rescue",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "0",
+				"dao": "0"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "100",
+						"overlay": "0"
+					}
+				}
+			],
+			"rescueFunding": [
+				{
+					"id": "rescue0",
+					"payer": "rescuer",
+					"reserve": {
+						"primary": "300",
+						"overlay": "0"
+					}
+				}
+			],
+			"admissions": [
+				{
+					"id": "limited",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "successful",
+					"bondPrincipal": "1400",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "600",
+						"appellantProfit": "2100",
+						"executionBacking": "0",
+						"overlay": "0"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "800",
+					"sourceFundingId": "limited",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					]
+				},
+				{
+					"kind": "appellantProfit",
+					"amount": "2100",
+					"sourceFundingId": "limited",
+					"generation": 0,
+					"bookRound": 1,
+					"feeEventIds": [
+						203
+					]
+				}
+			],
+			"observedRoundFees": {
+				"source": "round-engine-generated",
+				"bond": "1400",
+				"juryWork": "800",
+				"juryGrossPayout": "800",
+				"juryEvidence": [
+					204,
+					205,
+					206,
+					207,
+					208,
+					209,
+					210
+				],
+				"vindication": "200",
+				"vindicationEvidence": [
+					211
+				],
+				"normalWork": "0",
+				"normalEvidence": [],
+				"profit": "2100",
+				"appellantEvidence": [
+					203
+				]
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "600",
+							"appellantProfit": "2100",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "600",
+							"appellantProfit": "2100",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"payer": "rescuer",
+						"deposited": {
+							"primary": "300",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"consumed": {
+							"primary": "100",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "200",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "100",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"consumed": {
+							"primary": "100",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "100",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"id": "rescue0",
+						"payer": "rescuer",
+						"consumed": {
+							"primary": "100",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "200",
+							"overlay": "0"
+						}
+					},
+					{
+						"id": "limited",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "600",
+							"appellantProfit": "2100",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					}
+				],
+				"totalDeposited": "3100",
+				"totalConsumed": "2900",
+				"totalRefunded": "200",
+				"overlayRouted": "0",
+				"taxableWork": "800"
+			}
+		},
+		{
+			"name": "successive_appeals_keep_distinct_book_round_ids",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "0",
+				"dao": "0"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "1000",
+						"overlay": "0"
+					}
+				}
+			],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "g0-a0",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "unsuccessful",
+					"bondPrincipal": "1400",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "1600",
+						"appellantProfit": "0",
+						"executionBacking": "0",
+						"overlay": "0"
+					}
+				},
+				{
+					"id": "g0-a1",
+					"payer": "appellantB",
+					"generation": 0,
+					"bookRound": 3,
+					"quotaKind": "beyondQuota",
+					"result": "successful",
+					"bondPrincipal": "2200",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "1200",
+						"appellantProfit": "1300",
+						"executionBacking": "0",
+						"overlay": "0"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "700",
+					"sourceFundingId": "ordinary",
+					"origin": "original-normal-work",
+					"feeEventIds": [
+						202,
+						203,
+						204,
+						207
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "1400",
+					"sourceFundingId": "g0-a0",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						209,
+						210,
+						211,
+						212,
+						213,
+						214,
+						215
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "1200",
+					"sourceFundingId": "g0-a1",
+					"generation": 0,
+					"bookRound": 3,
+					"workKind": "jury",
+					"feeEventIds": [
+						218,
+						219,
+						220,
+						221,
+						222,
+						223,
+						224,
+						225,
+						226,
+						227,
+						228
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "200",
+					"sourceFundingId": "g0-a0",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "replacement",
+					"origin": "vindicated-prior-appeal-funded-work",
+					"feeEventIds": [
+						9100
+					]
+				},
+				{
+					"kind": "appellantProfit",
+					"amount": "1300",
+					"sourceFundingId": "g0-a1",
+					"generation": 0,
+					"bookRound": 3,
+					"origin": "observed-second-appellant-payout-minus-principal"
+				}
+			],
+			"observedRoundFees": {
+				"successive": {
+					"source": "round-engine-generated",
+					"jury": [
+						{
+							"work": "1400",
+							"juryGrossPayout": "2800",
+							"ids": [
+								209,
+								210,
+								211,
+								212,
+								213,
+								214,
+								215
+							],
+							"bond": "1400"
+						},
+						{
+							"work": "1200",
+							"juryGrossPayout": "1200",
+							"ids": [
+								218,
+								219,
+								220,
+								221,
+								222,
+								223,
+								224,
+								225,
+								226,
+								227,
+								228
+							],
+							"bond": "2200"
+						}
+					],
+					"profit": "1300",
+					"normalWork": "700",
+					"normalIds": [
+						202,
+						203,
+						204,
+						207
+					]
+				},
+				"priorAdmissionVindicationFixture": {
+					"sequence_id": 9100,
+					"address": "0x000000000000000000000000000000000000005d",
+					"round_index": 2,
+					"round_label": null,
+					"role": "VALIDATOR",
+					"vote": null,
+					"hash": null,
+					"cost": "0",
+					"staked": "0",
+					"earned": "200",
+					"slashed": "0",
+					"burned": "0"
+				}
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "1600",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "1600",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"payer": "appellantB",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "1200",
+							"appellantProfit": "1300",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "1200",
+							"appellantProfit": "1300",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "1000",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"consumed": {
+							"primary": "700",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "300",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "700",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "300",
+							"overlay": "0"
+						}
+					},
+					{
+						"id": "g0-a0",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "1600",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"id": "g0-a1",
+						"payer": "appellantB",
+						"consumed": {
+							"taxableWork": "1200",
+							"appellantProfit": "1300",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					}
+				],
+				"totalDeposited": "5100",
+				"totalConsumed": "4800",
+				"totalRefunded": "300",
+				"overlayRouted": "0",
+				"taxableWork": "3500"
+			}
+		},
+		{
+			"name": "tiny_overlay_rounding_ignores_interleaved_event_order",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "1",
+				"dao": "0"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "3",
+						"overlay": "1"
+					}
+				}
+			],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "tiny-a",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "unsuccessful",
+					"bondPrincipal": "0",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "3",
+						"appellantProfit": "0",
+						"executionBacking": "0",
+						"overlay": "1"
+					}
+				},
+				{
+					"id": "tiny-b",
+					"payer": "appellantB",
+					"generation": 0,
+					"bookRound": 3,
+					"quotaKind": "beyondQuota",
+					"result": "unsuccessful",
+					"bondPrincipal": "0",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "4",
+						"appellantProfit": "0",
+						"executionBacking": "0",
+						"overlay": "1"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "1",
+					"sourceFundingId": "ordinary",
+					"origin": "ordinary-work",
+					"feeEventIds": [
+						9901
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "4",
+					"sourceFundingId": "tiny-b",
+					"generation": 0,
+					"bookRound": 3,
+					"workKind": "jury",
+					"feeEventIds": [
+						9902
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "2",
+					"sourceFundingId": "ordinary",
+					"origin": "ordinary-work",
+					"feeEventIds": [
+						9903
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "3",
+					"sourceFundingId": "tiny-a",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						9904
+					]
+				}
+			],
+			"observedRoundFees": {
+				"smallEventsFixture": [
+					{
+						"sequence_id": 9901,
+						"address": "0x0000000000000000000000000000000000000066",
+						"round_index": 1,
+						"round_label": null,
+						"role": "VALIDATOR",
+						"vote": null,
+						"hash": null,
+						"cost": "0",
+						"staked": "0",
+						"earned": "1",
+						"slashed": "0",
+						"burned": "0"
+					},
+					{
+						"sequence_id": 9902,
+						"address": "0x0000000000000000000000000000000000000067",
+						"round_index": 1,
+						"round_label": null,
+						"role": "VALIDATOR",
+						"vote": null,
+						"hash": null,
+						"cost": "0",
+						"staked": "0",
+						"earned": "4",
+						"slashed": "0",
+						"burned": "0"
+					},
+					{
+						"sequence_id": 9903,
+						"address": "0x0000000000000000000000000000000000000068",
+						"round_index": 1,
+						"round_label": null,
+						"role": "VALIDATOR",
+						"vote": null,
+						"hash": null,
+						"cost": "0",
+						"staked": "0",
+						"earned": "2",
+						"slashed": "0",
+						"burned": "0"
+					},
+					{
+						"sequence_id": 9904,
+						"address": "0x0000000000000000000000000000000000000069",
+						"round_index": 1,
+						"round_label": null,
+						"role": "VALIDATOR",
+						"vote": null,
+						"hash": null,
+						"cost": "0",
+						"staked": "0",
+						"earned": "3",
+						"slashed": "0",
+						"burned": "0"
+					}
+				]
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "3",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "1"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "3",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "1"
+						}
+					},
+					{
+						"payer": "appellantB",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "4",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "1"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "4",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "1"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "3",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "1"
+						},
+						"consumed": {
+							"primary": "3",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "1"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "3",
+							"overlay": "1"
+						},
+						"refunded": {
+							"primary": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"id": "tiny-a",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "3",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "1"
+						}
+					},
+					{
+						"id": "tiny-b",
+						"payer": "appellantB",
+						"consumed": {
+							"taxableWork": "4",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "1"
+						}
+					}
+				],
+				"totalDeposited": "13",
+				"totalConsumed": "11",
+				"totalRefunded": "2",
+				"overlayRouted": "1",
+				"taxableWork": "10"
+			}
+		},
+		{
+			"name": "same_generation_void_reuse_keeps_distinct_ids",
+			"overlayBps": 1000,
+			"actualOverlayRouted": {
+				"developer": "0",
+				"dao": "0"
+			},
+			"ordinaryFunding": [],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "g0-old",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "unsuccessful",
+					"bondPrincipal": "1400",
+					"voided": true,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "1400",
+						"appellantProfit": "0",
+						"executionBacking": "0",
+						"overlay": "0"
+					}
+				},
+				{
+					"id": "g0-new",
+					"payer": "appellantB",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "successful",
+					"bondPrincipal": "1400",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "800",
+						"appellantProfit": "2100",
+						"executionBacking": "0",
+						"overlay": "0"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "1400",
+					"sourceFundingId": "g0-old",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						209,
+						210,
+						211,
+						212,
+						213,
+						214,
+						215
+					]
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "800",
+					"sourceFundingId": "g0-new",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury",
+					"feeEventIds": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					]
+				},
+				{
+					"kind": "appellantProfit",
+					"amount": "2100",
+					"sourceFundingId": "g0-new",
+					"generation": 0,
+					"bookRound": 1,
+					"feeEventIds": [
+						203
+					]
+				}
+			],
+			"observedRoundFees": {
+				"voided": {
+					"source": "round-engine-generated",
+					"bond": "1400",
+					"juryWork": "1400",
+					"juryGrossPayout": "2800",
+					"juryEvidence": [
+						209,
+						210,
+						211,
+						212,
+						213,
+						214,
+						215
+					],
+					"vindication": "0",
+					"vindicationEvidence": [],
+					"normalWork": "700",
+					"normalEvidence": [
+						202,
+						203,
+						204,
+						207
+					],
+					"profit": "0",
+					"appellantEvidence": []
+				},
+				"reused": {
+					"source": "round-engine-generated",
+					"bond": "1400",
+					"juryWork": "800",
+					"juryGrossPayout": "800",
+					"juryEvidence": [
+						204,
+						205,
+						206,
+						207,
+						208,
+						209,
+						210
+					],
+					"vindication": "200",
+					"vindicationEvidence": [
+						211
+					],
+					"normalWork": "0",
+					"normalEvidence": [],
+					"profit": "2100",
+					"appellantEvidence": [
+						203
+					]
+				}
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"payer": "appellantB",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "800",
+							"appellantProfit": "2100",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "800",
+							"appellantProfit": "2100",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "g0-old",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"id": "g0-new",
+						"payer": "appellantB",
+						"consumed": {
+							"taxableWork": "800",
+							"appellantProfit": "2100",
+							"executionBacking": "0",
+							"overlay": "0"
+						},
+						"refunded": {
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					}
+				],
+				"totalDeposited": "4300",
+				"totalConsumed": "4300",
+				"totalRefunded": "0",
+				"overlayRouted": "0",
+				"taxableWork": "2200"
+			}
+		}
+	]
+}
