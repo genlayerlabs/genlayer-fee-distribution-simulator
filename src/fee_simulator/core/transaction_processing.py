@@ -34,7 +34,12 @@ def process_transaction(
     addresses: List[str],
     transaction_results: TransactionRoundResults,
     transaction_budget: TransactionBudget,
+    discarded_generations: List[TransactionRoundResults] | None = None,
 ) -> tuple[List[FeeEvent], List[RoundLabel]]:
+
+    discarded_generations = discarded_generations or []
+    if discarded_generations:
+        _validate_recompute_allowance(discarded_generations, transaction_results, transaction_budget)
 
     event_sequence = EventSequence()  # singleton
     fee_events = []  # list of immutable objects that can be audited
@@ -101,6 +106,7 @@ def process_transaction(
                         appeal_round_index=i,  # Pass the current appeal round index
                         rotations=transaction_budget.rotations,
                         rotations_used=transaction_budget.rotationsUsed,
+                        invalidated_generation=transaction_budget.recomputeInvalidated,
                     )
                     fee_events.append(
                         FeeEvent(
@@ -123,6 +129,17 @@ def process_transaction(
             )
             fee_events.extend(round_fee_events)
 
+    # Preserve historical time-unit work without collecting another sender
+    # deposit or spending appeal bonds already returned on invalidation.
+    for generation in discarded_generations:
+        historical, _ = process_transaction(
+            addresses, generation,
+            transaction_budget.model_copy(update={"recomputeInvalidated": True}),
+        )
+        for event in historical:
+            if event.role in ("LEADER", "VALIDATOR") and not event.staked:
+                fee_events.append(event.model_copy(update={"sequence_id": event_sequence.next_id()}))
+
     refunds = compute_sender_refund(
         sender_address, fee_events, transaction_budget, labels
     )
@@ -136,3 +153,22 @@ def process_transaction(
     )
 
     return fee_events, labels
+
+
+def _validate_recompute_allowance(history, current, budget):
+    """Ordinary rotations and lazy replays consume the same per-round limit."""
+    used = [0] * len(budget.rotations)
+    for generation in [*history, current]:
+        labels = label_rounds(generation)
+        for index, round_obj in enumerate(generation.rounds):
+            if is_appeal_round(labels[index]) or not round_obj.rotations:
+                continue
+            ordinal = index // 2
+            if ordinal >= len(used):
+                raise ValueError("Missing funded normal round")
+            used[ordinal] += max(0, len(round_obj.rotations) - 1)
+    for generation in history:
+        ordinal = (len(generation.rounds) - 1) // 2
+        used[ordinal] += 1
+    if any(spent > funded for spent, funded in zip(used, budget.rotations)):
+        raise ValueError("Recomputation exceeds assigned rotations")
