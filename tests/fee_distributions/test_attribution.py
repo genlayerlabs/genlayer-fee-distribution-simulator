@@ -131,6 +131,72 @@ def test_overlay_aggregates_by_immutable_admission_before_rounding():
     assert payer(case, "sender")["consumed"]["overlay"] == 1
 
 
+def test_failed_appeal_assigns_only_stranded_one_wei_to_its_working_overlay_reserve():
+    case = attribution_vectors()["cases"][9]
+    assert case["name"] == "failed_appeal_overlay_floor_one_wei_shortfall"
+    assert case["actualOverlayRouted"]["developer"] == 441
+    assert case["observedRoundFees"]["totalTaxableWork"] == 2500
+    assert case["observedRoundFees"]["capturedAppealWork"] == 1400
+    assert payer(case, "sender")["consumed"]["overlay"] == 194
+    assert payer(case, "appellantA")["consumed"]["overlay"] == 247
+    assert payer(case, "appellantA")["refunded"]["overlay"] == 441
+    assert case["expected"]["totalConsumed"] == 2941
+
+    # A solvent ordinary column retains the old cumulative-floor ownership.
+    solvent = deepcopy(case)
+    solvent["ordinaryFunding"][0]["reserve"]["overlay"] = 195
+    result = settle_attribution(solvent)
+    sender = next(row for row in result["byPayer"] if row["payer"] == "sender")
+    appellant = next(row for row in result["byPayer"] if row["payer"] == "appellantA")
+    assert sender["consumed"]["overlay"] == 195
+    assert appellant["consumed"]["overlay"] == 246
+
+    # The only working admission can absorb one rounded wei, never two.
+    underfunded = deepcopy(case)
+    underfunded["ordinaryFunding"][0]["reserve"]["overlay"] = 193
+    with pytest.raises(ValueError, match="overall overlay funding exhausted"):
+        settle_attribution(underfunded)
+
+    # An unused other appeal reserve cannot cover this one's rounded duty.
+    capped = deepcopy(case)
+    capped["admissions"][0]["reserve"]["overlay"] = 246
+    capped["admissions"].append({
+        **deepcopy(capped["admissions"][0]),
+        "id": "unused-other-appeal", "payer": "appellantB", "bookRound": 3,
+        "reserve": {"taxableWork": 0, "appellantProfit": 0,
+                    "executionBacking": 0, "overlay": 1},
+    })
+    with pytest.raises(ValueError, match="overall overlay funding exhausted"):
+        settle_attribution(capped)
+
+
+def test_overlay_rounding_tie_uses_immutable_admission_order():
+    case = {
+        "overlayBps": 5000,
+        "actualOverlayRouted": {"developer": 1, "dao": 0},
+        "ordinaryFunding": [{"id": "ordinary", "payer": "sender",
+                             "reserve": {"primary": 1, "overlay": 0}}],
+        "rescueFunding": [],
+        "admissions": [
+            {"id": name, "payer": name, "generation": 0, "bookRound": round_,
+             "quotaKind": "beyondQuota", "reserve": {
+                 "taxableWork": 1, "appellantProfit": 0,
+                 "executionBacking": 0, "overlay": 1}}
+            for name, round_ in (("first", 1), ("second", 3))
+        ],
+        "charges": [
+            {"kind": "taxableWork", "amount": 1, "sourceFundingId": "ordinary"},
+            *({"kind": "taxableWork", "amount": 1, "sourceFundingId": name,
+               "generation": 0, "bookRound": round_, "workKind": "jury"}
+              for name, round_ in (("first", 1), ("second", 3))),
+        ],
+    }
+    result = settle_attribution(case)
+    by_funding = {row["id"]: row for row in result["byFunding"]}
+    assert by_funding["first"]["consumed"]["overlay"] == 1
+    assert by_funding["second"]["consumed"]["overlay"] == 0
+
+
 def test_vindication_uses_original_appeal_owner_and_same_slot_reuse_keeps_ids():
     successive = attribution_vectors()["cases"][6]
     vindication = next(charge for charge in successive["charges"]

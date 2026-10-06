@@ -163,6 +163,26 @@ def settle_attribution(case):
         entry["consumed"]["overlay"] += take
         ordinary_overlay += due - take
     ordinary_overlay += actual_overlay - allocated_typed
+    ordinary_capacity = sum(available(funding[key], "overlay") for key in ordinary_order)
+    if ordinary_overlay > ordinary_capacity:
+        # Cumulative floors can leave one wei per working admission assigned
+        # to an already-full ordinary column. Only that admission's rounded-up
+        # proportional duty, capped by its own overlay reserve, may absorb it.
+        deficit = ordinary_overlay - ordinary_capacity
+        for admission in admissions:
+            if not deficit:
+                break
+            source = admission["id"]
+            work = taxable_by_source[source]
+            if not work:
+                continue
+            entry = funding[source]
+            rounded_share = (actual_overlay * work + total_taxable - 1) // total_taxable
+            ceiling = min(rounded_share, entry["deposited"]["overlay"])
+            extra = min(deficit, max(0, ceiling - entry["consumed"]["overlay"]))
+            entry["consumed"]["overlay"] += extra
+            ordinary_overlay -= extra
+            deficit -= extra
     ordinary_debit("overlay", ordinary_overlay)
 
     by_payer = defaultdict(lambda: {"deposited": defaultdict(int), "consumed": defaultdict(int), "refunded": defaultdict(int)})

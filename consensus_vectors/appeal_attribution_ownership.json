@@ -2297,6 +2297,155 @@
 				"overlayRouted": "0",
 				"taxableWork": "2200"
 			}
+		},
+		{
+			"name": "failed_appeal_overlay_floor_one_wei_shortfall",
+			"overlayBps": 1500,
+			"actualOverlayRouted": {
+				"developer": "441",
+				"dao": "0"
+			},
+			"ordinaryFunding": [
+				{
+					"id": "ordinary0",
+					"payer": "sender",
+					"reserve": {
+						"primary": "1100",
+						"overlay": "194"
+					}
+				}
+			],
+			"rescueFunding": [],
+			"admissions": [
+				{
+					"id": "rounding-a",
+					"payer": "appellantA",
+					"generation": 0,
+					"bookRound": 1,
+					"quotaKind": "beyondQuota",
+					"result": "unsuccessful",
+					"bondPrincipal": "0",
+					"voided": false,
+					"prepaidScheduledBase": "0",
+					"reserve": {
+						"taxableWork": "3900",
+						"appellantProfit": "0",
+						"executionBacking": "0",
+						"overlay": "688"
+					}
+				}
+			],
+			"charges": [
+				{
+					"kind": "taxableWork",
+					"amount": "1100",
+					"sourceFundingId": "ordinary",
+					"origin": "original-work",
+					"feeEventIds": []
+				},
+				{
+					"kind": "taxableWork",
+					"amount": "1400",
+					"sourceFundingId": "rounding-a",
+					"generation": 0,
+					"bookRound": 1,
+					"workKind": "jury"
+				}
+			],
+			"observedRoundFees": {
+				"source": "CON-984 on-chain failed-appeal settlement witness",
+				"totalTaxableWork": 2500,
+				"capturedAppealWork": 1400,
+				"ordinaryOverlayReserve": 194,
+				"actualOverlayRouted": 441
+			},
+			"expected": {
+				"byPayer": [
+					{
+						"payer": "appellantA",
+						"deposited": {
+							"primary": "0",
+							"taxableWork": "3900",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "688"
+						},
+						"consumed": {
+							"primary": "0",
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "247"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "2500",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "441"
+						}
+					},
+					{
+						"payer": "sender",
+						"deposited": {
+							"primary": "1100",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "194"
+						},
+						"consumed": {
+							"primary": "1100",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "194"
+						},
+						"refunded": {
+							"primary": "0",
+							"taxableWork": "0",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "0"
+						}
+					}
+				],
+				"byFunding": [
+					{
+						"id": "ordinary0",
+						"payer": "sender",
+						"consumed": {
+							"primary": "1100",
+							"overlay": "194"
+						},
+						"refunded": {
+							"primary": "0",
+							"overlay": "0"
+						}
+					},
+					{
+						"id": "rounding-a",
+						"payer": "appellantA",
+						"consumed": {
+							"taxableWork": "1400",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "247"
+						},
+						"refunded": {
+							"taxableWork": "2500",
+							"appellantProfit": "0",
+							"executionBacking": "0",
+							"overlay": "441"
+						}
+					}
+				],
+				"totalDeposited": "5882",
+				"totalConsumed": "2941",
+				"totalRefunded": "2941",
+				"overlayRouted": "441",
+				"taxableWork": "2500"
+			}
 		}
 	]
 }

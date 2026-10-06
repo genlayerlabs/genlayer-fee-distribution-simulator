@@ -115,8 +115,9 @@ def _ordinary_charge(amount, origin, ids):
             "origin": origin, "feeEventIds": ids}
 
 
-def _case(name, ordinary, admissions, charges, evidence, developer, dao, rescue=None):
-    source = {"name": name, "overlayBps": 1000,
+def _case(name, ordinary, admissions, charges, evidence, developer, dao, rescue=None,
+          overlay_bps=1000):
+    source = {"name": name, "overlayBps": overlay_bps,
               "actualOverlayRouted": {"developer": developer, "dao": dao},
               "ordinaryFunding": ordinary, "rescueFunding": rescue or [],
               "admissions": admissions, "charges": charges,
@@ -270,6 +271,19 @@ def attribution_vectors(*, decimal_strings=False):
          _appeal_charge("appellantProfit", success["profit"], same_new,
                         feeEventIds=success["appellantEvidence"])],
         {"voided": failure, "reused": success}, 0, 0,
+    ))
+
+    rounding = _admission("rounding-a", "appellantA", 0, 1, "beyondQuota",
+                          (3900, 0, 0, 688), bond=0)
+    cases.append(_case(
+        "failed_appeal_overlay_floor_one_wei_shortfall",
+        [_ordinary("ordinary0", "sender", 1100, 194)], [rounding],
+        [_ordinary_charge(1100, "original-work", []),
+         _appeal_charge("taxableWork", 1400, rounding, workKind="jury")],
+        {"source": "CON-984 on-chain failed-appeal settlement witness",
+         "totalTaxableWork": 2500, "capturedAppealWork": 1400,
+         "ordinaryOverlayReserve": 194, "actualOverlayRouted": 441},
+        441, 0, overlay_bps=1500,
     ))
 
     corpus = {"schemaVersion": 2, "model": "N-B02 fee-deposit attribution",
