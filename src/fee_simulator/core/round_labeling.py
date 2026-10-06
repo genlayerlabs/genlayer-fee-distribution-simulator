@@ -222,17 +222,11 @@ def classify_appeal_round(
         orig_round, leader_addresses[original_round_index]
     )
 
-    # The appeal type follows what was appealed, not the submitted node name
-    # (FeesRecorder MajorityTimeout branch): a round colored LeaderTimeout —
-    # a receipt round with a validators-timeout majority after a successful
-    # leader appeal — is appealed as a leader-timeout appeal.
-    timeout_colored = (
-        prior_labels is not None
-        and original_round_index < len(prior_labels)
-        and prior_labels[original_round_index] == "LEADER_TIMEOUT_50_PERCENT"
-    )
-
-    if orig_leader_action == "LEADER_TIMEOUT" or timeout_colored:
+    # LT50 is a *fee payout color*, not an appeal-admission route. A leader
+    # replay that ends in ValidatorsTimeout is colored LT50 for its work, but
+    # its next appeal draws a fresh validator jury. Only an actual timed-out
+    # leader enters the leader-timeout appeal family.
+    if orig_leader_action == "LEADER_TIMEOUT":
         return classify_leader_timeout_appeal(round_index, rounds, leader_addresses)
     else:
         orig_majority = compute_majority(orig_round)
@@ -243,6 +237,11 @@ def classify_appeal_round(
 
 # Special case patterns
 SPECIAL_CASE_PATTERNS = [
+    {
+        "name": "Skip replay before successful validator jury",
+        "pattern": ["LEADER_TIMEOUT_50_PERCENT", "APPEAL_VALIDATOR_SUCCESSFUL"],
+        "changes": {0: "SKIP_ROUND"},
+    },
     {
         "name": "Skip round before terminal successful appeal",
         "pattern": [
