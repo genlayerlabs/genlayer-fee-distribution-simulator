@@ -2,9 +2,16 @@
 
 ## What this is
 
-The **executable specification of GenLayer's time-unit fee model** — a pure-Python mirror of the fee distribution implemented by the `genlayer-consensus` contracts (`FeesProcessor`, `FeesRecorder`, `FeeManager.calculateMinAppealBond`). It models a consensus transaction as a path through a state machine (**TRANSITIONS_GRAPH → Path → TransactionRoundResults → Round Labels → Fee Distribution**), computes who earns/loses what, and checks 24 economic invariants (value conservation, bond coverage, non-negative balances, …) on every run.
+The **executable specification of GenLayer's time-unit fee model** — a pure-Python mirror of the fee distribution implemented by the `genlayer-consensus` contracts (`FeesProcessor`, `FeesRecorder`, `FeeManager.calculateMinAppealBond`). It models a consensus transaction as a path through a state machine (**TRANSITIONS_GRAPH → Path → TransactionRoundResults → Round Labels → Fee Distribution**), computes who earns/loses what, and provides 24 trace invariant checks (value conservation, bond coverage, non-negative balances, …).
 
-Because each simulation takes milliseconds, it can do what the on-chain test harness cannot: sweep **every generatable consensus path** (thousands of scenarios, deep appeal chains included) and assert the economics hold on all of them.
+Bounded sweeps can check thousands of generated paths and appeal chains. Passing these trace checks does not establish coalition resistance. [Economic requirements across roles](docs/COALITION_ECONOMIC_CONSTRAINTS.md) explains the appeal-reward paper constraints and optional owner-level checks, which require a matched honest baseline and explicit ownership.
+
+The [owner-funded negative-fee proposal](docs/OWNER_FUNDED_NEGATIVE_FEES.md) is
+implemented as an **opt-in** policy. It reserves owner capital before work,
+collects existing voting penalties and new successful leader/timeout correction
+fees from that capital, and independently reconciles collection and burn.
+Ordinary fee outputs and consensus-vector generation retain their existing policy.
+Run `python -m examples.owner_funded_fees` for two illustrative settlements.
 
 To understand the consensus concepts (voting, appeals, rounds), see [docs/BASIC_CONCEPTS.md](docs/BASIC_CONCEPTS.md).
 
@@ -442,7 +449,7 @@ The system maintains 24 invariants that are checked for every test:
 8. **Burn non-negativity** - Burns are non-negative
 9. **No double penalties** - Single penalty per violation
 10. **Bounded slashing impact** - Slashing within reasonable bounds
-11. **No profit from griefing** - Can't profit from attacks
+11. **No profit from griefing** - Minority-vote heuristic; not a general coalition guarantee
 12. **Cost of contention** - Contention has economic cost
 13. **Griefing amplification** - Attack costs scale appropriately
 14. **Progress monotonicity** - System makes forward progress
