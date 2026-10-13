@@ -94,3 +94,12 @@ The certified 2.5x appellant return is retained in `PaperFeeKernel.tla` and
 checked for drift. It is not treated as a proof of correction frequency:
 `MinCorrectionTasks` remains an empirical lower-bound assumption because an
 appellant reward alone cannot establish that useful appeals occur or succeed.
+
+The runner accepts both legacy and named temporal-counterexample messages.
+Expected-red campaigns require the appropriate TLC exit code (12 for an
+invariant, 13 for a temporal property), explored states, and the expected
+property; temporal counterexamples also require a lasso or stuttering trace.
+Legacy temporal messages are accepted only for configurations declaring the
+single expected property. A parser failure or an unrelated invariant failure
+cannot satisfy an expected-red campaign. Each campaign uses one worker, a
+768 MiB heap, a five-minute timeout, and an isolated temporary directory.

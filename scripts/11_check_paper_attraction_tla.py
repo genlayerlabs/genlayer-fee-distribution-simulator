@@ -25,30 +25,30 @@ TLA_DIRECTORY = REPOSITORY_ROOT / "formal" / "tla"
 MODEL = "EndogenousEvaluatorAttraction.tla"
 
 CAMPAIGNS = (
-    ("green", "EndogenousEvaluatorAttraction.cfg", True, "No error has been found"),
+    ("green", "EndogenousEvaluatorAttraction.cfg", "pass", None),
     (
         "no effective diagnostics",
         "EndogenousEvaluatorAttraction_no_effective_diagnostics_expected_red.cfg",
-        False,
-        "Invariant GoodBasin is violated",
+        "invariant",
+        "GoodBasin",
     ),
     (
         "no vindication",
         "EndogenousEvaluatorAttraction_no_vindication_expected_red.cfg",
-        False,
-        "Invariant GoodBasin is violated",
+        "invariant",
+        "GoodBasin",
     ),
     (
         "weak payoff response",
         "EndogenousEvaluatorAttraction_weak_response_expected_red.cfg",
-        False,
-        "Temporal properties were violated",
+        "temporal",
+        "EventuallyStableFullCompetence",
     ),
     (
         "bad bootstrap",
         "EndogenousEvaluatorAttraction_bad_bootstrap_expected_red.cfg",
-        False,
-        "Temporal properties were violated",
+        "temporal",
+        "EventuallyStableFullCompetence",
     ),
 )
 
@@ -117,8 +117,28 @@ def check_generated_kernel() -> None:
 
 
 def distinct_states(output: str) -> str:
-    matches = re.findall(r"([0-9]+) distinct states found", output)
-    return matches[-1] if matches else "unknown"
+    matches = re.findall(r"([\d,]+) distinct states found", output)
+    return matches[-1].replace(",", "") if matches else "unknown"
+
+
+def outcome_matches(code: int, output: str, expected: str, property_name: Optional[str]) -> bool:
+    states = distinct_states(output)
+    if states == "unknown" or int(states) == 0:
+        return False
+    if expected == "pass":
+        return code == 0 and "Model checking completed. No error has been found." in output
+    if expected == "invariant":
+        violation = re.search(r"Invariant (\w+) is violated", output)
+        return code == 12 and violation is not None and violation[1] == property_name
+    if expected == "temporal":
+        # Legacy generic wording is safe only with the one-property config
+        # check below. New TLC identifies the actual violated property.
+        named = re.search(r"Temporal property (\w+) was violated", output)
+        matches = named[1] == property_name if named else "Temporal properties were violated" in output
+        return (code == 13 and matches
+                and ("Stuttering" in output or "Back to state" in output)
+                and re.search(r"Invariant \w+ is violated", output) is None)
+    return False
 
 
 def main() -> None:
@@ -132,11 +152,18 @@ def main() -> None:
     tla_jar = find_tla_jar(args.jar)
 
     with tempfile.TemporaryDirectory(prefix="paper-attraction-tlc-") as temp:
-        for index, (name, config, should_pass, evidence) in enumerate(CAMPAIGNS):
+        for index, (name, config, expected, property_name) in enumerate(CAMPAIGNS):
+            if expected == "temporal":
+                properties = re.findall(r"^PROPERTY\s+(\w+)\s*$", (TLA_DIRECTORY / config).read_text(), re.M)
+                if properties != [property_name]:
+                    raise SystemExit(f"Expected exactly the named temporal property in {config}")
             metadata = Path(temp) / f"campaign-{index}"
             command = [
                 str(java),
                 "-XX:+UseParallelGC",
+                "-XX:ActiveProcessorCount=1",
+                "-Xmx768m",
+                "-Djava.io.tmpdir=" + temp,
                 "-cp",
                 str(tla_jar),
                 "tlc2.TLC",
@@ -149,23 +176,26 @@ def main() -> None:
                 config,
                 MODEL,
             ]
+            # Isolate generated trace-explorer files from the source checkout.
+            work = Path(temp) / f"model-{index}"
+            work.mkdir()
+            for source in (MODEL, "PaperFeeKernel.tla", config):
+                shutil.copyfile(TLA_DIRECTORY / source, work / source)
             result = subprocess.run(
                 command,
-                cwd=TLA_DIRECTORY,
+                cwd=work,
                 text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 check=False,
+                timeout=300,
             )
-            outcome_matches = (
-                result.returncode == 0 if should_pass else result.returncode != 0
-            )
-            if not outcome_matches or evidence not in result.stdout:
+            if not outcome_matches(result.returncode, result.stdout, expected, property_name):
                 print(result.stdout)
                 raise SystemExit(
                     f"Unexpected TLC result for {name}: exit {result.returncode}"
                 )
-            expectation = "GREEN" if should_pass else "EXPECTED RED"
+            expectation = "GREEN" if expected == "pass" else "EXPECTED RED"
             print(
                 f"PASS [{expectation}]: {name} "
                 f"({distinct_states(result.stdout)} distinct states)"
