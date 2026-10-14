@@ -19,6 +19,7 @@ To understand the consensus concepts (voting, appeals, rounds), see [docs/BASIC_
 ## What it does NOT do
 
 - **It does not verify the contracts — it models them.** Parity holds only as long as both sides move together (see *Parity discipline* below). The enforcement point is the vector-driven test suites in `genlayer-consensus`, not this repo.
+- **Settlement vectors start after admission.** They do not run live validator selection, capacity-limited appeal admission, or the public `bond + funding` quote. Those surfaces require quote-equals-submission contract tests and shared Studio/Consensus E2E coverage in addition to vector parity.
 - **It only models the time-unit fee layer.** Out of scope: the unified execution budget (gas/receipt/storage fees), the developer-fee gross-up, the GEN-per-time-unit price multiplier, message fees, and top-ups. Amounts here are raw time-unit fees (e.g. `leaderTimeout=100`, `validatorsTimeout=200`).
 - **It abstracts validator identity.** Committee sizes, roles and vote alignment match the contracts; the concrete address selection (VRF, consumed-validator tracking) does not — compare quantities and roles, never addresses.
 - **Round sizes cap at 1000** for simulation purposes; the on-chain `VALIDATORS_PER_ROUND` continues to 1535/1537.
@@ -86,7 +87,15 @@ scripts/                     # Utility scripts
 ├── 01_generate_test_vectors.py  # Generate compressed JSON files for all paths
 ├── 02_decode_test_vector.py     # Decode and visualize JSON path files
 ├── 03_analyze_incentives.py     # Analyze incentive structures
-└── 04_interactive_simulator.py  # Interactive path builder and simulator
+├── 04_interactive_simulator.py  # Interactive path builder and simulator
+├── 05_convert_to_solidity_json.py
+├── 06_categorize_appeal_tests.py
+├── 07_generate_consensus_vectors.py
+├── 08_appeal_reward_impact.py   # Quantify 2.5x and vindication impact
+├── 09_verify_paper_payoff_kernel.py  # Certify paper-facing payoff properties
+├── 10_generate_paper_fee_kernel_tla.py  # Bind FeeEvents to TLA+ constants
+├── 11_check_paper_attraction_tla.py  # Run green and expected-red TLC checks
+└── 12_check_consensus_vector_conformance.py  # Classify the pending Solidity delta
 
 examples/                    # Example scenarios
 ├── 01_basic_transaction.py      # Simple majority agreement
@@ -340,6 +349,24 @@ These examples are perfect for:
 - Testing different scenarios
 - Learning the impact of appeals and timeouts
 - Demonstrating the system to others
+
+### Paper Payoff Certificate
+
+The bounded-attraction paper's protocol-side payoff premises are checked
+directly against executable `FeeEvent` output. The verifier exhausts every
+first-rung vote-count equivalence class, checks extremal profiles at every
+configured committee-size rung, and has expected-red controls for the key
+reward and penalty rules.
+
+```bash
+PYTHONPATH=. python scripts/09_verify_paper_payoff_kernel.py
+PYTHONPATH=. python scripts/09_verify_paper_payoff_kernel.py --json
+```
+
+See [`docs/PAPER_PAYOFF_ASSURANCE.md`](docs/PAPER_PAYOFF_ASSURANCE.md) for the
+exact claim boundary and remaining empirical and TLA+ composition obligations.
+The bounded population model and its expected-red controls are documented in
+[`formal/tla/README.md`](formal/tla/README.md).
 
 ### Creating Custom Scenarios
 

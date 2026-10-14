@@ -64,7 +64,13 @@ def compute_majority(
         return "UNDETERMINED"
 
     # Count votes by type
-    vote_counts = {"AGREE": 0, "DISAGREE": 0, "TIMEOUT": 0, "IDLE": 0}
+    vote_counts = {
+        "AGREE": 0,
+        "DISAGREE": 0,
+        "TIMEOUT": 0,
+        "DETERMINISTIC_VIOLATION": 0,
+        "IDLE": 0,
+    }
     for addr, vote in rotation.items():
         vote_type = normalize_vote(vote)
         if vote_type in vote_counts:
@@ -85,6 +91,8 @@ def compute_majority(
         return "DISAGREE"
     elif vote_counts["TIMEOUT"] >= majority_threshold:
         return "TIMEOUT"
+    elif vote_counts["DETERMINISTIC_VIOLATION"] >= majority_threshold:
+        return "DETERMINISTIC_VIOLATION"
     else:
         return "UNDETERMINED"
 
@@ -145,7 +153,10 @@ def who_is_in_vote_majority(
         if normalize_vote(vote) == majority_vote:
             majority_addresses.append(addr)
 
-    minority_addresses = list(set(rotation.keys()) - set(majority_addresses))
+    majority_address_set = set(majority_addresses)
+    minority_addresses = [
+        addr for addr in rotation.keys() if addr not in majority_address_set
+    ]
     return majority_addresses, minority_addresses
 
 

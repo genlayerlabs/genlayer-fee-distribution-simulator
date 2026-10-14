@@ -1,3 +1,4 @@
+from src.fee_simulator.protocol.appeal_economics import successful_appeal_reward
 from typing import List
 from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
@@ -45,6 +46,8 @@ def apply_appeal_leader_successful(
         validators_timeout=budget.validatorsTimeout,
         round_labels=round_labels,
         rotations=budget.rotations,
+        rotations_used=budget.rotationsUsed,
+        invalidated_generation=budget.recomputeInvalidated,
     )
     events.append(
         FeeEvent(
@@ -57,7 +60,7 @@ def apply_appeal_leader_successful(
             hash="0xdefault",
             cost=0,
             staked=0,
-            earned=int(appeal_bond * 1.5),  # 50% return on investment
+            earned=successful_appeal_reward(appeal_bond),
             slashed=0,
             burned=0,
         )

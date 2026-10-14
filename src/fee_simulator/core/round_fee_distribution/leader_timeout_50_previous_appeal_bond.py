@@ -48,6 +48,8 @@ def apply_leader_timeout_50_previous_appeal_bond(
         round_labels=round_labels,
         appeal_round_index=round_index - 1,
         rotations=budget.rotations,
+        rotations_used=budget.rotationsUsed,
+        invalidated_generation=budget.recomputeInvalidated,
     )
 
     leader_share = appeal_bond // 2

@@ -174,13 +174,23 @@ Invariant: len(A_events) == N_appeals
 ```
 
 ### 17. Majority/Minority Consistency
-**Statement:** In a round with a clear majority decision, only validators who voted with the majority receive earnings.
-**Importance:** The core incentive mechanism that drives the network towards consensus.
+**Statement:** In an ordinary round with a clear majority decision, only validators who voted with the majority receive earnings. A successful validator appeal is the explicit exception: its own committee is settled from its own vote, and each original-round voter matching a clear new majority receives one additional validator reward. No-majority appeals do not create vindication rewards.
+**Importance:** Preserves ordinary majority settlement while enforcing the retroactive incentive for correct dissent revealed by a successful appeal.
 **Mathematical Formulation:**
 ```
 For each Round `R_i` with a majority outcome `M`:
   For each FeeEvent `e` in that round where e.role == "VALIDATOR":
     If e.earned > 0: Invariant: e.vote == M
+
+For each successful validator appeal `A` with clear majority `M_A`:
+  Appeal validators voting `M_A` earn `validatorsTimeout`.
+  Appeal validators not voting `M_A` incur the normal minority burn.
+  Original-round validators voting `M_A` earn one `validatorsTimeout`.
+  All other original-round validators earn zero and incur no retroactive burn.
+
+For each successful validator appeal `A` with no majority:
+  Appeal validators follow the existing no-majority settlement.
+  Original-round validators receive no vindication reward.
 ```
 
 ### 18. Leader Timeout Earning

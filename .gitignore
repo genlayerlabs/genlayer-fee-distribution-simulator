@@ -6,6 +6,8 @@ checkpoints/
 .claude/memory/
 path_jsons/
 solidity_test_jsons/
+formal/tla/states/
+formal/tla/.tlacache/
 .env
 
 # all .md concatenated from spec-in-repo branch of genlayer-consensus

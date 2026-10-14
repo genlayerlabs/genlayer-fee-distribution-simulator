@@ -5,7 +5,6 @@ Graph data structure for the fee simulator round combinations.
 from types import MappingProxyType
 from typing import Dict, List, Any
 
-
 # The dependency graph as pure data
 # Using MappingProxyType for immutability
 _GRAPH_DATA = {
@@ -83,6 +82,32 @@ _GRAPH_DATA = {
 
 # Expose immutable view of the graph
 TRANSACTION_GRAPH: Dict[str, List[str]] = MappingProxyType(_GRAPH_DATA)
+
+
+def is_protocol_valid_path(path: List[str]) -> bool:
+    """Enforce lifecycle rules that need path history, not one graph edge.
+
+    A successful validator-review jury is followed by exactly one terminal
+    normal recomputation. That terminal decision ends this appeal ladder and
+    cannot itself be appealed again.
+    """
+
+    terminal_normal_seen = False
+    expect_terminal_normal = False
+    for node in path:
+        if terminal_normal_seen and node != "END":
+            return False
+        if expect_terminal_normal:
+            if node == "END":
+                return True
+            if "APPEAL" in node or node == "START":
+                return False
+            expect_terminal_normal = False
+            terminal_normal_seen = True
+            continue
+        if node == "VALIDATOR_APPEAL_SUCCESSFUL":
+            expect_terminal_normal = True
+    return True
 
 
 def get_graph() -> Dict[str, List[str]]:

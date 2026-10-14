@@ -286,6 +286,42 @@ class TestSpecificPatterns:
         assert labels[1] == "APPEAL_LEADER_SUCCESSFUL"
         assert labels[2] == "NORMAL_ROUND"
 
+    def test_terminal_successful_validator_appeal_still_skips_original_round(self):
+        """The overturned round is skipped even when re-execution is not recorded yet."""
+        transaction_results = TransactionRoundResults(
+            rounds=[
+                Round(
+                    rotations=[
+                        Rotation(
+                            votes={
+                                addresses_pool[0]: ["LEADER_RECEIPT", "AGREE"],
+                                addresses_pool[1]: "AGREE",
+                                addresses_pool[2]: "AGREE",
+                                addresses_pool[3]: "DISAGREE",
+                                addresses_pool[4]: "DISAGREE",
+                            }
+                        )
+                    ]
+                ),
+                Round(
+                    rotations=[
+                        Rotation(
+                            votes={
+                                addresses_pool[5]: "DISAGREE",
+                                addresses_pool[6]: "DISAGREE",
+                                addresses_pool[7]: "DISAGREE",
+                                addresses_pool[8]: "AGREE",
+                                addresses_pool[9]: "AGREE",
+                            }
+                        )
+                    ]
+                ),
+            ]
+        )
+
+        labels = label_rounds(transaction_results)
+        assert labels == ["SKIP_ROUND", "APPEAL_VALIDATOR_SUCCESSFUL"]
+
     def test_leader_timeout_150_pattern(self):
         """Leader timeout + successful appeal + normal should trigger special labeling."""
         transaction_results = TransactionRoundResults(

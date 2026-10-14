@@ -59,7 +59,9 @@ The system is designed to economically incentivize honest and timely participati
     -   The **Leader** earns `leaderTimeout` + `validatorsTimeout`.
     -   **Majority Validators** each earn `validatorsTimeout`.
 -   **Successful Appeal**:
-    -   The **Appellant** is rewarded handsomely, receiving **1.5x their appeal bond** back (a 50% return on investment).
+    -   The **Appellant** receives **2.5x their appeal bond** back (principal plus a 150% return).
+    -   On a successful validator appeal with a clear new majority, each validator from the original round whose vote matches that new majority receives one `validatorsTimeout` vindication reward.
+    -   A successful validator appeal that ends with no majority has no vindication reward because there is no side to vindicate.
 
 #### Penalties
 
@@ -90,8 +92,8 @@ Consider the path: `Normal (Majority Agrees) â†’ Validator Appeal (Successful) â
 
 1.  **Round 0 (`NORMAL_ROUND`)**: A leader and 5 validators participate. A majority agrees, but a minority disagrees and decides to appeal.
 2.  **Round 1 (`APPEAL_VALIDATOR_SUCCESSFUL`)**: An appellant from the minority pays an appeal bond. A new set of 7 validators is brought in. They vote, and this time the outcome is `DISAGREE`, overturning the original result.
-    -   The appellant receives 1.5x their bond back.
-    -   The original majority from Round 0 is penalized.
+    -   The appellant receives 2.5x their bond back.
+    -   The Round 0 `DISAGREE` voters each receive one `validatorsTimeout` vindication reward.
+    -   The original majority receives zero from the skipped round and is not retroactively penalized.
 3.  **Round 2 (`NORMAL_ROUND`)**: Because of the successful appeal, the original Round 0 is now considered invalid. Its label is retroactively changed to `SKIP_ROUND`. The system proceeds to a new normal round.
     -   This new normal round will be much larger (11 participants), reusing the validators from both Round 0 and Round 1 to ensure a higher level of security after the dispute.
-
