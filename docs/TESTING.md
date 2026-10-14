@@ -2,7 +2,22 @@
 
 ## Overview
 
-The GenLayer Fee Distribution Simulator employs a comprehensive testing strategy designed to ensure mathematical correctness and production-ready reliability for blockchain financial operations. The test suite uses multiple testing approaches to achieve 100% coverage of all possible transaction scenarios.
+The GenLayer Fee Distribution Simulator uses several testing approaches. Coverage is bounded by the generated paths, participant model and assertions; it does not prove strategic safety across all ownership combinations. See [Economic requirements across roles](COALITION_ECONOMIC_CONSTRAINTS.md) for the additional owner/baseline inputs and accounting coverage limits.
+
+The [owner-funded policy](OWNER_FUNDED_NEGATIVE_FEES.md) has a separate executable
+settlement and independent output checker. Run its focused tests with:
+
+```sh
+python -m pytest -q tests/fee_distributions/test_owner_funded_fees.py \
+  tests/fee_distributions/test_liability_reservations.py \
+  tests/fee_distributions/test_economic_invariants.py \
+  tests/fee_distributions/test_appeal_liability_requirements.py
+```
+
+These include synthetic mutation controls, large-integer properties, a bounded
+arithmetic certificate and custody settlement permutations. They do not run live
+consensus or establish off-ledger economic assumptions. Full `python -m pytest
+-q` remains the regression gate for the unchanged default policy.
 
 ## Current Test Suite Statistics
 
@@ -195,7 +210,7 @@ def test_round_labeling_properties(num_rounds, appeal_pattern):
 8. **Burn non-negativity**: Burns are non-negative
 9. **No double penalties**: Single penalty per violation
 10. **Bounded slashing impact**: Slashing within reasonable bounds
-11. **No profit from griefing**: Can't profit from attacks
+11. **No profit from griefing**: Minority-vote heuristic, not a general coalition guarantee
 12. **Cost of contention**: Contention has economic cost
 13. **Griefing amplification**: Attack costs scale appropriately
 14. **Progress monotonicity**: System makes forward progress

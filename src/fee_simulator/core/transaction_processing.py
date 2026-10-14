@@ -1,4 +1,6 @@
-from typing import List
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import List, Mapping
 
 from src.fee_simulator.protocol.models import (
     TransactionBudget,
@@ -30,12 +32,62 @@ from src.fee_simulator.core.round_fee_distribution.distribute_round import (
 from src.fee_simulator.core.refunds import compute_sender_refund
 
 
+@dataclass(frozen=True)
+class EventOrigin:
+    generation: int
+    round_index: int
+
+
+@dataclass(frozen=True)
+class GenerationEvidence:
+    generation: int
+    results: TransactionRoundResults
+    labels: tuple[RoundLabel, ...]
+    invalidated: bool
+
+
+@dataclass(frozen=True)
+class FeeSimulation:
+    """Ordinary fee output plus provenance; does not change any fee rule."""
+
+    fee_events: tuple[FeeEvent, ...]
+    labels: tuple[RoundLabel, ...]
+    origins: Mapping[int, EventOrigin]
+    generations: tuple[GenerationEvidence, ...]
+
+
 def process_transaction(
     addresses: List[str],
     transaction_results: TransactionRoundResults,
     transaction_budget: TransactionBudget,
     discarded_generations: List[TransactionRoundResults] | None = None,
 ) -> tuple[List[FeeEvent], List[RoundLabel]]:
+    simulation = process_transaction_with_provenance(
+        addresses, transaction_results, transaction_budget, discarded_generations,
+    )
+    return list(simulation.fee_events), list(simulation.labels)
+
+
+def process_transaction_with_provenance(
+    addresses: List[str],
+    transaction_results: TransactionRoundResults,
+    transaction_budget: TransactionBudget,
+    discarded_generations: List[TransactionRoundResults] | None = None,
+) -> FeeSimulation:
+    """Keep generation/round identity separate from mutable payout labels.
+
+    The ordinary entry point retains its tuple result and event serialization.
+    This evidence is used by the opt-in owner-liability settlement.
+    """
+    history = discarded_generations or []
+    return _process_transaction(
+        addresses, transaction_results, transaction_budget, history, len(history),
+    )
+
+
+def _process_transaction(
+    addresses, transaction_results, transaction_budget, discarded_generations, generation_id,
+) -> FeeSimulation:
 
     discarded_generations = discarded_generations or []
     if discarded_generations:
@@ -129,16 +181,30 @@ def process_transaction(
             )
             fee_events.extend(round_fee_events)
 
+    origins = {
+        event.sequence_id: EventOrigin(generation_id, event.round_index)
+        for event in fee_events if event.round_index is not None
+    }
+    evidence = [GenerationEvidence(
+        generation_id, replace_idle_transaction_results.model_copy(deep=True),
+        tuple(labels), transaction_budget.recomputeInvalidated,
+    )]
+
     # Preserve historical time-unit work without collecting another sender
     # deposit or spending appeal bonds already returned on invalidation.
-    for generation in discarded_generations:
-        historical, _ = process_transaction(
+    for historical_id, generation in enumerate(discarded_generations):
+        historical = _process_transaction(
             addresses, generation,
             transaction_budget.model_copy(update={"recomputeInvalidated": True}),
+            [], historical_id,
         )
-        for event in historical:
+        evidence.extend(historical.generations)
+        for event in historical.fee_events:
             if event.role in ("LEADER", "VALIDATOR") and not event.staked:
-                fee_events.append(event.model_copy(update={"sequence_id": event_sequence.next_id()}))
+                new_id = event_sequence.next_id()
+                fee_events.append(event.model_copy(update={"sequence_id": new_id}))
+                if event.sequence_id in historical.origins:
+                    origins[new_id] = historical.origins[event.sequence_id]
 
     refunds = compute_sender_refund(
         sender_address, fee_events, transaction_budget, labels
@@ -152,7 +218,10 @@ def process_transaction(
         )
     )
 
-    return fee_events, labels
+    return FeeSimulation(
+        tuple(fee_events), tuple(labels), MappingProxyType(origins),
+        tuple(sorted(evidence, key=lambda item: item.generation)),
+    )
 
 
 def _validate_recompute_allowance(history, current, budget):

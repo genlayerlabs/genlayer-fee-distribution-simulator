@@ -10,6 +10,7 @@ from src.fee_simulator.protocol.models import (
     TransactionRoundResults,
 )
 from src.fee_simulator.protocol.types import RoundLabel
+from .economic import EconomicComparison, check_economic_invariants
 
 # Import all invariant check functions from the invariants module
 from src.fee_simulator.specification.invariants.definitions import (
@@ -47,9 +48,15 @@ def check_all_invariants(
     transaction_results: TransactionRoundResults,
     round_labels: List[RoundLabel],
     tolerance: int = 10,
+    *,
+    economic_comparison: EconomicComparison | None = None,
 ) -> Tuple[bool, List[str]]:
     """
-    Check all invariants and return (success, list_of_violations)
+    Check trace invariants and return (success, list_of_violations).
+
+    Owner-level economic assurance additionally requires a justified matched
+    baseline and ownership map. Pass ``economic_comparison`` to include it;
+    without that argument, success makes no coalition-resistance claim.
     """
     violations = []
 
@@ -162,5 +169,9 @@ def check_all_invariants(
             violations.append(f"{e.invariant_name}: {e.message}")
         except Exception as e:
             violations.append(f"{invariant_name}: Unexpected error - {str(e)}")
+
+    if economic_comparison is not None:
+        _, economic_violations = check_economic_invariants(fee_events, economic_comparison)
+        violations.extend(economic_violations)
 
     return len(violations) == 0, violations
