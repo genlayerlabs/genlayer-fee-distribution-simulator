@@ -144,8 +144,8 @@ Appeal                # Appeal information with appealant address
 ### Constants
 ```python
 # Round sizes (after ROUND_SIZES split)
-NORMAL_ROUND_SIZES = [5, 11, 23, 47, 95, 191, 383, 767, 1000]
-APPEAL_ROUND_SIZES = [7, 13, 25, 49, 97, 193, 385, 769, 1000]
+NORMAL_ROUND_SIZES = [5, 11, 23, 47, 95, 191, 383, 767, 1535]
+APPEAL_ROUND_SIZES = [7, 13, 25, 49, 97, 193, 385, 769, 1537]
 
 # Penalty coefficients
 PENALTY_REWARD_COEFFICIENT = 1  # Multiplier for minority validator penalties
@@ -481,8 +481,8 @@ check_comprehensive_invariants(fee_events, transaction, labels)
 The system uses two separate arrays for round sizes defined in `constants.py`:
 
 ```python
-NORMAL_ROUND_SIZES = [5, 11, 23, 47, 95, 191, 383, 767, 1000]
-APPEAL_ROUND_SIZES = [7, 13, 25, 49, 97, 193, 385, 769, 1000]
+NORMAL_ROUND_SIZES = [5, 11, 23, 47, 95, 191, 383, 767, 1535]
+APPEAL_ROUND_SIZES = [7, 13, 25, 49, 97, 193, 385, 769, 1537]
 ```
 
 These sizes follow an exponential growth pattern (approximately doubling) to:

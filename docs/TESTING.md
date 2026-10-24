@@ -6,9 +6,9 @@ The GenLayer Fee Distribution Simulator employs a comprehensive testing strategy
 
 ## Current Test Suite Statistics
 
-- **Total Tests**: 146 tests
+- **Total Tests**: 1088 tests collected (1083 pass, 5 skipped)
 - **Test Coverage**: 100% of all possible transaction paths up to length 7
-- **Execution Time**: ~27 seconds for full suite
+- **Execution Time**: ~65 seconds for full suite (Python 3.13, 10-core machine)
 - **Test Categories**:
   - Unit tests for individual functions
   - Integration tests for complete workflows
@@ -22,9 +22,12 @@ The GenLayer Fee Distribution Simulator employs a comprehensive testing strategy
 
 Before running tests, ensure you have the proper environment activated:
 
+Python **3.12+** is required: `requirements.txt` pins `numpy==2.5.2`, which has no
+release for Python 3.10 or 3.11 (`ERROR: No matching distribution found for numpy==2.5.2`).
+
 ```bash
 # Install dependencies if needed
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 And then activate the environment.
@@ -178,7 +181,7 @@ def test_round_labeling_properties(num_rounds, appeal_pattern):
 
 **Statistics**:
 - Length 3: 4 paths
-- Length 7: 484 paths
+- Length 7: 250 paths (484 cumulative up to length 7)
 - Length 17: ~113M paths
 
 ### 5. Invariant Testing
