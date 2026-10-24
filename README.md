@@ -22,7 +22,7 @@ To understand the consensus concepts (voting, appeals, rounds), see [docs/BASIC_
 - **Settlement vectors start after admission.** They do not run live validator selection, capacity-limited appeal admission, or the public `bond + funding` quote. Those surfaces require quote-equals-submission contract tests and shared Studio/Consensus E2E coverage in addition to vector parity.
 - **It only models the time-unit fee layer.** Out of scope: the unified execution budget (gas/receipt/storage fees), the developer-fee gross-up, the GEN-per-time-unit price multiplier, message fees, and top-ups. Amounts here are raw time-unit fees (e.g. `leaderTimeout=100`, `validatorsTimeout=200`).
 - **It abstracts validator identity.** Committee sizes, roles and vote alignment match the contracts; the concrete address selection (VRF, consumed-validator tracking) does not — compare quantities and roles, never addresses.
-- **Round sizes cap at 1000** for simulation purposes; the on-chain `VALIDATORS_PER_ROUND` continues to 1535/1537.
+- **Round sizes follow the on-chain ladder to the top.** The model builds rounds of 1535 validators (normal) and 1537 (appeal), so rounds 16 and 17+ carry the full on-chain committee rather than a clipped one.
 
 ## What it's for
 
@@ -147,8 +147,8 @@ Rounds are identified by their vote patterns, not their position:
    - `NA`: Not applicable (appeals)
 
 2. **Round Sizes**:
-   - Normal rounds: [5, 11, 23, 47, 95, 191, 383, 767, 1000]
-   - Appeal rounds: [7, 13, 25, 49, 97, 193, 385, 769, 1000]
+   - Normal rounds: [5, 11, 23, 47, 95, 191, 383, 767, 1535]
+   - Appeal rounds: [7, 13, 25, 49, 97, 193, 385, 769, 1537]
 
 3. **Fee Distribution**:
    - Leader earns: leader_timeout + validator_timeout (if majority)
