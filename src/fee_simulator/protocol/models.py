@@ -73,6 +73,10 @@ class Rotation(BaseModel):
 class Round(BaseModel):
     model_config = ConfigDict(frozen=True)
     rotations: List[Rotation]
+    # Immutable jury admission basis; raw earlier jury tallies may be voided.
+    challenged_outcome: Optional[Literal["AGREE", "TIMEOUT"]] = None
+    settled_outcome: Optional[Literal["AGREE", "TIMEOUT", "DISAGREE", "UNDETERMINED"]] = None
+    appeal_voided: bool = False
 
 
 class TransactionRoundResults(BaseModel):

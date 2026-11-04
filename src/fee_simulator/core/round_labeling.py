@@ -418,6 +418,18 @@ def label_rounds(transaction_results: TransactionRoundResults) -> List[RoundLabe
     total_rounds = len(rounds)
 
     for i, round_votes in enumerate(rounds):
+        context = transaction_results.rounds[i]
+        if context.challenged_outcome is not None:
+            # A settled deadline tally carries the same meaning as the last
+            # reveal. An absent tally is still an unresolved/void jury.
+            outcome = context.settled_outcome
+            if outcome is None and round_votes:
+                outcome = compute_majority(round_votes)
+            succeeds = (not context.appeal_voided and outcome is not None
+                        and outcome != context.challenged_outcome)
+            labels.append("APPEAL_VALIDATOR_SUCCESSFUL" if succeeds
+                          else "APPEAL_VALIDATOR_UNSUCCESSFUL")
+            continue
         # Handle empty rounds
         if not round_votes:
             labels.append("EMPTY_ROUND")

@@ -377,8 +377,25 @@ def summarize(examples):
     return {"rewards": rewards, "penalties": penalties, "sender_outcomes": sender}
 
 
+def write_jury_classification_vectors(out):
+    """Compact CON-1088 outcomes, including a deadline with no reveal callback."""
+    from src.fee_simulator.protocol.models import Round, TransactionRoundResults
+    from src.fee_simulator.core.round_labeling import label_rounds
+    cases = []
+    for challenged in ("AGREE", "TIMEOUT"):
+        for outcome in ("AGREE", "TIMEOUT", "UNDETERMINED", None):
+            for voided in (False, True):
+                jury = Round(rotations=[], challenged_outcome=challenged,
+                             settled_outcome=outcome, appeal_voided=voided)
+                label = label_rounds(TransactionRoundResults(rounds=[Round(rotations=[]), jury]))[1]
+                cases.append(dict(challenged=challenged, outcome=outcome,
+                                  voided=voided, expected=label))
+    (out / "con1088_jury_classification.json").write_text(json.dumps(cases, indent=2) + "\n")
+
+
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--jury-only", action="store_true", help="Regenerate the compact challenged-jury parity matrix only.")
     parser.add_argument("--output-dir", default="consensus_vectors")
     parser.add_argument("--recompute-only", action="store_true", help="Regenerate only the independent recomputation work vectors")
     parser.add_argument("--max-length", type=int, default=7)
@@ -407,6 +424,9 @@ def main():
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
+    write_jury_classification_vectors(out)
+    if args.jury_only:
+        return
     from src.fee_simulator.core.recompute_vectors import recompute_vectors
     (out / "recompute_work.json").write_text(json.dumps(recompute_vectors(), indent="\t") + "\n")
     if args.recompute_only:
